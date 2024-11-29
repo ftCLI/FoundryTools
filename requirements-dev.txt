@@ -1,4 +1,4 @@
-mypy==0.991
+mypy==1.13.0
 pre-commit==4.0.1
 pylint==3.3.1
 ruff==0.8.1
