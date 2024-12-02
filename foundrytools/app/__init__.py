@@ -1,12 +1,12 @@
-from foundrytools.app.fix_empty_notdef import run as fix_empty_notdef
-from foundrytools.app.fix_italic_angle import run as fix_italic_angle
-from foundrytools.app.otf_autohint import run as otf_autohint
-from foundrytools.app.otf_check_outlines import run as otf_check_outlines
-from foundrytools.app.otf_dehint import run as otf_dehint
-from foundrytools.app.otf_desubroutinize import run as otf_desubroutinize
-from foundrytools.app.otf_subroutinize import run as otf_subroutinize
-from foundrytools.app.ttf_autohint import run as ttf_autohint
-from foundrytools.app.ttf_dehint import run as ttf_dehint
+from .fix_empty_notdef import run as fix_empty_notdef
+from .fix_italic_angle import run as fix_italic_angle
+from .otf_autohint import run as otf_autohint
+from .otf_check_outlines import run as otf_check_outlines
+from .otf_dehint import run as otf_dehint
+from .otf_desubroutinize import run as otf_desubroutinize
+from .otf_subroutinize import run as otf_subroutinize
+from .ttf_autohint import run as ttf_autohint
+from .ttf_dehint import run as ttf_dehint
 
 
 __all__ = [
