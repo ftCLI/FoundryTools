@@ -16,14 +16,14 @@ from foundrytools.constants import (
     T_OS_2,
 )
 from foundrytools.core.tables.default import DefaultTbl
-from foundrytools.utils.bits_tools import is_nth_bit_set
-from foundrytools.utils.misc import get_glyph_bounds
-from foundrytools.utils.string_tools import adjust_string_length
 from foundrytools.lib.unicode import (
     OS_2_UNICODE_RANGES,
     check_block_support,
     count_block_codepoints,
 )
+from foundrytools.utils.bits_tools import is_nth_bit_set
+from foundrytools.utils.misc import get_glyph_bounds
+from foundrytools.utils.string_tools import adjust_string_length
 
 ITALIC_BIT = 0
 UNDERSCORE_BIT = 1

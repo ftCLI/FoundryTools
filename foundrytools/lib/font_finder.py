@@ -1,8 +1,7 @@
+from collections.abc import Generator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Callable
-
-from collections.abc import Generator
+from typing import Callable, Optional
 
 from fontTools.ttLib.ttFont import TTLibError
 

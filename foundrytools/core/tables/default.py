@@ -5,7 +5,6 @@ from fontTools.ttLib.tables.DefaultTable import DefaultTable
 
 from foundrytools.utils.bits_tools import update_bit
 
-
 T = TypeVar("T", bound=DefaultTable)
 
 
