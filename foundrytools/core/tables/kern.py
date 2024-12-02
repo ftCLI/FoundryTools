@@ -2,7 +2,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._k_e_r_n import table__k_e_r_n
 
 from foundrytools.constants import T_CMAP, T_KERN
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.core.tables.default import DefaultTbl
 
 
 class KernTable(DefaultTbl):  # pylint: disable=too-few-public-methods

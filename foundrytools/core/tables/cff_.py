@@ -11,8 +11,8 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables.C_F_F_ import table_C_F_F_
 
 from foundrytools.constants import T_CFF
-from foundrytools.skia_tools import correct_cff_contours
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.lib.skia_tools import correct_cff_contours
+from foundrytools.core.tables.default import DefaultTbl
 from foundrytools.utils.misc import restore_flavor
 from foundrytools.utils.path_tools import get_temp_file_path
 

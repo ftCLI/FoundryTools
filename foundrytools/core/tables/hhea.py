@@ -7,7 +7,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._h_h_e_a import table__h_h_e_a
 
 from foundrytools.constants import T_HEAD, T_HHEA, T_POST
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.core.tables.default import DefaultTbl
 
 
 class HheaTable(DefaultTbl):

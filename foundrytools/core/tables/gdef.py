@@ -2,7 +2,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables.G_D_E_F_ import table_G_D_E_F_
 
 from foundrytools.constants import T_GDEF
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.core.tables.default import DefaultTbl
 
 
 class GdefTable(DefaultTbl):  # pylint: disable=too-few-public-methods

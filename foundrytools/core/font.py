@@ -17,9 +17,9 @@ from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
 from ufo2ft.postProcessor import PostProcessor
 
 from foundrytools import constants as const
-from foundrytools.otf_builder import build_otf
-from foundrytools.qu2cu import quadratics_to_cubics
-from foundrytools.tables import (
+from foundrytools.lib.otf_builder import build_otf
+from foundrytools.lib.qu2cu import quadratics_to_cubics
+from foundrytools.core.tables import (
     CFFTable,
     CmapTable,
     GdefTable,
@@ -34,7 +34,7 @@ from foundrytools.tables import (
     PostTable,
     TABLES_LOOKUP,
 )
-from foundrytools.ttf_builder import build_ttf
+from foundrytools.lib.ttf_builder import build_ttf
 from foundrytools.utils.path_tools import get_temp_file_path
 from foundrytools.utils.unicode_tools import (
     _cmap_from_glyph_names,
