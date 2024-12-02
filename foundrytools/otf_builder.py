@@ -4,7 +4,7 @@ from fontTools.fontBuilder import FontBuilder
 from fontTools.misc.psCharStrings import T2CharString
 from fontTools.ttLib import TTFont
 
-from foundrytools.constants import T_CFF, T_HEAD, T_NAME, T_POST
+from .constants import T_CFF, T_HEAD, T_NAME, T_POST
 
 
 def build_otf(

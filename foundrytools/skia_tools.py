@@ -13,7 +13,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables import _g_l_y_f, _h_m_t_x
 from fontTools.ttLib.ttGlyphSet import _TTGlyph
 
-from foundrytools.constants import T_CFF, T_GLYF, T_HMTX
+from .constants import T_CFF, T_GLYF, T_HMTX
 
 _TTGlyphMapping = Mapping[str, _TTGlyph]
 

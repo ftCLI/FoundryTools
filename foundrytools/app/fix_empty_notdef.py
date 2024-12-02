@@ -7,6 +7,7 @@ from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib.tables._g_l_y_f import Glyph
+
 from foundrytools import Font
 
 logger = logging.getLogger(__name__)

@@ -3,8 +3,8 @@ from io import BytesIO
 from fontTools.ttLib import TTFont
 from ttfautohint import ttfautohint
 
-from foundrytools.constants import T_HEAD
 from foundrytools import Font
+from foundrytools.constants import T_HEAD
 
 
 class TTFAutohintError(Exception):
