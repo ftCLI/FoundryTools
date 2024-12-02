@@ -4,7 +4,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._g_l_y_f import table__g_l_y_f
 
 from foundrytools.constants import T_FPGM, T_GLYF
-from foundrytools.lib.skia_tools import correct_glyf_contours
+from foundrytools.lib.pathops import correct_glyf_contours
 from foundrytools.core.tables.default import DefaultTbl
 
 

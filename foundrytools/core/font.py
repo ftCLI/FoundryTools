@@ -36,7 +36,7 @@ from foundrytools.core.tables import (
 )
 from foundrytools.lib.ttf_builder import build_ttf
 from foundrytools.utils.path_tools import get_temp_file_path
-from foundrytools.utils.unicode_tools import (
+from foundrytools.lib.unicode import (
     _cmap_from_glyph_names,
     _prod_name_from_uni_str,
     _ReversedCmap,
