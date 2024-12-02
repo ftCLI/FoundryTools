@@ -7,7 +7,7 @@ from fontTools.ttLib.tables._g_l_y_f import (
 )
 from fontTools.ttLib.ttGlyphSet import _TTGlyphCFF
 
-from .constants import (
+from foundrytools.constants import (
     T_CFF,
     T_GLYF,
     T_HMTX,

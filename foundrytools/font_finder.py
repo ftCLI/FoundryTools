@@ -6,7 +6,7 @@ from collections.abc import Generator
 
 from fontTools.ttLib.ttFont import TTLibError
 
-from .font import Font
+from foundrytools.font import Font
 
 __all__ = ["FinderError", "FinderFilter", "FinderOptions", "FontFinder"]
 
