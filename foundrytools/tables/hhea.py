@@ -1,4 +1,5 @@
 import math
+from copy import deepcopy
 from typing import Optional, Union
 
 from fontTools.misc.roundTools import otRound
@@ -20,6 +21,7 @@ class HheaTable(DefaultTbl):
         :type ttfont: TTFont
         """
         super().__init__(ttfont=ttfont, table_tag=T_HHEA)
+        self._copy = deepcopy(self.table)
 
     @property
     def table(self) -> table__h_h_e_a:
@@ -40,6 +42,16 @@ class HheaTable(DefaultTbl):
         :type value: table__h_h_e_a
         """
         self._table = value
+
+    @property
+    def is_modified(self) -> bool:
+        """
+        A read-only property that returns whether the ``hhea`` table has been modified.
+
+        :return: Whether the ``hhea`` table has been modified.
+        :rtype: bool
+        """
+        return self._copy.compile(self.ttfont) != self.table.compile(self.ttfont)
 
     @property
     def ascent(self) -> int:

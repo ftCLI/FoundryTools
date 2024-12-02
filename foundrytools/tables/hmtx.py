@@ -37,7 +37,7 @@ class HmtxTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         """
         self._table = value
 
-    def fix_non_breaking_space_width(self) -> None:
+    def fix_non_breaking_space_width(self) -> bool:
         """
         Sets the width of the non-breaking space glyph to be the same as the space glyph.
 
@@ -52,3 +52,6 @@ class HmtxTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         # Set the width of the non-breaking space glyph
         if self.table.metrics[nbsp_glyph] != self.table.metrics[space_glyph]:
             self.table.metrics[nbsp_glyph] = self.table.metrics[space_glyph]
+            return True
+
+        return False

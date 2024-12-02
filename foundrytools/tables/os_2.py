@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Optional
 
 from fontTools.misc.roundTools import otRound
@@ -225,7 +226,7 @@ class FsSelection:
         self.os_2_table.set_bit(field_name="fsSelection", pos=OBLIQUE_BIT, value=value)
 
 
-class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods
+class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many-instance-attributes
     """This class extends the fontTools ``OS/2`` table."""
 
     def __init__(self, ttfont: TTFont):
@@ -236,7 +237,8 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods
         :type ttfont: TTFont
         """
         super().__init__(ttfont=ttfont, table_tag=T_OS_2)
-        self.fs_selection = FsSelection(os_2_table=self)
+        self.fs_selection = FsSelection(self)
+        self._copy = deepcopy(self.table)
 
     class InvalidOS2VersionError(Exception):
         """Exception raised when trying to access a field that is not defined in the current OS/2
@@ -261,6 +263,16 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods
         :type value: table_O_S_2f_2
         """
         self._table = value
+
+    @property
+    def is_modified(self) -> bool:
+        """
+        A property that returns True if the OS/2 table has been modified.
+
+        :return: True if the OS/2 table has been modified, False otherwise.
+        :rtype: bool
+        """
+        return self._copy.compile(self.ttfont) != self.table.compile(self.ttfont)
 
     @property
     def version(self) -> int:
@@ -289,26 +301,6 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods
                 f"Expected a value between {MIN_OS2_VERSION} and {MAX_OS2_VERSION}."
             )
         self.table.version = value
-
-    @property
-    def avg_char_width(self) -> int:
-        """
-        A property with getter and setter for the ``OS/2.xAvgCharWidth`` field.
-
-        :return: The ``OS/2.xAvgCharWidth`` value.
-        :rtype: int
-        """
-        return self.table.xAvgCharWidth
-
-    @avg_char_width.setter
-    def avg_char_width(self, value: int) -> None:
-        """
-        Sets the ``OS/2.xAvgCharWidth`` value.
-
-        :param value: The value to set.
-        :type value: int
-        """
-        self.table.xAvgCharWidth = value
 
     @property
     def weight_class(self) -> int:
