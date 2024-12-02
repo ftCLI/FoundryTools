@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._p_o_s_t import table__p_o_s_t
 
@@ -16,6 +18,7 @@ class PostTable(DefaultTbl):
         :type ttfont: TTFont
         """
         super().__init__(ttfont=ttfont, table_tag=T_POST)
+        self._copy = deepcopy(self.table)
 
     @property
     def table(self) -> table__p_o_s_t:
@@ -36,6 +39,16 @@ class PostTable(DefaultTbl):
         :type value: table__p_o_s_t
         """
         self._table = value
+
+    @property
+    def is_modified(self) -> bool:
+        """
+        Checks if the table has been modified.
+
+        :return: True if the table has been modified, False otherwise.
+        :rtype: bool
+        """
+        return self._copy.compile(self.ttfont) != self.table.compile(self.ttfont)
 
     @property
     def italic_angle(self) -> float:

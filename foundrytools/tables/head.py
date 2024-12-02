@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from fontTools.misc.textTools import num2binary
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._h_e_a_d import table__h_e_a_d
@@ -70,6 +72,7 @@ class HeadTable(DefaultTbl):
         """
         super().__init__(ttfont=ttfont, table_tag=T_HEAD)
         self.mac_style = MacStyle(head_table=self)
+        self._copy = deepcopy(self.table)
 
     @property
     def table(self) -> table__h_e_a_d:
@@ -90,6 +93,16 @@ class HeadTable(DefaultTbl):
         :type value: table__h_e_a_d
         """
         self._table = value
+
+    @property
+    def is_modified(self) -> bool:
+        """
+        A property that returns True if the ``head`` table has been modified, False otherwise.
+
+        :return: True if the ``head`` table has been modified, False otherwise.
+        :rtype: bool
+        """
+        return self._copy.compile(self.ttfont) != self.table.compile(self.ttfont)
 
     @property
     def font_revision(self) -> float:

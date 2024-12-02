@@ -1,32 +1,39 @@
 import contextlib
 import math
-
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from types import TracebackType
 from typing import Optional, Union, Any, Literal
 
-from collections.abc import Generator
-
 import defcon
-from cffsubr import subroutinize as subr, desubroutinize as desubr
-from dehinter.font import dehint
 from extractor import extractUFO
 from fontTools.misc.cliTools import makeOutputFileName
-from fontTools.misc.roundTools import otRound
 from fontTools.pens.statisticsPen import StatisticsPen
 from fontTools.subset import Options, Subsetter
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
 from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
-from ttfautohint import ttfautohint
 from ufo2ft.postProcessor import PostProcessor
 
-from foundrytools import constants as const, tables
-from foundrytools.beziers_tools import add_extremes
+from foundrytools import constants as const
 from foundrytools.otf_builder import build_otf
-from foundrytools.t2_charstrings import quadratics_to_cubics
-from foundrytools.tables import FontTables
+from foundrytools.qu2cu import quadratics_to_cubics
+from foundrytools.tables import (
+    CFFTable,
+    CmapTable,
+    GdefTable,
+    GlyfTable,
+    GsubTable,
+    HeadTable,
+    HheaTable,
+    HmtxTable,
+    KernTable,
+    NameTable,
+    OS2Table,
+    PostTable,
+    TABLES_LOOKUP,
+)
 from foundrytools.ttf_builder import build_ttf
 from foundrytools.utils.path_tools import get_temp_file_path
 from foundrytools.utils.unicode_tools import (
@@ -128,15 +135,20 @@ class StyleFlags:
         except Exception as e:
             raise FontError("An error occurred while updating font properties") from e
 
-    def _set_font_style(self, bold: bool = None, italic: bool = None, regular: bool = None) -> None:
+    def _set_font_style(
+        self,
+        bold: Optional[bool] = None,
+        italic: Optional[bool] = None,
+        regular: Optional[bool] = None,
+    ) -> None:
         if bold is not None:
-            self.font.tables.os_2.fs_selection.bold = bold
-            self.font.tables.head.mac_style.bold = bold
+            self.font.os_2.fs_selection.bold = bold
+            self.font.head.mac_style.bold = bold
         if italic is not None:
-            self.font.tables.os_2.fs_selection.italic = italic
-            self.font.tables.head.mac_style.italic = italic
+            self.font.os_2.fs_selection.italic = italic
+            self.font.head.mac_style.italic = italic
         if regular is not None:
-            self.font.tables.os_2.fs_selection.regular = regular
+            self.font.os_2.fs_selection.regular = regular
 
     @property
     def is_bold(self) -> bool:
@@ -152,7 +164,7 @@ class StyleFlags:
         :rtype: bool
         """
         try:
-            return self.font.tables.os_2.fs_selection.bold and self.font.tables.head.mac_style.bold
+            return self.font.os_2.fs_selection.bold and self.font.head.mac_style.bold
         except Exception as e:
             raise FontError("An error occurred while checking if the font is bold") from e
 
@@ -175,9 +187,7 @@ class StyleFlags:
         :rtype: bool
         """
         try:
-            return (
-                self.font.tables.os_2.fs_selection.italic and self.font.tables.head.mac_style.italic
-            )
+            return self.font.os_2.fs_selection.italic and self.font.head.mac_style.italic
         except Exception as e:
             raise FontError("An error occurred while checking if the font is italic") from e
 
@@ -188,8 +198,14 @@ class StyleFlags:
 
     @property
     def is_oblique(self) -> bool:
+        """
+        A property for getting and setting the oblique bit of the font.
+
+        :return: ``True`` if the font is oblique, ``False`` otherwise.
+        :rtype: bool
+        """
         try:
-            return self.font.tables.os_2.fs_selection.oblique
+            return self.font.os_2.fs_selection.oblique
         except Exception as e:
             raise FontError("An error occurred while checking if the font is oblique") from e
 
@@ -197,14 +213,20 @@ class StyleFlags:
     def is_oblique(self, value: bool) -> None:
         """Set the oblique bit in the OS/2 table."""
         try:
-            self.font.tables.os_2.fs_selection.oblique = value
+            self.font.os_2.fs_selection.oblique = value
         except Exception as e:
             raise FontError("An error occurred while setting the oblique bit") from e
 
     @property
     def is_regular(self) -> bool:
+        """
+        A property for getting and setting the regular bit of the font.
+
+        :return: ``True`` if the font is regular, ``False`` otherwise.
+        :rtype: bool
+        """
         try:
-            return self.font.tables.os_2.fs_selection.regular
+            return self.font.os_2.fs_selection.regular
         except Exception as e:
             raise FontError("An error occurred while checking if the font is regular") from e
 
@@ -216,7 +238,7 @@ class StyleFlags:
                 self._set_font_style(regular=True, bold=False, italic=False)
             else:
                 # Prevent setting the regular bit if the font is bold or italic
-                self.font.tables.os_2.fs_selection.regular = not (self.is_bold or self.is_italic)
+                self.font.os_2.fs_selection.regular = not (self.is_bold or self.is_italic)
 
 
 class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
@@ -274,9 +296,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self._bytesio: Optional[BytesIO] = None
         self._ttfont: Optional[TTFont] = None
         self._temp_file: Path = get_temp_file_path()
-        self._is_modified = False
         self._init_font(font_source, lazy, recalc_bboxes, recalc_timestamp)
-        self.tables: FontTables = FontTables(self.ttfont)
+        self._init_tables()  # Ensure tables are initialized before flags
         self.flags = StyleFlags(self)
 
     def _init_font(
@@ -328,6 +349,20 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             self._bytesio, lazy=lazy, recalcBBoxes=recalc_bboxes, recalcTimestamp=recalc_timestamp
         )
 
+    def _init_tables(self) -> None:
+        self._cff: Optional[CFFTable] = None
+        self._cmap: Optional[CmapTable] = None
+        self._gdef: Optional[GdefTable] = None
+        self._glyf: Optional[GlyfTable] = None
+        self._gsub: Optional[GsubTable] = None
+        self._head: Optional[HeadTable] = None
+        self._hhea: Optional[HheaTable] = None
+        self._hmtx: Optional[HmtxTable] = None
+        self._kern: Optional[KernTable] = None
+        self._name: Optional[NameTable] = None
+        self._os_2: Optional[OS2Table] = None
+        self._post: Optional[PostTable] = None
+
     def __enter__(self) -> "Font":
         return self
 
@@ -341,6 +376,31 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def __repr__(self) -> str:
         return f"<Font file={self.file}, bytesio={self.bytesio}, ttfont={self.ttfont}>"
+
+    def _load_table(self, table_tag: str):  # type: ignore
+        """
+        Load a table from the font.
+
+        :param table_tag: The table tag.
+        :type table_tag: str
+        :return: The table object.
+        :rtype: Table
+        """
+        if self.ttfont.get(table_tag) is None:
+            raise KeyError(f"The '{table_tag}' table is not present in the font")
+
+        table_attr, table_cls = TABLES_LOOKUP[table_tag]
+        if getattr(self, table_attr) is None:
+            setattr(self, table_attr, table_cls(self.ttfont))
+
+    def _get_table(self, table_tag: str):  # type: ignore
+        table_attr, _ = TABLES_LOOKUP[table_tag]
+        if getattr(self, table_attr) is None:
+            self._load_table(table_tag)
+        table = getattr(self, table_attr)
+        if table is None:
+            raise KeyError(f"The '{table_tag}' table is not present in the font")
+        return table
 
     @property
     def file(self) -> Optional[Path]:
@@ -411,9 +471,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def temp_file(self) -> Path:
         """
-        A property with a getter method for the temporary file path of the font. The temporary file
-        can be used, for example, to store the font file when it is loaded from a ``BytesIO`` object
-        or a ``TTFont`` object and not from a file.
+        A placeholder for the temporary file path of the font, in is needed for some operations.
 
         :return: The temporary file path of the font.
         :rtype: Path
@@ -421,29 +479,124 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._temp_file
 
     @property
-    def is_modified(self) -> bool:
+    def cff(self) -> CFFTable:
         """
-        A property with both getter and setter methods for the modified flag of the font.
+        The ``CFF `` table handler.
 
-        The ``Font`` class itself does not have a method to check if the underlying ``TTFont``
-        object has been modified. Instead, the ``is_modified`` attribute of the individual tables
-        (e.g., ``NameTable``, ``OS2Table``) should be used to determine if any modifications have
-        been made.
-
-        :return: A boolean indicating whether the font has been modified.
-        :rtype: Bool
+        :return: The loaded ``CFFTable``.
+        :rtype: CFFTable
         """
-        return self._is_modified
+        return self._get_table(const.T_CFF)
 
-    @is_modified.setter
-    def is_modified(self, value: bool) -> None:
+    @property
+    def cmap(self) -> CmapTable:
         """
-        Set the modified flag of the font.
+        The ``cmap`` table handler.
 
-        :param value: A boolean indicating whether the font has been modified.
-        :type value: bool
+        :return: The loaded ``CmapTable``.
+        :rtype: CmapTable
         """
-        self._is_modified = value
+        return self._get_table(const.T_CMAP)
+
+    @property
+    def gdef(self) -> GdefTable:
+        """
+        The ``GDEF`` table handler.
+
+        :return: The loaded ``GdefTable``.
+        :rtype: GdefTable
+        """
+        return self._get_table(const.T_GDEF)
+
+    @property
+    def glyf(self) -> GlyfTable:
+        """
+        The ``glyf`` table handler.
+
+        :return: The loaded ``GlyfTable``.
+        :rtype: GlyfTable
+        """
+        return self._get_table(const.T_GLYF)
+
+    @property
+    def gsub(self) -> GsubTable:
+        """
+        The ``GSUB`` table handler.
+
+        :return: The loaded ``GsubTable``.
+        :rtype: GsubTable
+        """
+        return self._get_table(const.T_GSUB)
+
+    @property
+    def head(self) -> HeadTable:
+        """
+        The ``head`` table handler.
+
+        :return: The loaded ``HeadTable``.
+        :rtype: HeadTable
+        """
+        return self._get_table(const.T_HEAD)
+
+    @property
+    def hhea(self) -> HheaTable:
+        """
+        The ``hhea`` table handler.
+
+        :return: The loaded ``HheaTable``.
+        :rtype: HheaTable
+        """
+        return self._get_table(const.T_HHEA)
+
+    @property
+    def hmtx(self) -> HmtxTable:
+        """
+        The ``hmtx`` table handler.
+
+        :return: The loaded ``HmtxTable``.
+        :rtype: HmtxTable
+        """
+        return self._get_table(const.T_HMTX)
+
+    @property
+    def kern(self) -> KernTable:
+        """
+        The ``kern`` table handler.
+
+        :return: The loaded ``KernTable``.
+        :rtype: KernTable
+        """
+        return self._get_table(const.T_KERN)
+
+    @property
+    def name(self) -> NameTable:
+        """
+        The ``name`` table handler.
+
+        :return: The loaded ``NameTable``.
+        :rtype: NameTable
+        """
+        return self._get_table(const.T_NAME)
+
+    @property
+    def os_2(self) -> OS2Table:
+        """
+        The ``OS/2`` table handler.
+
+        :return: The loaded ``OS2Table``.
+        :rtype: OS2Table
+        """
+        return self._get_table(const.T_OS_2)
+
+    @property
+    def post(self) -> PostTable:
+        """
+        The ``post`` table handler.
+
+        :return: The loaded ``PostTable``.
+        :rtype: PostTable
+        """
+        return self._get_table(const.T_POST)
 
     @property
     def is_ps(self) -> bool:
@@ -555,7 +708,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self.ttfont.save(buf)
         buf.seek(0)
         self.ttfont = TTFont(buf, recalcBBoxes=recalc_bboxes, recalcTimestamp=recalc_timestamp)
-        self.tables = FontTables(self.ttfont)
+        self._init_tables()
         self.flags = StyleFlags(self)
         buf.close()
 
@@ -716,14 +869,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
                 "Conversion to PostScript is not supported for variable fonts."
             )
         try:
-            self.tt_decomponentize()
+            self.glyf.decompose_all()
 
             charstrings = quadratics_to_cubics(
                 font=self.ttfont, tolerance=tolerance, correct_contours=correct_contours
             )
             build_otf(font=self.ttfont, charstrings_dict=charstrings)
 
-            self.tables.os_2.recalc_avg_char_width()
+            self.os_2.recalc_avg_char_width()
         except Exception as e:
             raise FontError(e) from e
 
@@ -733,62 +886,30 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             raise NotImplementedError("Font is already a SFNT font.")
         self.ttfont.flavor = None
 
-    def tt_autohint(self) -> None:
-        """Autohint a TrueType font."""
-        if not self.is_tt:
-            raise NotImplementedError("TTF auto-hinting is only supported for TrueType fonts.")
-
-        try:
-            with BytesIO() as buffer:
-                flavor = self.ttfont.flavor
-                self.ttfont.flavor = None
-                self.save(buffer, reorder_tables=None)
-                data = ttfautohint(in_buffer=buffer.getvalue(), no_info=True)
-                hinted_font = TTFont(BytesIO(data), recalcTimestamp=False)
-                hinted_font[const.T_HEAD].modified = self.ttfont[const.T_HEAD].modified
-                self.ttfont = hinted_font
-                self.ttfont.flavor = flavor
-        except Exception as e:
-            raise FontError(e) from e
-
-    def tt_dehint(self) -> None:
-        """Dehint a TrueType font."""
-        if not self.is_tt:
-            raise NotImplementedError(
-                "TrueType dehinting is only supported for TrueType flavored fonts."
-            )
-
-        try:
-            dehint(self.ttfont, verbose=False)
-        except Exception as e:
-            raise FontError(e) from e
-
     def tt_decomponentize(self) -> Optional[set[str]]:
         """Decomposes all composite glyphs of a TrueType font."""
         if not self.is_tt:
             raise NotImplementedError("Decomponentization is only supported for TrueType fonts.")
 
         try:
-            return self.tables.glyf.decompose_all()
+            return self.glyf.decompose_all()
         except Exception as e:
             raise FontError(e) from e
 
-    def tt_scale_upem(self, target_upm: int) -> None:
+    def scale_upm(self, target_upm: int) -> None:
         """
-        Scale the Units Per Em (UPM) of a TrueType font.
+        Scale the font to the specified Units Per Em (UPM) value.
 
         :param target_upm: The target UPM value. Must be in the range 16 to 16384.
         :type target_upm: int
         """
-        if not self.is_tt:
-            raise NotImplementedError("Scaling upem is only supported for TrueType fonts.")
 
         if target_upm < const.MIN_UPM or target_upm > const.MAX_UPM:
             raise ValueError(
                 f"units_per_em must be in the range {const.MAX_UPM} to {const.MAX_UPM}."
             )
 
-        if self.tables.head.units_per_em == target_upm:
+        if self.head.units_per_em == target_upm:
             return
 
         try:
@@ -838,166 +959,19 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
         try:
             if self.is_ps:
-                return self.tables.cff.correct_contours(
+                return self.cff.correct_contours(
                     remove_hinting=remove_hinting,
                     ignore_errors=ignore_errors,
                     remove_unused_subroutines=remove_unused_subroutines,
                     min_area=min_area,
                 )
             if self.is_tt:
-                return self.tables.glyf.correct_contours(
+                return self.glyf.correct_contours(
                     remove_hinting=remove_hinting,
                     ignore_errors=ignore_errors,
                     min_area=min_area,
                 )
             raise FontError("Unknown font type.")
-        except Exception as e:
-            raise FontError(e) from e
-
-    def _restore_hinting_data(
-        self, cff_table: tables.CFFTable, private_dict: dict[str, Any]
-    ) -> None:
-        """
-        Restore hinting data to a PostScript font.
-
-        :param cff_table: The CFF table of the font.
-        :type cff_table: CFFTable
-        :param private_dict: The private dictionary of the font.
-        :type private_dict: dict[str, Any]
-        """
-
-        if not self.is_ps:
-            raise NotImplementedError("Not a PostScript flavored font.")
-
-        hinting_attributes = (
-            "BlueValues",
-            "OtherBlues",
-            "FamilyBlues",
-            "FamilyOtherBlues",
-            "StdHW",
-            "StdVW",
-            "StemSnapH",
-            "StemSnapV",
-        )
-
-        try:
-            for attr in hinting_attributes:
-                setattr(cff_table.private_dict, attr, private_dict.get(attr))
-        except Exception as e:
-            raise FontError(e) from e
-
-    def ps_autohint(self, **kwargs: dict[str, Any]) -> None:
-        """
-        Autohint a PostScript font.
-
-        :param kwargs: Additional options to pass to the autohinting process.
-        :type kwargs: dict[str, Any]
-        """
-        if not self.is_ps:
-            raise NotImplementedError(
-                "OTF autohinting is only supported for PostScript flavored fonts."
-            )
-
-        try:
-            self.tables.cff.autohint(**kwargs)
-        except Exception as e:
-            raise FontError(e) from e
-
-    def ps_dehint(self, drop_hinting_data: bool = False) -> None:
-        """
-        Dehint a PostScript font.
-
-        :param drop_hinting_data: If ``True``, drop hinting data from the CFF table. Defaults to
-            ``False``.
-        :type drop_hinting_data: bool
-        :return: A boolean indicating whether the ``CFF`` table has been modified.
-        :rtype: bool
-        """
-        if not self.is_ps:
-            raise NotImplementedError(
-                "PostScript dehinting is only supported for PostScript flavored fonts."
-            )
-
-        try:
-            self.tables.cff.remove_hinting(drop_hinting_data=drop_hinting_data)
-        except Exception as e:
-            raise FontError(e) from e
-
-    def ps_subroutinize(self) -> None:
-        """Subroutinize a PostScript font."""
-        if not self.is_ps:
-            raise NotImplementedError(
-                "Subroutinization is only supported for PostScript flavored fonts."
-            )
-        try:
-            subr(self.ttfont)
-        except Exception as e:
-            raise FontError(e) from e
-
-    def ps_desubroutinize(self) -> None:
-        """Desubroutinize a PostScript font."""
-        if not self.is_ps:
-            raise NotImplementedError(
-                "Desubroutinization is only supported for PostScript flavored fonts."
-            )
-        try:
-            desubr(self.ttfont)
-        except Exception as e:
-            raise FontError(e) from e
-
-    def ps_check_outlines(self) -> None:
-        """Check the outlines of a PostScript font."""
-        if not self.is_ps:
-            raise NotImplementedError("Checking outlines is only supported for PostScript fonts.")
-
-        try:
-            self.tables.cff.check_outlines()
-        except Exception as e:
-            raise FontError(e) from e
-
-    def ps_add_extremes(self, drop_hinting_data: bool = False) -> None:
-        """
-        Add extrema to the outlines of a PostScript font.
-
-        :param drop_hinting_data: If ``True``, drop hinting data from the CFF table. Defaults to
-            ``False``.
-        :type drop_hinting_data: bool
-        """
-        if not self.is_ps:
-            raise NotImplementedError("Adding extrema is only supported for PostScript fonts.")
-
-        try:
-            cff_table = tables.CFFTable(self.ttfont)
-            data = cff_table.private_dict.rawDict
-            charstrings = add_extremes(self.ttfont)
-            build_otf(font=self.ttfont, charstrings_dict=charstrings)
-
-            # Reload the font before correcting contours, otherwise the CFF top dict entries will be
-            # deleted.
-            self.reload()
-            self.correct_contours(remove_hinting=True, ignore_errors=True)
-
-            if not drop_hinting_data:
-                # The font has been reloaded, so we need to instantiate the CFFTable again.
-                cff_table = tables.CFFTable(self.ttfont)
-                self._restore_hinting_data(cff_table, data)
-        except Exception as e:
-            raise FontError(e) from e
-
-    def ps_round_coordinates(self) -> set[str]:
-        """
-        Round the outlines coordinates of a PostScript font.
-
-        :return: A set of glyph names that have been modified.
-        :rtype: set[str]
-        """
-        if not self.is_ps:
-            raise NotImplementedError(
-                "Rounding coordinates is only supported for PostScript fonts."
-            )
-
-        try:
-            return self.tables.cff.round_coordinates()
         except Exception as e:
             raise FontError(e) from e
 
@@ -1024,104 +998,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
                         return italic_angle
                     return 0.0
             raise FontError("The font does not contain the glyph 'H' or 'uni0048'.")
-        except Exception as e:
-            raise FontError(e) from e
-
-    def fix_italic_angle(
-        self, min_slant: float = 2.0, italic: bool = True, oblique: bool = False
-    ) -> dict[str, dict[str, Any]]:
-        """
-        Fix the italic angle of the font.
-
-        This method calculates the italic angle of the font and updates the ``post`` and ``hhea``
-        tables with the new values if they differ from the current values. If the font is a
-        PostScript font, the ``cff`` table is also updated. The method also updates the italic and
-        oblique bits in the ``OS/2`` and `head` tables.
-
-        :param min_slant: The minimum slant value to consider the font italic. Defaults to 2.0.
-        :type min_slant: float
-        :param italic: If ``True``, set the font to italic when the italic angle is not zero.
-            Defaults to ``True``.
-        :type italic: bool
-        :param oblique: If ``True``, set the font to oblique when the italic angle is not zero.
-            Defaults to ``False``.
-        :return: A dictionary containing the old and new values of the italic angle and the run/rise
-                 values, along with a check result indicating whether the values were updated.
-        :rtype: dict[str, dict[str, Any]]
-        """
-
-        result: dict[str, dict[str, Any]] = {}
-        try:
-            is_italic = self.flags.is_italic
-            is_oblique = self.flags.is_oblique
-            post_italic_angle = self.tables.post.italic_angle
-            hhea_run_rise = (self.tables.hhea.caret_slope_run, self.tables.hhea.caret_slope_rise)
-            run_rise_angle = self.tables.hhea.run_rise_angle
-
-            # Calculate the italic angle and the caret slope run and rise values.
-            calculated_slant = self.calc_italic_angle(min_slant=min_slant)
-            calculated_run = self.tables.hhea.calc_caret_slope_run(italic_angle=calculated_slant)
-            calculated_rise = self.tables.hhea.calc_caret_slope_rise(italic_angle=calculated_slant)
-
-            # Check if the ``is_italic`` attribute is correctly set.
-            should_be_italic = italic and calculated_slant != 0.0
-            italic_bits_check = is_italic == should_be_italic
-            if not italic_bits_check:
-                self.flags.is_italic = should_be_italic
-            result["is_italic"] = {
-                "old": is_italic,
-                "new": should_be_italic,
-                "pass": italic_bits_check,
-            }
-
-            # Check if the ``is_oblique`` attribute is correctly set. The oblique bit is only
-            # defined in ``OS/2`` table version 4 and later.
-            should_be_oblique = (
-                oblique and calculated_slant != 0.0 and self.tables.os_2.version >= 4
-            )
-            oblique_bit_check = is_oblique == should_be_oblique
-            if not oblique_bit_check:
-                self.flags.is_oblique = should_be_oblique
-            result["is_oblique"] = {
-                "old": is_oblique,
-                "new": should_be_oblique,
-                "pass": oblique_bit_check,
-            }
-
-            # Check if the italic is correctly set in the ``post`` table.
-            italic_angle_check = otRound(post_italic_angle) == otRound(calculated_slant)
-            if not italic_angle_check:
-                self.tables.post.italic_angle = calculated_slant
-            result["italic_angle"] = {
-                "old": post_italic_angle,
-                "new": calculated_slant,
-                "pass": italic_angle_check,
-            }
-
-            # Check if the run/rise values are correctly set in the ``hhea`` table.
-            run_rise_check = otRound(run_rise_angle) == otRound(calculated_slant)
-            if not run_rise_check:
-                self.tables.hhea.caret_slope_run = calculated_run
-                self.tables.hhea.caret_slope_rise = calculated_rise
-            result["run_rise"] = {
-                "old": hhea_run_rise,
-                "new": (calculated_run, calculated_rise),
-                "pass": run_rise_check,
-            }
-
-            if self.is_ps:
-                cff_italic_angle = self.tables.cff.top_dict.ItalicAngle
-                cff_italic_angle_check = otRound(cff_italic_angle) == otRound(calculated_slant)
-                if not cff_italic_angle_check:
-                    self.tables.cff.top_dict.ItalicAngle = otRound(calculated_slant)
-                result["cff_italic_angle"] = {
-                    "old": cff_italic_angle,
-                    "new": calculated_slant,
-                    "pass": cff_italic_angle_check,
-                }
-
-            return result
-
         except Exception as e:
             raise FontError(e) from e
 
@@ -1206,7 +1082,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             options = Options(**const.SUBSETTER_DEFAULTS)
             options.recalc_timestamp = self.ttfont.recalcTimestamp
             old_glyph_order = self.ttfont.getGlyphOrder()
-            unicodes = self.tables.cmap.get_codepoints()
+            unicodes = self.cmap.get_codepoints()
             subsetter = Subsetter(options=options)
             subsetter.populate(unicodes=unicodes)
             subsetter.subset(self.ttfont)

@@ -1,7 +1,6 @@
 import contextlib
 from typing import Any
 
-from afdko.checkoutlinesufo import run as check_outlines
 from afdko.otfautohint.__main__ import _validate_path
 from afdko.otfautohint.autohint import ACOptions, openFont, FontInstance, fontWrapper
 from fontTools.cffLib import PrivateDict, TopDict
@@ -16,6 +15,17 @@ from foundrytools.skia_tools import correct_cff_contours
 from foundrytools.tables.default import DefaultTbl
 from foundrytools.utils.misc import restore_flavor
 from foundrytools.utils.path_tools import get_temp_file_path
+
+HINTING_ATTRS = (
+    "BlueValues",
+    "OtherBlues",
+    "FamilyBlues",
+    "FamilyOtherBlues",
+    "StdHW",
+    "StdVW",
+    "StemSnapH",
+    "StemSnapV",
+)
 
 
 class CFFTableError(Exception):
@@ -33,6 +43,7 @@ class CFFTable(DefaultTbl):
         :type ttfont: TTFont
         """
         super().__init__(ttfont=ttfont, table_tag=T_CFF)
+        self._raw_dict_copy: dict = self.table.cff.topDictIndex[0].Private.rawDict.copy()
 
     @property
     def table(self) -> table_C_F_F_:
@@ -74,44 +85,38 @@ class CFFTable(DefaultTbl):
         """
         return self.top_dict.Private
 
-    def _restore_hinting_data(self, private_dict: dict[str, Any]) -> None:
+    def get_hinting_data(self) -> dict[str, Any]:
         """
-        Restore hinting data to a PostScript font.
+        Returns the hinting data from the ``CFF`` table.
 
-        :param private_dict: The private dictionary of the font.
-        :type private_dict: dict[str, Any]
+        :return: The hinting data.
+        :rtype: dict[str, Any]
         """
-        hinting_attributes = (
-            "BlueValues",
-            "OtherBlues",
-            "FamilyBlues",
-            "FamilyOtherBlues",
-            "StdHW",
-            "StdVW",
-            "StemSnapH",
-            "StemSnapV",
-        )
+        hinting_data = {}
+        for attr in HINTING_ATTRS:
+            if hasattr(self.private_dict, attr):
+                hinting_data[attr] = getattr(self.private_dict, attr)
+        return hinting_data
 
+    def set_hinting_data(self, **kwargs: dict[str, Any]) -> None:
+        """
+        Sets the hinting data in the ``CFF`` table.
+
+        :param kwargs: The hinting data to set.
+        :type kwargs: dict[str, Any]
+        """
+        for attr, value in kwargs.items():
+            setattr(self.private_dict, attr, value)
+
+    def _restore_hinting_data(self) -> None:
+        """
+        Restore the original hinting data to the ``CFF`` table.
+        """
         try:
-            for attr in hinting_attributes:
-                setattr(self.private_dict, attr, private_dict.get(attr))
+            for attr in HINTING_ATTRS:
+                setattr(self.private_dict, attr, self._raw_dict_copy.get(attr))
         except Exception as e:
             raise CFFTableError(f"Error restoring hinting data: {e}") from e
-
-    def remove_hinting(self, drop_hinting_data: bool = False) -> None:
-        """
-        Removes hinting data from a PostScript font.
-
-        :param drop_hinting_data: If True, the hinting data will be removed from the font.
-        :type drop_hinting_data: bool
-        """
-        try:
-            data = self.private_dict.rawDict
-            self.table.cff.remove_hints()
-            if not drop_hinting_data:
-                self._restore_hinting_data(private_dict=data)
-        except Exception as e:
-            raise CFFTableError(f"Error while removing hinting data: {e}") from e
 
     def set_names(self, **kwargs: dict[str, str]) -> None:
         """
@@ -195,7 +200,21 @@ class CFFTable(DefaultTbl):
                 new_value = old_value.replace(old_string, new_string).replace("  ", " ").strip()
                 setattr(top_dict, attr_name, new_value)
 
-    def round_coordinates(self) -> set[str]:
+    def remove_hinting(self, drop_hinting_data: bool = False) -> None:
+        """
+        Removes hinting data from a PostScript font.
+
+        :param drop_hinting_data: If True, the hinting data will be removed from the font.
+        :type drop_hinting_data: bool
+        """
+        try:
+            self.table.cff.remove_hints()
+            if not drop_hinting_data:
+                self._restore_hinting_data()
+        except Exception as e:
+            raise CFFTableError(f"Error while removing hinting data: {e}") from e
+
+    def round_coordinates(self, drop_hinting_data: bool = False) -> set[str]:
         """
         Round the coordinates of the font's glyphs using the ``RoundingPen``.
 
@@ -240,6 +259,9 @@ class CFFTable(DefaultTbl):
                 charstrings[glyph_name] = rounded_charstring
                 rounded_charstrings.add(glyph_name)
 
+        if not drop_hinting_data:
+            self._restore_hinting_data()
+
         return rounded_charstrings
 
     def autohint(self, **kwargs: dict[str, Any]) -> None:
@@ -267,26 +289,13 @@ class CFFTable(DefaultTbl):
         except Exception as e:
             raise CFFTableError(e) from e
 
-    def check_outlines(self) -> None:
-        """Check the outlines of a PostScript font."""
-
-        try:
-            with restore_flavor(self.ttfont):
-                temp_file = get_temp_file_path()
-                self.ttfont.save(temp_file)
-                check_outlines(args=[temp_file.as_posix(), "--error-correction-mode"])
-                with TTFont(temp_file) as temp_font:
-                    self.table = temp_font[T_CFF]
-                temp_file.unlink()
-        except Exception as e:
-            raise CFFTableError(e) from e
-
     def correct_contours(
         self,
         remove_hinting: bool = True,
         ignore_errors: bool = True,
         remove_unused_subroutines: bool = True,
         min_area: int = 25,
+        drop_hinting_data: bool = False,
     ) -> set[str]:
         """
         Corrects contours of the CFF table by removing overlaps, correcting the direction of the
@@ -301,13 +310,18 @@ class CFFTable(DefaultTbl):
         :type remove_unused_subroutines: bool
         :param min_area: The minimum area of a contour to be considered. Default is 25.
         :type min_area: int
+        :param drop_hinting_data: If True, the hinting data will be removed from the font.
+        :type drop_hinting_data: bool
         :return: A set of glyph names that were modified.
         :rtype: set[str]
         """
-        return correct_cff_contours(
+        fixed_glyphs = correct_cff_contours(
             font=self.ttfont,
             remove_hinting=remove_hinting,
             ignore_errors=ignore_errors,
             remove_unused_subroutines=remove_unused_subroutines,
             min_area=min_area,
         )
+        if not drop_hinting_data:
+            self._restore_hinting_data()
+        return fixed_glyphs

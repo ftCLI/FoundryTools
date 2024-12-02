@@ -37,14 +37,16 @@ class KernTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         """
         self._table = value
 
-    def remove_unmapped_glyphs(self) -> None:
+    def remove_unmapped_glyphs(self) -> bool:
         """Removes unmapped glyphs from the ``kern`` table."""
         if all(kernTable.format != 0 for kernTable in self.table.kernTables):
-            return
+            return False
 
         character_glyphs = set()
         for table in self.ttfont[T_CMAP].tables:
             character_glyphs.update(table.cmap.values())
+
+        modified = False
 
         for table in self.table.kernTables:
             if table.format == 0:
@@ -53,5 +55,8 @@ class KernTable(DefaultTbl):  # pylint: disable=too-few-public-methods
                     if left_glyph not in character_glyphs or right_glyph not in character_glyphs:
                         pairs_to_delete.append((left_glyph, right_glyph))
                 if pairs_to_delete:
+                    modified = True
                     for pair in pairs_to_delete:
                         del table.kernTable[pair]
+
+        return modified

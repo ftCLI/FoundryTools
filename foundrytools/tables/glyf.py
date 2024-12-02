@@ -8,6 +8,10 @@ from foundrytools.skia_tools import correct_glyf_contours
 from foundrytools.tables.default import DefaultTbl
 
 
+class GlyfTableError(Exception):
+    """An exception class for errors related to the glyf table."""
+
+
 class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
     """This class extends the fontTools ``glyf`` table."""
 
@@ -39,9 +43,6 @@ class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         :type value: table__g_l_y_f
         """
         self._table = value
-
-    class GlyfTableError(Exception):
-        """An exception class for errors related to the glyf table."""
 
     def correct_contours(
         self, remove_hinting: bool = True, ignore_errors: bool = True, min_area: int = 25
@@ -101,7 +102,7 @@ class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
             return decomposed_glyphs
 
         except Exception as e:
-            raise self.GlyfTableError(e) from e
+            raise GlyfTableError(e) from e
 
     def decompose_transformed(self) -> set[str]:
         """Decompose composite glyphs that have transformed components."""

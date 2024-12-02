@@ -1,4 +1,5 @@
 from collections.abc import Iterable
+from copy import deepcopy
 from typing import Optional
 
 from fontTools.misc.timeTools import timestampToString
@@ -25,6 +26,8 @@ class NameTable(DefaultTbl):
         :type ttfont: TTFont
         """
         super().__init__(ttfont=ttfont, table_tag=T_NAME)
+        self._copy = deepcopy(self.table)
+        self._is_modified = False
 
     @property
     def table(self) -> table__n_a_m_e:
@@ -47,52 +50,15 @@ class NameTable(DefaultTbl):
         self._table = value
 
     @property
-    def names(self) -> list[NameRecord]:
+    def is_modified(self) -> bool:
         """
-        Returns the NameRecords from the ``name`` table.
+        Compiles the original and current ``name`` tables and compares them to determine if the
+        table has been modified.
 
-        :return: The NameRecords from the ``name`` table.
-        :rtype: list[NameRecord]
+        :return: Whether the ``name`` table has been modified.
+        :rtype: bool
         """
-        return self.table.names
-
-    def get_debug_name(self, name_id: int) -> str:
-        """
-        Returns the debug name of a NameRecord based on the NameID.
-
-        :param name_id: The NameID of the NameRecord.
-        :type name_id: int
-        :return: The NameRecord string.
-        :rtype: str
-        """
-        return self.table.getDebugName(nameID=name_id)
-
-    def get_best_family_name(self) -> str:
-        """
-        Returns the best family name from the ``name`` table.
-
-        :return: The best family name.
-        :rtype: str
-        """
-        return self.table.getBestFamilyName()
-
-    def get_best_subfamily_name(self) -> str:
-        """
-        Returns the best style name from the ``name`` table.
-
-        :return: The best style name.
-        :rtype: str
-        """
-        return self.table.getBestSubFamilyName()
-
-    def get_best_full_name(self) -> str:
-        """
-        Returns the best full name from the ``name`` table.
-
-        :return: The best full name.
-        :rtype: str
-        """
-        return self.table.getBestFullName()
+        return self._copy.compile(self.ttfont) != self.table.compile(self.ttfont)
 
     def get_manufacturer_name(self) -> str:
         """
@@ -101,7 +67,7 @@ class NameTable(DefaultTbl):
         :return: The manufacturer name.
         :rtype: str
         """
-        return self.get_debug_name(NameIds.MANUFACTURER_NAME)
+        return self.table.getDebugName(NameIds.MANUFACTURER_NAME)
 
     def set_name(
         self,
@@ -368,13 +334,13 @@ class NameTable(DefaultTbl):
         if not alternate:
             font_revision = round(self.ttfont[T_HEAD].fontRevision, 3)
             vendor_id = self.ttfont[T_OS_2].achVendID
-            postscript_name = self.get_debug_name(NameIds.POSTSCRIPT_NAME)
+            postscript_name = self.table.getDebugName(NameIds.POSTSCRIPT_NAME)
             unique_id = f"{font_revision};{vendor_id};{postscript_name}"
         else:
             year_created = timestampToString(self.ttfont[T_HEAD].created).split(" ")[-1]
-            family_name = self.get_best_family_name()
-            subfamily_name = self.get_best_subfamily_name()
-            manufacturer_name = self.get_debug_name(NameIds.MANUFACTURER_NAME)
+            family_name = self.table.getBestFamilyName()
+            subfamily_name = self.table.getBestSubFamilyName()
+            manufacturer_name = self.table.getDebugName(NameIds.MANUFACTURER_NAME)
             unique_id = f"{manufacturer_name}: {family_name}-{subfamily_name}: {year_created}"
 
         self.set_name(
@@ -391,8 +357,8 @@ class NameTable(DefaultTbl):
         :type platform_id: Optional[int]
         """
 
-        family_name = self.get_best_family_name()
-        subfamily_name = self.get_best_subfamily_name()
+        family_name = self.table.getBestFamilyName()
+        subfamily_name = self.table.getBestSubFamilyName()
         full_font_name = f"{family_name} {subfamily_name}"
 
         self.set_name(
@@ -426,8 +392,8 @@ class NameTable(DefaultTbl):
         :type platform_id: Optional[int]
         """
 
-        family_name = self.get_best_family_name()
-        subfamily_name = self.get_best_subfamily_name()
+        family_name = self.table.getBestFamilyName()
+        subfamily_name = self.table.getBestSubFamilyName()
         postscript_name = f"{family_name}-{subfamily_name}".replace(" ", "")
 
         self.set_name(
@@ -442,7 +408,7 @@ class NameTable(DefaultTbl):
         names = self.filter_names(name_ids=name_ids, platform_id=3)
         for name in names:
             try:
-                string = self.get_debug_name(name_id=name.nameID)
+                string = self.table.getDebugName(name.nameID)
                 self.set_name(name_id=name.nameID, name_string=string, platform_id=1)
             except AttributeError:
                 continue

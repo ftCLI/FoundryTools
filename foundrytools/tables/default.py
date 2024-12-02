@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import Generic, TypeVar
 
 from fontTools.ttLib import TTFont
@@ -16,12 +15,6 @@ class DefaultTbl(Generic[T]):
 
     This class allows you to interact with a specific table in a font's data to determine if the
     table has been modified and to set specific bits within the table's fields.
-
-    :ivar ttfont: The TTFont object representing the font.
-    :type ttfont: TTFont :ivar table: The table within the font corresponding to the specified table
-        tag.
-    :type table: Any :ivar _copy: A deep copy of the original table to check for modifications.
-    :type _copy: Any
     """
 
     def __init__(self, ttfont: TTFont, table_tag: str):
@@ -35,9 +28,18 @@ class DefaultTbl(Generic[T]):
         """
         if table_tag not in ttfont:
             raise KeyError(f"Table {table_tag} not found in font")
-        self.ttfont: TTFont = ttfont
+        self._ttfont: TTFont = ttfont
         self._table: T = ttfont.get(table_tag)
-        self._copy: T = deepcopy(self._table)
+
+    @property
+    def ttfont(self) -> TTFont:
+        """
+        Returns the ``TTFont`` object to which the table belongs.
+
+        :return: The TTFont object.
+        :rtype: TTFont
+        """
+        return self._ttfont
 
     @property
     def table(self) -> T:
@@ -62,12 +64,15 @@ class DefaultTbl(Generic[T]):
     @property
     def is_modified(self) -> bool:
         """
-        Returns the modified status of the table by comparing it with the original table.
+        Checks if the table has been modified.
 
-        :return: ``True`` if the table is modified, ``False`` otherwise.
+        By default, we assume that when the table has been accessed, it has been modified.
+        Subclasses should override this method to provide a more accurate check.
+
+        :return: True
         :rtype: bool
         """
-        return self._table.compile(self.ttfont) != self._copy.compile(self.ttfont)
+        return True
 
     def set_bit(self, field_name: str, pos: int, value: bool) -> None:
         """

@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._c_m_a_p import table__c_m_a_p
 
@@ -16,6 +18,7 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         :type ttfont: TTFont
         """
         super().__init__(ttfont=ttfont, table_tag=T_CMAP)
+        self._copy = deepcopy(self.table)
 
     @property
     def table(self) -> table__c_m_a_p:
@@ -36,6 +39,16 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         :type value: table__c_m_a_p
         """
         self._table = value
+
+    @property
+    def is_modified(self) -> bool:
+        """
+        Returns whether the ``cmap`` table has been modified.
+
+        :return: Whether the ``cmap`` table has been modified.
+        :rtype: bool
+        """
+        return self._copy.compile(self.ttfont) != self.table.compile(self.ttfont)
 
     def get_codepoints(self) -> set[int]:
         """
