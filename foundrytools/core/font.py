@@ -62,6 +62,7 @@ class StyleFlags:
     .. code-block:: python
 
         from foundrytools import Font, Flags
+
         font = Font("path/to/font.ttf")
         flags = Flags(font)
 
@@ -253,6 +254,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     .. code-block:: python
 
         from foundrytools import Font
+
         font = Font("path/to/font.ttf")
 
         # Check if the font is italic
