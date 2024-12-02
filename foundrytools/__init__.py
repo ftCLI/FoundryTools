@@ -1,4 +1,5 @@
 from foundrytools.core.font import Font
+from foundrytools.core import tables
 from foundrytools.core.font_finder import FontFinder
 from foundrytools import app
 
