@@ -887,16 +887,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             raise NotImplementedError("Font is already a SFNT font.")
         self.ttfont.flavor = None
 
-    def tt_decomponentize(self) -> Optional[set[str]]:
-        """Decomposes all composite glyphs of a TrueType font."""
-        if not self.is_tt:
-            raise NotImplementedError("Decomponentization is only supported for TrueType fonts.")
-
-        try:
-            return self.glyf.decompose_all()
-        except Exception as e:
-            raise FontError(e) from e
-
     def scale_upm(self, target_upm: int) -> None:
         """
         Scale the font to the specified Units Per Em (UPM) value.
