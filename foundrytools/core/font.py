@@ -988,26 +988,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         except Exception as e:
             raise FontError(e) from e
 
-    def rename_glyphs(self, new_glyph_order: list[str]) -> bool:
-        """
-        Rename the glyphs in the font based on the new glyph order.
-
-        :param new_glyph_order: The new glyph order.
-        :type new_glyph_order: List[str]
-        :return: ``True`` if the glyphs were renamed, ``False`` otherwise.
-        :rtype: bool
-        """
-        try:
-            old_glyph_order = self.ttfont.getGlyphOrder()
-            if new_glyph_order == old_glyph_order:
-                return False
-            rename_map = dict(zip(old_glyph_order, new_glyph_order))
-            PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
-            self.cmap.rebuild_character_map(remap_all=True)
-            return True
-        except Exception as e:
-            raise FontError(e) from e
-
     def set_production_names(self) -> list[tuple[str, str]]:
         """
         Set the production names for the glyphs in the font.
