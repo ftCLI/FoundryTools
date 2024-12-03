@@ -50,7 +50,7 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         """
         return self._copy.compile(self.ttfont) != self.table.compile(self.ttfont)
 
-    def get_codepoints(self) -> set[int]:
+    def get_all_codepoints(self) -> set[int]:
         """
         Returns all the codepoints in the ``cmap`` table.
 
