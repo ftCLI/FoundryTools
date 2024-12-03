@@ -63,6 +63,23 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
                 codepoints.update(table.cmap.keys())
         return codepoints
 
+    def get_unmapped_glyphs(self) -> list[str]:
+        """
+        Returns all the unmapped glyphs in the ``cmap`` table.
+
+        :return: A set of glyph names
+        :rtype: set[str]
+        """
+        glyph_order = self.ttfont.getGlyphOrder()
+        reversed_cmap = self.table.buildReversed()
+        unmapped_glyphs = []
+
+        for glyf_name in glyph_order:
+            if reversed_cmap.get(glyf_name) is None:
+                unmapped_glyphs.append(glyf_name)
+
+        return unmapped_glyphs
+
     def add_missing_nbsp(self) -> None:
         """Fixes the missing non-breaking space glyph by double mapping the space glyph."""
         # Get the space glyph
