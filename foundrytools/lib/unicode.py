@@ -657,29 +657,6 @@ def _cmap_from_reversed_cmap(reversed_cmap: dict[str, set[int]]) -> _CharacterMa
     return cmap_dict
 
 
-def get_mapped_and_unmapped_glyphs(ttfont: TTFont) -> tuple[list[str], list[str]]:
-    """
-    Collect the unmapped glyphs from the given TTFont object.
-
-    :param ttfont: The ``TTFont`` object.
-    :type ttfont: TTFont
-    :return: A tuple containing the mapped and unmapped glyphs.
-    :rtype: tuple[list[str], list[str]]
-    """
-    glyph_order = ttfont.getGlyphOrder()
-    reversed_cmap: dict[str, set[int]] = ttfont[T_CMAP].buildReversed()
-
-    mapped_glyphs = []
-    unmapped_glyphs = []
-
-    for glyph_name in glyph_order:
-        if glyph_name in reversed_cmap:
-            mapped_glyphs.append(glyph_name)
-        else:
-            unmapped_glyphs.append(glyph_name)
-    return mapped_glyphs, unmapped_glyphs
-
-
 def update_character_map(
     source_cmap: _CharacterMap, target_cmap: _CharacterMap
 ) -> tuple[_CharacterMap, list[tuple[int, str]], list[tuple[int, str, str]]]:
