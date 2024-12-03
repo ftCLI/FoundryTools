@@ -4,10 +4,8 @@ from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Literal, Optional, Union
+from typing import Any, Optional, Union
 
-import defcon
-from extractor import extractUFO
 from fontTools.misc.cliTools import makeOutputFileName
 from fontTools.pens.statisticsPen import StatisticsPen
 from fontTools.ttLib import TTFont
@@ -1038,53 +1036,5 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
             self.cmap.rebuild_character_map(remap_all=True)
             return renamed_glyphs
-        except Exception as e:
-            raise FontError(e) from e
-
-    def sort_glyphs(
-        self,
-        sort_by: Literal["unicode", "alphabetical", "cannedDesign"] = "unicode",
-    ) -> bool:
-        """
-        Reorder the glyphs based on the Unicode values, alphabetical order, or canned design order.
-
-        :param sort_by: The sorting method. Can be one of the following values: 'unicode',
-            'alphabetical', or 'cannedDesign'. Defaults to 'unicode'.
-        :type sort_by: Literal['unicode', 'alphabetical', 'cannedDesign']
-        :return: ``True`` if the glyphs were reordered, ``False`` otherwise.
-        :rtype: bool
-        """
-        try:
-            ufo = defcon.Font()
-            extractUFO(self.file, destination=ufo, doFeatures=False, doInfo=False, doKerning=False)
-            old_glyph_order = self.ttfont.getGlyphOrder()
-            new_glyph_order = ufo.unicodeData.sortGlyphNames(
-                glyphNames=old_glyph_order,
-                sortDescriptors=[{"type": sort_by}],
-            )
-
-            # Ensure that the '.notdef' glyph is always the first glyph in the font as required by
-            # the OpenType specification. If the '.notdef' glyph is not the first glyph, compiling
-            # the CFF table will fail.
-            # https://learn.microsoft.com/en-us/typography/opentype/spec/recom#glyph-0-the-notdef-glyph
-            if ".notdef" in new_glyph_order:
-                new_glyph_order.remove(".notdef")
-                new_glyph_order.insert(0, ".notdef")
-
-            if old_glyph_order == new_glyph_order:
-                return False
-
-            self.ttfont.reorderGlyphs(new_glyph_order=new_glyph_order)
-
-            # Remove this block when the new version of fontTools is released.
-            if self.is_ps:
-                cff_table = self.ttfont[const.T_CFF]
-                top_dict = cff_table.cff.topDictIndex[0]
-                charstrings = top_dict.CharStrings.charStrings
-                sorted_charstrings = {k: charstrings.get(k) for k in new_glyph_order}
-                top_dict.charset = new_glyph_order
-                top_dict.CharStrings.charStrings = sorted_charstrings
-
-            return True
         except Exception as e:
             raise FontError(e) from e
