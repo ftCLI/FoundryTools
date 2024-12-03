@@ -615,7 +615,7 @@ def _friendly_name_from_uni_str(uni_str: str) -> Optional[str]:
     return UNICODES_TO_NAMES.get(uni_str, {}).get("friendly", [None])[0]
 
 
-def _cmap_from_glyph_names(glyphs_list: list[str]) -> _CharacterMap:
+def cmap_from_glyph_names(glyphs_list: list[str]) -> _CharacterMap:
     """
     Get the Unicode values for the given list of glyph names.
 
@@ -655,29 +655,6 @@ def _cmap_from_reversed_cmap(reversed_cmap: dict[str, set[int]]) -> _CharacterMa
     cmap_dict = dict(sorted(cmap_dict.items(), key=lambda item: item[0]))
 
     return cmap_dict
-
-
-def get_mapped_and_unmapped_glyphs(ttfont: TTFont) -> tuple[list[str], list[str]]:
-    """
-    Collect the unmapped glyphs from the given TTFont object.
-
-    :param ttfont: The ``TTFont`` object.
-    :type ttfont: TTFont
-    :return: A tuple containing the mapped and unmapped glyphs.
-    :rtype: tuple[list[str], list[str]]
-    """
-    glyph_order = ttfont.getGlyphOrder()
-    reversed_cmap: dict[str, set[int]] = ttfont[T_CMAP].buildReversed()
-
-    mapped_glyphs = []
-    unmapped_glyphs = []
-
-    for glyph_name in glyph_order:
-        if glyph_name in reversed_cmap:
-            mapped_glyphs.append(glyph_name)
-        else:
-            unmapped_glyphs.append(glyph_name)
-    return mapped_glyphs, unmapped_glyphs
 
 
 def update_character_map(
@@ -764,38 +741,6 @@ def setup_character_map(ttfont: TTFont, mapping: _CharacterMap) -> None:
     cmap_table.tables = out_tables
 
     ttfont[T_CMAP] = cmap_table
-
-
-def rebuild_character_map(
-    font: TTFont, remap_all: bool = False
-) -> tuple[list[tuple[int, str]], list[tuple[int, str, str]]]:
-    """
-    Rebuild the character map for the given ``TTFont`` object.
-
-    :param font: The ``TTFont`` object.
-    :type font: TTFont
-    :param remap_all: Whether to remap all glyphs.
-    :type remap_all: bool
-    :return: A tuple containing the remapped and duplicate glyphs.
-    :rtype: tuple[list[tuple[int, str]], list[tuple[int, str, str]]]
-    """
-
-    glyph_order = font.getGlyphOrder()
-    _, unmapped = get_mapped_and_unmapped_glyphs(font)
-
-    if not remap_all:
-        target_cmap = font.getBestCmap()  # We can also use cmap_from_reversed_cmap
-        source_cmap = _cmap_from_glyph_names(glyphs_list=unmapped)
-    else:
-        target_cmap = {}
-        source_cmap = _cmap_from_glyph_names(glyphs_list=glyph_order)
-
-    updated_cmap, remapped, duplicates = update_character_map(
-        source_cmap=source_cmap, target_cmap=target_cmap
-    )
-    setup_character_map(ttfont=font, mapping=updated_cmap)
-
-    return remapped, duplicates
 
 
 def _get_multi_mapped_glyphs(

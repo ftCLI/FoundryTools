@@ -35,13 +35,9 @@ from foundrytools.lib.otf_builder import build_otf
 from foundrytools.lib.qu2cu import quadratics_to_cubics
 from foundrytools.lib.ttf_builder import build_ttf
 from foundrytools.lib.unicode import (
-    _cmap_from_glyph_names,
     _prod_name_from_uni_str,
     _ReversedCmap,
-    get_mapped_and_unmapped_glyphs,
     get_uni_str,
-    setup_character_map,
-    update_character_map,
 )
 from foundrytools.utils.path_tools import get_temp_file_path
 
@@ -992,31 +988,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         except Exception as e:
             raise FontError(e) from e
 
-    def rebuild_cmap(self, remap_all: bool = False) -> list[tuple[int, str]]:
-        """
-        Rebuild the character map of a font.
-
-        :param remap_all: If ``True``, remap all glyphs in the font. Defaults to ``False``.
-        """
-
-        try:
-            glyph_order = self.ttfont.getGlyphOrder()
-            _, unmapped = get_mapped_and_unmapped_glyphs(ttfont=self.ttfont)
-            if not remap_all:
-                target_cmap = self.ttfont.getBestCmap()  # We can also use cmap_from_reversed_cmap
-                source_cmap = _cmap_from_glyph_names(glyphs_list=unmapped)
-            else:
-                target_cmap = {}
-                source_cmap = _cmap_from_glyph_names(glyphs_list=glyph_order)
-
-            updated_cmap, remapped, _ = update_character_map(
-                source_cmap=source_cmap, target_cmap=target_cmap
-            )
-            setup_character_map(ttfont=self.ttfont, mapping=updated_cmap)
-            return remapped
-        except Exception as e:
-            raise FontError(e) from e
-
     def rename_glyph(self, old_name: str, new_name: str) -> bool:
         """
         Rename a single glyph in the font.
@@ -1046,7 +1017,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
             rename_map = dict(zip(old_glyph_order, new_glyph_order))
             PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
-            self.rebuild_cmap(remap_all=True)
+            self.cmap.rebuild_character_map(remap_all=True)
 
             return new_glyph_order != old_glyph_order
         except Exception as e:
@@ -1067,7 +1038,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
                 return False
             rename_map = dict(zip(old_glyph_order, new_glyph_order))
             PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
-            self.rebuild_cmap(remap_all=True)
+            self.cmap.rebuild_character_map(remap_all=True)
             return True
         except Exception as e:
             raise FontError(e) from e
@@ -1120,7 +1091,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
             rename_map = dict(zip(old_glyph_order, new_glyph_order))
             PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
-            self.rebuild_cmap(remap_all=True)
+            self.cmap.rebuild_character_map(remap_all=True)
             return renamed_glyphs
         except Exception as e:
             raise FontError(e) from e
