@@ -23,7 +23,6 @@ from foundrytools.lib.unicode import (
 )
 from foundrytools.utils.bits_tools import is_nth_bit_set
 from foundrytools.utils.misc import get_glyph_bounds
-from foundrytools.utils.string_tools import adjust_string_length
 
 ITALIC_BIT = 0
 UNDERSCORE_BIT = 1
@@ -457,7 +456,8 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :param value: The value to set.
         :type value: str
         """
-        self.table.achVendID = adjust_string_length(value, length=4, pad_char=" ")
+        value = value.ljust(4, " ") if len(value) < 4 else value[:4]
+        self.table.achVendID = value
 
     @property
     def typo_ascender(self) -> int:

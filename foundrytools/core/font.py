@@ -4,16 +4,13 @@ from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Literal, Optional, Union
+from typing import Any, Optional, Union
 
-import defcon
-from extractor import extractUFO
 from fontTools.misc.cliTools import makeOutputFileName
 from fontTools.pens.statisticsPen import StatisticsPen
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
 from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
-from ufo2ft.postProcessor import PostProcessor
 
 from foundrytools import constants as const
 from foundrytools.core.tables import (
@@ -34,11 +31,6 @@ from foundrytools.core.tables import (
 from foundrytools.lib.otf_builder import build_otf
 from foundrytools.lib.qu2cu import quadratics_to_cubics
 from foundrytools.lib.ttf_builder import build_ttf
-from foundrytools.lib.unicode import (
-    _prod_name_from_uni_str,
-    _ReversedCmap,
-    get_uni_str,
-)
 from foundrytools.utils.path_tools import get_temp_file_path
 
 __all__ = ["Font", "FontError"]
@@ -985,161 +977,5 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
                         return italic_angle
                     return 0.0
             raise FontError("The font does not contain the glyph 'H' or 'uni0048'.")
-        except Exception as e:
-            raise FontError(e) from e
-
-    def rename_glyph(self, old_name: str, new_name: str) -> bool:
-        """
-        Rename a single glyph in the font.
-
-        :param old_name: The old glyph name.
-        :type old_name: str
-        :param new_name: The new glyph name.
-        :type new_name: str
-        :return: ``True`` if the glyph was renamed, ``False`` otherwise.
-        :rtype: bool
-        """
-        try:
-            old_glyph_order = self.ttfont.getGlyphOrder()
-            new_glyph_order = []
-
-            if old_name not in old_glyph_order:
-                raise ValueError(f"Glyph '{old_name}' not found in the font.")
-
-            if new_name in old_glyph_order:
-                raise ValueError(f"Glyph '{new_name}' already exists in the font.")
-
-            for glyph_name in old_glyph_order:
-                if glyph_name == old_name:
-                    new_glyph_order.append(new_name)
-                else:
-                    new_glyph_order.append(glyph_name)
-
-            rename_map = dict(zip(old_glyph_order, new_glyph_order))
-            PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
-            self.cmap.rebuild_character_map(remap_all=True)
-
-            return new_glyph_order != old_glyph_order
-        except Exception as e:
-            raise FontError(e) from e
-
-    def rename_glyphs(self, new_glyph_order: list[str]) -> bool:
-        """
-        Rename the glyphs in the font based on the new glyph order.
-
-        :param new_glyph_order: The new glyph order.
-        :type new_glyph_order: List[str]
-        :return: ``True`` if the glyphs were renamed, ``False`` otherwise.
-        :rtype: bool
-        """
-        try:
-            old_glyph_order = self.ttfont.getGlyphOrder()
-            if new_glyph_order == old_glyph_order:
-                return False
-            rename_map = dict(zip(old_glyph_order, new_glyph_order))
-            PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
-            self.cmap.rebuild_character_map(remap_all=True)
-            return True
-        except Exception as e:
-            raise FontError(e) from e
-
-    def set_production_names(self) -> list[tuple[str, str]]:
-        """
-        Set the production names for the glyphs in the font.
-
-        The method iterates through each glyph in the old glyph order and determines its production
-        name based on its assigned or calculated Unicode value. If the production name is already
-        assigned, the glyph is skipped. If the production name is different from the original glyph
-        name and is not yet assigned, the glyph is renamed and added to the new glyph order list.
-        Finally, the font is updated with the new glyph order, the cmap table is rebuilt, and the
-        list of renamed glyphs is returned.
-
-        :return: A list of tuples containing the old and new glyph names.
-        :rtype: List[Tuple[str, str]]
-        """
-
-        try:
-            old_glyph_order: list[str] = self.ttfont.getGlyphOrder()
-            reversed_cmap: _ReversedCmap = self.ttfont[const.T_CMAP].buildReversed()
-            new_glyph_order: list[str] = []
-            renamed_glyphs: list[tuple[str, str]] = []
-
-            for glyph_name in old_glyph_order:
-                uni_str = get_uni_str(glyph_name, reversed_cmap)
-                # If still no uni_str, the glyph name is unmodified.
-                if not uni_str:
-                    new_glyph_order.append(glyph_name)
-                    continue
-
-                # In case the production name could not be found, the glyph is already named with
-                # the production name, or the production name is already assigned, we skip the
-                # renaming process.
-                production_name = _prod_name_from_uni_str(uni_str)
-                if (
-                    not production_name
-                    or production_name == glyph_name
-                    or production_name in old_glyph_order
-                ):
-                    new_glyph_order.append(glyph_name)
-                    continue
-
-                new_glyph_order.append(production_name)
-                renamed_glyphs.append((glyph_name, production_name))
-
-            if not renamed_glyphs:
-                return []
-
-            rename_map = dict(zip(old_glyph_order, new_glyph_order))
-            PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
-            self.cmap.rebuild_character_map(remap_all=True)
-            return renamed_glyphs
-        except Exception as e:
-            raise FontError(e) from e
-
-    def sort_glyphs(
-        self,
-        sort_by: Literal["unicode", "alphabetical", "cannedDesign"] = "unicode",
-    ) -> bool:
-        """
-        Reorder the glyphs based on the Unicode values, alphabetical order, or canned design order.
-
-        :param sort_by: The sorting method. Can be one of the following values: 'unicode',
-            'alphabetical', or 'cannedDesign'. Defaults to 'unicode'.
-        :type sort_by: Literal['unicode', 'alphabetical', 'cannedDesign']
-        :return: ``True`` if the glyphs were reordered, ``False`` otherwise.
-        :rtype: bool
-        """
-        try:
-            ufo = defcon.Font()
-            extractUFO(self.file, destination=ufo, doFeatures=False, doInfo=False, doKerning=False)
-            old_glyph_order = self.ttfont.getGlyphOrder()
-            new_glyph_order = ufo.unicodeData.sortGlyphNames(
-                glyphNames=old_glyph_order,
-                sortDescriptors=[{"type": sort_by}],
-            )
-
-            # Ensure that the '.notdef' glyph is always the first glyph in the font as required by
-            # the OpenType specification. If the '.notdef' glyph is not the first glyph, compiling
-            # the CFF table will fail.
-            # https://learn.microsoft.com/en-us/typography/opentype/spec/recom#glyph-0-the-notdef-glyph
-            if ".notdef" in new_glyph_order:
-                new_glyph_order.remove(".notdef")
-                new_glyph_order.insert(0, ".notdef")
-
-            if old_glyph_order == new_glyph_order:
-                return False
-
-            self.ttfont.reorderGlyphs(new_glyph_order=new_glyph_order)
-
-            # Remove this block when the new version of fontTools is released.
-            if self.is_ps:
-                cff_table = self.ttfont[const.T_CFF]
-                top_dict = cff_table.cff.topDictIndex[0]
-                charstrings = top_dict.CharStrings.charStrings
-                sorted_charstrings = {k: charstrings.get(k) for k in new_glyph_order}
-                top_dict.charset = new_glyph_order
-                top_dict.CharStrings.charStrings = sorted_charstrings
-
-            return True
         except Exception as e:
             raise FontError(e) from e
