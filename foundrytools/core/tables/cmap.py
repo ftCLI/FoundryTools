@@ -5,6 +5,11 @@ from fontTools.ttLib.tables._c_m_a_p import table__c_m_a_p
 
 from foundrytools.constants import T_CMAP
 from foundrytools.core.tables.default import DefaultTbl
+from foundrytools.lib.unicode import (
+    cmap_from_glyph_names,
+    setup_character_map,
+    update_character_map,
+)
 
 
 class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
@@ -79,6 +84,36 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
                 unmapped_glyphs.append(glyf_name)
 
         return unmapped_glyphs
+
+    def rebuild_character_map(
+        self, remap_all: bool = False
+    ) -> tuple[list[tuple[int, str]], list[tuple[int, str, str]]]:
+        """
+        Rebuild the character map of the font.
+
+        :param remap_all: Whether to remap all glyphs. If ``False``, only the unmapped glyphs will
+            be remapped.
+        :type remap_all: bool
+        :return: A tuple containing the remapped and duplicate glyphs.
+        :rtype: tuple[list[tuple[int, str]], list[tuple[int, str, str]]]
+        """
+
+        glyph_order = self.ttfont.getGlyphOrder()
+        unmapped = self.get_unmapped_glyphs()
+
+        if not remap_all:
+            target_cmap = self.table.getBestCmap()
+            source_cmap = cmap_from_glyph_names(glyphs_list=unmapped)
+        else:
+            target_cmap = {}
+            source_cmap = cmap_from_glyph_names(glyphs_list=glyph_order)
+
+        updated_cmap, remapped, duplicates = update_character_map(
+            source_cmap=source_cmap, target_cmap=target_cmap
+        )
+        setup_character_map(ttfont=self.ttfont, mapping=updated_cmap)
+
+        return remapped, duplicates
 
     def add_missing_nbsp(self) -> None:
         """Fixes the missing non-breaking space glyph by double mapping the space glyph."""
