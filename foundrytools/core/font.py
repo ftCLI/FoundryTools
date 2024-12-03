@@ -10,7 +10,6 @@ import defcon
 from extractor import extractUFO
 from fontTools.misc.cliTools import makeOutputFileName
 from fontTools.pens.statisticsPen import StatisticsPen
-from fontTools.subset import Options, Subsetter
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
 from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
@@ -316,7 +315,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         elif isinstance(font_source, TTFont):
             self._init_from_ttfont(font_source, lazy, recalc_bboxes, recalc_timestamp)
         else:
-            raise ValueError(
+            raise FontError(
                 f"Invalid source type {type(font_source)}. Expected str, Path, BytesIO, or TTFont."
             )
 
@@ -888,16 +887,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             raise NotImplementedError("Font is already a SFNT font.")
         self.ttfont.flavor = None
 
-    def tt_decomponentize(self) -> Optional[set[str]]:
-        """Decomposes all composite glyphs of a TrueType font."""
-        if not self.is_tt:
-            raise NotImplementedError("Decomponentization is only supported for TrueType fonts.")
-
-        try:
-            return self.glyf.decompose_all()
-        except Exception as e:
-            raise FontError(e) from e
-
     def scale_upm(self, target_upm: int) -> None:
         """
         Scale the font to the specified Units Per Em (UPM) value.
@@ -1025,72 +1014,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             )
             setup_character_map(ttfont=self.ttfont, mapping=updated_cmap)
             return remapped
-        except Exception as e:
-            raise FontError(e) from e
-
-    def remove_glyphs(
-        self,
-        glyph_names_to_remove: Optional[set[str]],
-        glyph_ids_to_remove: Optional[set[int]],
-    ) -> set[str]:
-        """
-        Removes glyphs from the font object.
-
-        :param glyph_names_to_remove: A set of glyph names to remove.
-        :type glyph_names_to_remove: Optional[set[str]]
-        :param glyph_ids_to_remove: A set of glyph IDs to remove.
-        :type glyph_ids_to_remove: Optional[set[int]]
-        :return: A set of glyph names that were removed.
-        :rtype: set[str]
-        """
-        try:
-            old_glyph_order = self.ttfont.getGlyphOrder()
-            if not glyph_names_to_remove and not glyph_ids_to_remove:
-                raise ValueError("No glyph names or glyph IDs provided to remove.")
-
-            glyph_names_to_remove = glyph_names_to_remove or set()
-
-            # Convert glyph IDs to glyph names to populate the subsetter with only one parameter.
-            if glyph_ids_to_remove:
-                for glyph_id in glyph_ids_to_remove:
-                    if glyph_id < 0 or glyph_id >= len(old_glyph_order):
-                        continue
-                    glyph_names_to_remove.add(old_glyph_order[glyph_id])
-
-            if not glyph_names_to_remove:
-                return set()
-
-            remaining_glyphs = {gn for gn in old_glyph_order if gn not in glyph_names_to_remove}
-            options = Options(**const.SUBSETTER_DEFAULTS)
-            options.recalc_timestamp = self.ttfont.recalcTimestamp
-
-            subsetter = Subsetter(options=options)
-            subsetter.populate(glyphs=remaining_glyphs)
-            subsetter.subset(self.ttfont)
-
-            new_glyph_order = self.ttfont.getGlyphOrder()
-            return set(old_glyph_order).difference(new_glyph_order)
-        except Exception as e:
-            raise FontError(e) from e
-
-    def remove_unused_glyphs(self) -> set[str]:
-        """
-        Remove glyphs that are not reachable by Unicode values or by substitution rules in the font.
-
-        :return: A set of glyph names that were removed.
-        :rtype: set[str]
-        """
-        try:
-            options = Options(**const.SUBSETTER_DEFAULTS)
-            options.recalc_timestamp = self.ttfont.recalcTimestamp
-            old_glyph_order = self.ttfont.getGlyphOrder()
-            unicodes = self.cmap.get_codepoints()
-            subsetter = Subsetter(options=options)
-            subsetter.populate(unicodes=unicodes)
-            subsetter.subset(self.ttfont)
-            new_glyph_order = self.ttfont.getGlyphOrder()
-
-            return set(old_glyph_order) - set(new_glyph_order)
         except Exception as e:
             raise FontError(e) from e
 

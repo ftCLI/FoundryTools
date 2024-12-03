@@ -1,8 +1,6 @@
 import contextlib
 from typing import Any
 
-from afdko.otfautohint.__main__ import _validate_path
-from afdko.otfautohint.autohint import ACOptions, FontInstance, fontWrapper, openFont
 from fontTools.cffLib import PrivateDict, TopDict
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.roundingPen import RoundingPen
@@ -13,8 +11,6 @@ from fontTools.ttLib.tables.C_F_F_ import table_C_F_F_
 from foundrytools.constants import T_CFF
 from foundrytools.core.tables.default import DefaultTbl
 from foundrytools.lib.pathops import correct_cff_contours
-from foundrytools.utils.misc import restore_flavor
-from foundrytools.utils.path_tools import get_temp_file_path
 
 HINTING_ATTRS = (
     "BlueValues",
@@ -263,31 +259,6 @@ class CFFTable(DefaultTbl):
             self._restore_hinting_data()
 
         return rounded_charstrings
-
-    def autohint(self, **kwargs: dict[str, Any]) -> None:
-        """
-        Autohint the font using the AFDKO autohinting process.
-
-        :param kwargs: Additional options to pass to the autohinting process.
-        :type kwargs: dict[str, Any]
-        """
-        try:
-            temp_file = get_temp_file_path()
-            options = ACOptions()
-            for key, value in kwargs.items():
-                setattr(options, key, value)
-
-            with restore_flavor(self.ttfont):
-                self.ttfont.save(temp_file)
-                in_file = _validate_path(temp_file)
-                font = openFont(in_file, options=options)
-                font_instance = FontInstance(font=font, inpath=in_file, outpath=None)
-                fw = fontWrapper(options=options, fil=[font_instance])
-                fw.hint()
-                self.table = fw.fontInstances[0].font.ttFont[T_CFF]
-                temp_file.unlink()
-        except Exception as e:
-            raise CFFTableError(e) from e
 
     def correct_contours(
         self,
