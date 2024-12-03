@@ -10,7 +10,7 @@ from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.ttGlyphSet import _TTGlyph
 
-from foundrytools.skia_tools import simplify_path
+from foundrytools.lib.pathops import simplify_path
 
 __all__ = ["quadratics_to_cubics", "quadratics_to_cubics_2"]
 

@@ -1,16 +1,16 @@
 from foundrytools import constants
-from foundrytools.tables.cff_ import CFFTable
-from foundrytools.tables.cmap import CmapTable
-from foundrytools.tables.gdef import GdefTable
-from foundrytools.tables.glyf import GlyfTable
-from foundrytools.tables.gsub import GsubTable
-from foundrytools.tables.head import HeadTable
-from foundrytools.tables.hhea import HheaTable
-from foundrytools.tables.hmtx import HmtxTable
-from foundrytools.tables.kern import KernTable
-from foundrytools.tables.name import NameTable
-from foundrytools.tables.os_2 import OS2Table
-from foundrytools.tables.post import PostTable
+from foundrytools.core.tables.cff_ import CFFTable
+from foundrytools.core.tables.cmap import CmapTable
+from foundrytools.core.tables.gdef import GdefTable
+from foundrytools.core.tables.glyf import GlyfTable
+from foundrytools.core.tables.gsub import GsubTable
+from foundrytools.core.tables.head import HeadTable
+from foundrytools.core.tables.hhea import HheaTable
+from foundrytools.core.tables.hmtx import HmtxTable
+from foundrytools.core.tables.kern import KernTable
+from foundrytools.core.tables.name import NameTable
+from foundrytools.core.tables.os_2 import OS2Table
+from foundrytools.core.tables.post import PostTable
 
 TABLES_LOOKUP = {
     constants.T_CFF: ("_cff", CFFTable),

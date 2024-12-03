@@ -1,7 +1,7 @@
 from typing import Any
 
 from afdko.otfautohint.__main__ import _validate_path
-from afdko.otfautohint.autohint import ACOptions, openFont, FontInstance, fontWrapper
+from afdko.otfautohint.autohint import ACOptions, FontInstance, fontWrapper, openFont
 
 from foundrytools import Font
 from foundrytools.utils.misc import restore_flavor

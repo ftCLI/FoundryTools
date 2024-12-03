@@ -4,7 +4,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._p_o_s_t import table__p_o_s_t
 
 from foundrytools.constants import T_POST
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.core.tables.default import DefaultTbl
 
 
 class PostTable(DefaultTbl):

@@ -5,7 +5,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._h_e_a_d import table__h_e_a_d
 
 from foundrytools.constants import T_HEAD
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.core.tables.default import DefaultTbl
 from foundrytools.utils.bits_tools import is_nth_bit_set
 
 BOLD_BIT = 0

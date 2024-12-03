@@ -4,7 +4,7 @@ from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from types import TracebackType
-from typing import Optional, Union, Any, Literal
+from typing import Any, Literal, Optional, Union
 
 import defcon
 from extractor import extractUFO
@@ -17,9 +17,8 @@ from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
 from ufo2ft.postProcessor import PostProcessor
 
 from foundrytools import constants as const
-from foundrytools.otf_builder import build_otf
-from foundrytools.qu2cu import quadratics_to_cubics
-from foundrytools.tables import (
+from foundrytools.core.tables import (
+    TABLES_LOOKUP,
     CFFTable,
     CmapTable,
     GdefTable,
@@ -32,11 +31,11 @@ from foundrytools.tables import (
     NameTable,
     OS2Table,
     PostTable,
-    TABLES_LOOKUP,
 )
-from foundrytools.ttf_builder import build_ttf
-from foundrytools.utils.path_tools import get_temp_file_path
-from foundrytools.utils.unicode_tools import (
+from foundrytools.lib.otf_builder import build_otf
+from foundrytools.lib.qu2cu import quadratics_to_cubics
+from foundrytools.lib.ttf_builder import build_ttf
+from foundrytools.lib.unicode import (
     _cmap_from_glyph_names,
     _prod_name_from_uni_str,
     _ReversedCmap,
@@ -45,6 +44,7 @@ from foundrytools.utils.unicode_tools import (
     setup_character_map,
     update_character_map,
 )
+from foundrytools.utils.path_tools import get_temp_file_path
 
 __all__ = ["Font", "FontError"]
 
@@ -62,6 +62,7 @@ class StyleFlags:
     .. code-block:: python
 
         from foundrytools import Font, Flags
+
         font = Font("path/to/font.ttf")
         flags = Flags(font)
 
@@ -253,6 +254,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     .. code-block:: python
 
         from foundrytools import Font
+
         font = Font("path/to/font.ttf")
 
         # Check if the font is italic

@@ -12,7 +12,7 @@ from fontTools.ttLib.tables._n_a_m_e import (
 )
 
 from foundrytools.constants import T_HEAD, T_NAME, T_OS_2, NameIds
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.core.tables.default import DefaultTbl
 
 
 class NameTable(DefaultTbl):

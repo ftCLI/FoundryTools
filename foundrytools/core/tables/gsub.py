@@ -2,7 +2,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables.G_S_U_B_ import table_G_S_U_B_
 
 from foundrytools.constants import T_GSUB
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.core.tables.default import DefaultTbl
 
 
 class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods

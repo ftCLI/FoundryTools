@@ -2,7 +2,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._h_m_t_x import table__h_m_t_x
 
 from foundrytools.constants import T_HMTX
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.core.tables.default import DefaultTbl
 
 
 class HmtxTable(DefaultTbl):  # pylint: disable=too-few-public-methods

@@ -4,7 +4,7 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._c_m_a_p import table__c_m_a_p
 
 from foundrytools.constants import T_CMAP
-from foundrytools.tables.default import DefaultTbl
+from foundrytools.core.tables.default import DefaultTbl
 
 
 class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
