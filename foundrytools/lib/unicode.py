@@ -560,16 +560,16 @@ def _glyph_name_from_uni_str(uni_str: str) -> Optional[str]:
     return None
 
 
-def _prod_name_from_uni_str(uni_str: str) -> Optional[str]:
+def prod_name_from_uni_str(uni_str: str) -> Optional[str]:
     """
     Get the production name of a glyph from its Unicode value.
 
     :Example:
-        >>> _prod_name_from_uni_str("0x0041")
+        >>> prod_name_from_uni_str("0x0041")
         'A'
-        >>> _prod_name_from_uni_str("0x10FFFF")
+        >>> prod_name_from_uni_str("0x10FFFF")
         'u10FFFF'
-        >>> _prod_name_from_uni_str("0x1F600")
+        >>> prod_name_from_uni_str("0x1F600")
         None
 
     :param uni_str: The Unicode value of the glyph.
@@ -580,14 +580,14 @@ def _prod_name_from_uni_str(uni_str: str) -> Optional[str]:
     return UNICODES_TO_NAMES.get(uni_str, {}).get("production", None)
 
 
-def _prod_name_from_glyph_name(glyph_name: str) -> Optional[str]:
+def prod_name_from_glyph_name(glyph_name: str) -> Optional[str]:
     """
     Get the production name of a glyph from its name.
 
     :Example:
-        >>> _prod_name_from_glyph_name("uni0041")
+        >>> prod_name_from_glyph_name("uni0041")
         'A'
-        >>> _prod_name_from_glyph_name("u10FFFF")
+        >>> prod_name_from_glyph_name("u10FFFF")
         'u10FFFF'
 
     :param glyph_name: The name of the glyph.
@@ -600,10 +600,10 @@ def _prod_name_from_glyph_name(glyph_name: str) -> Optional[str]:
         uni_str = _uni_str_from_glyph_name(glyph_name)
     if not uni_str:
         return None
-    return _prod_name_from_uni_str(uni_str)
+    return prod_name_from_uni_str(uni_str)
 
 
-def _friendly_name_from_uni_str(uni_str: str) -> Optional[str]:
+def friendly_name_from_uni_str(uni_str: str) -> Optional[str]:
     """
     Get the friendly name of a glyph from its Unicode value.
 
