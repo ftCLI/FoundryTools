@@ -5,6 +5,10 @@ from typing import Union
 from foundrytools import Font
 
 
+class FixMonospaceError(Exception):
+    """Raised when an error occurs in the fix_monospace method."""
+
+
 # Copied from fontbakery/profiles/shared_conditions.py
 def _get_glyph_metrics_stats(font: Font) -> dict[str, Union[bool, int]]:
     """
@@ -79,25 +83,30 @@ def run(font: Font) -> bool:
     """
     Fix the monospace attribute of a font.
 
-    Args:
-        font (Font): The font to fix.
+    :param font: The Font.
+    :type font: Font
+    :return: Whether the font was modified.
     """
-    glyph_metrics = _get_glyph_metrics_stats(font)
-    seems_monospaced = glyph_metrics["seems_monospaced"]
-    width_max = glyph_metrics["width_max"]
+    try:
+        glyph_metrics = _get_glyph_metrics_stats(font)
+        seems_monospaced = glyph_metrics["seems_monospaced"]
+        width_max = glyph_metrics["width_max"]
 
-    if seems_monospaced:
-        font.post.fixed_pitch = True
-        font.os_2.table.panose.bFamilyType = 2
-        font.os_2.table.panose.bProportion = 9
-        font.hhea.advance_width_max = width_max
+        if seems_monospaced:
+            font.post.fixed_pitch = True
+            font.os_2.table.panose.bFamilyType = 2
+            font.os_2.table.panose.bProportion = 9
+            font.hhea.advance_width_max = width_max
 
-        modified = font.os_2.is_modified or font.post.is_modified or font.hhea.is_modified
+            modified = font.os_2.is_modified or font.post.is_modified or font.hhea.is_modified
 
-        if font.is_ps and not font.cff.top_dict.isFixedPitch:
-            font.cff.top_dict.isFixedPitch = True
-            modified = True
+            if font.is_ps and not font.cff.top_dict.isFixedPitch:
+                font.cff.top_dict.isFixedPitch = True
+                modified = True
 
-        return modified
+            return modified
 
-    return False
+        return False
+
+    except Exception as e:
+        raise FixMonospaceError(f"{e}") from e
