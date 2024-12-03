@@ -11,7 +11,6 @@ from fontTools.pens.statisticsPen import StatisticsPen
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
 from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
-from ufo2ft.postProcessor import PostProcessor
 
 from foundrytools import constants as const
 from foundrytools.core.tables import (
@@ -32,11 +31,6 @@ from foundrytools.core.tables import (
 from foundrytools.lib.otf_builder import build_otf
 from foundrytools.lib.qu2cu import quadratics_to_cubics
 from foundrytools.lib.ttf_builder import build_ttf
-from foundrytools.lib.unicode import (
-    _ReversedCmap,
-    get_uni_str,
-    prod_name_from_uni_str,
-)
 from foundrytools.utils.path_tools import get_temp_file_path
 
 __all__ = ["Font", "FontError"]
