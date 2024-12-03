@@ -315,7 +315,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         elif isinstance(font_source, TTFont):
             self._init_from_ttfont(font_source, lazy, recalc_bboxes, recalc_timestamp)
         else:
-            raise ValueError(
+            raise FontError(
                 f"Invalid source type {type(font_source)}. Expected str, Path, BytesIO, or TTFont."
             )
 
