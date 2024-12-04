@@ -57,9 +57,10 @@ class FsSelection:
         :type os_2_table: OS2Table
         """
         self.os_2_table = os_2_table
+        self.fs_selection = getattr(self.os_2_table.table, "fsSelection", 0)
 
     def __repr__(self) -> str:
-        return f"fsSelection({num2binary(self.os_2_table.table.fsSelection)})"
+        return f"fsSelection({num2binary(self.fs_selection)})"
 
     @property
     def italic(self) -> bool:
@@ -69,7 +70,7 @@ class FsSelection:
         :return: True if bit 0 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, ITALIC_BIT)
+        return is_nth_bit_set(self.fs_selection, ITALIC_BIT)
 
     @italic.setter
     def italic(self, value: bool) -> None:
@@ -84,7 +85,7 @@ class FsSelection:
         :return: True if bit 1 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, UNDERSCORE_BIT)
+        return is_nth_bit_set(self.fs_selection, UNDERSCORE_BIT)
 
     @underscore.setter
     def underscore(self, value: bool) -> None:
@@ -104,7 +105,7 @@ class FsSelection:
         :return: True if bit 2 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, NEGATIVE_BIT)
+        return is_nth_bit_set(self.fs_selection, NEGATIVE_BIT)
 
     @negative.setter
     def negative(self, value: bool) -> None:
@@ -119,7 +120,7 @@ class FsSelection:
         :return: True if bit 3 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, OUTLINED_BIT)
+        return is_nth_bit_set(self.fs_selection, OUTLINED_BIT)
 
     @outlined.setter
     def outlined(self, value: bool) -> None:
@@ -134,7 +135,7 @@ class FsSelection:
         :return: True if bit 4 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, STRIKEOUT_BIT)
+        return is_nth_bit_set(self.fs_selection, STRIKEOUT_BIT)
 
     @strikeout.setter
     def strikeout(self, value: bool) -> None:
@@ -149,7 +150,7 @@ class FsSelection:
         :return: True if bit 5 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, BOLD_BIT)
+        return is_nth_bit_set(self.fs_selection, BOLD_BIT)
 
     @bold.setter
     def bold(self, value: bool) -> None:
@@ -164,7 +165,7 @@ class FsSelection:
         :return: True if bit 6 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, REGULAR_BIT)
+        return is_nth_bit_set(self.fs_selection, REGULAR_BIT)
 
     @regular.setter
     def regular(self, value: bool) -> None:
@@ -179,7 +180,7 @@ class FsSelection:
         :return: True if bit 7 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, USE_TYPO_METRICS_BIT)
+        return is_nth_bit_set(self.fs_selection, USE_TYPO_METRICS_BIT)
 
     @use_typo_metrics.setter
     def use_typo_metrics(self, value: bool) -> None:
@@ -199,7 +200,7 @@ class FsSelection:
         :return: True if bit 8 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, WWS_BIT)
+        return is_nth_bit_set(self.fs_selection, WWS_BIT)
 
     @wws_consistent.setter
     def wws_consistent(self, value: bool) -> None:
@@ -218,7 +219,7 @@ class FsSelection:
         :return: True if bit 9 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.os_2_table.table.fsSelection, OBLIQUE_BIT)
+        return is_nth_bit_set(self.fs_selection, OBLIQUE_BIT)
 
     @oblique.setter
     def oblique(self, value: bool) -> None:
@@ -242,6 +243,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         """
         super().__init__(ttfont=ttfont, table_tag=T_OS_2)
         self.fs_selection = FsSelection(self)
+        self.fs_type: int = self.table.fsType
         self._copy = deepcopy(self.table)
 
     @property
@@ -368,7 +370,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         * 4: Preview & Print Embedding
         * 8: Editable Embedding
         """
-        return int(num2binary(self.table.fsType, 16)[9:17], 2)
+        return int(num2binary(self.fs_type, 16)[9:17], 2)
 
     @embed_level.setter
     def embed_level(self, value: int) -> None:
@@ -404,7 +406,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :return: True if bit 8 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.table.fsType, NO_SUBSETTING_BIT)
+        return is_nth_bit_set(self.fs_type, NO_SUBSETTING_BIT)
 
     @no_subsetting.setter
     def no_subsetting(self, value: bool) -> None:
@@ -425,7 +427,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :return: True if bit 9 is set, False otherwise.
         :rtype: bool
         """
-        return is_nth_bit_set(self.table.fsType, BITMAP_EMBED_ONLY_BIT)
+        return is_nth_bit_set(self.fs_type, BITMAP_EMBED_ONLY_BIT)
 
     @bitmap_embed_only.setter
     def bitmap_embed_only(self, value: bool) -> None:
