@@ -584,7 +584,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :raises: InvalidOS2VersionError: If the ``OS/2`` table version is less than 2.
         """
         if self.version < 2:
-            raise self.InvalidOS2VersionError(
+            raise InvalidOS2VersionError(
                 "sxHeight is only defined in OS/2 table versions 2 and up."
             )
         self.table.sxHeight = value
