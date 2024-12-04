@@ -613,7 +613,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
         """
         if self.version < 2:
-            raise self.InvalidOS2VersionError(
+            raise InvalidOS2VersionError(
                 "sCapHeight is only defined in OS/2 table versions 2 and up."
             )
         self.table.sCapHeight = value
@@ -642,7 +642,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
         """
         if self.version < 2:
-            raise self.InvalidOS2VersionError(
+            raise InvalidOS2VersionError(
                 "usMaxContext is only defined in OS/2 table versions 2 and up."
             )
         self.table.usMaxContext = value
@@ -700,7 +700,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
         """
         if not self.version >= 2:
-            raise self.InvalidOS2VersionError(
+            raise InvalidOS2VersionError(
                 "sxHeight is only defined in OS/2 table versions 2 and up."
             )
         try:
@@ -723,7 +723,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
         """
         if not self.version >= 2:
-            raise self.InvalidOS2VersionError(
+            raise InvalidOS2VersionError(
                 "sCapHeight is only defined in OS/2 table versions 2 and up."
             )
         try:
@@ -807,7 +807,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         """
         current_version = self.version
         if target_version <= current_version:
-            raise self.InvalidOS2VersionError(
+            raise InvalidOS2VersionError(
                 f"The target version must be greater than the current version ({current_version})."
             )
 
