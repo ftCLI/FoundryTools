@@ -91,7 +91,7 @@ class HheaTable(DefaultTbl):
         :return: The ``lineGap`` value.
         :rtype: int
         """
-        return self.table.lineGap
+        return getattr(self.table, "lineGap")
 
     @line_gap.setter
     def line_gap(self, value: int) -> None:
@@ -151,7 +151,7 @@ class HheaTable(DefaultTbl):
         :return: The ``caretSlopeRise`` value.
         :rtype: int
         """
-        return self.table.caretSlopeRise
+        return getattr(self.table, "caretSlopeRise")
 
     @caret_slope_rise.setter
     def caret_slope_rise(self, value: int) -> None:
@@ -166,7 +166,7 @@ class HheaTable(DefaultTbl):
         :return: The ``caretSlopeRun`` value.
         :rtype: int
         """
-        return self.table.caretSlopeRun
+        return getattr(self.table, "caretSlopeRun")
 
     @caret_slope_run.setter
     def caret_slope_run(self, value: int) -> None:
@@ -181,7 +181,7 @@ class HheaTable(DefaultTbl):
         :return: The ``caretOffset`` value.
         :rtype: int
         """
-        return self.table.caretOffset
+        return getattr(self.table, "caretOffset")
 
     @caret_offset.setter
     def caret_offset(self, value: int) -> None:
@@ -196,7 +196,7 @@ class HheaTable(DefaultTbl):
         :return: The ``metricDataFormat`` value.
         :rtype: int
         """
-        return self.table.metricDataFormat
+        return getattr(self.table, "metricDataFormat")
 
     @property
     def number_of_hmetrics(self) -> int:
@@ -206,7 +206,7 @@ class HheaTable(DefaultTbl):
         :return: The ``numberOfHMetrics`` value.
         :rtype: int
         """
-        return self.table.numberOfHMetrics
+        return getattr(self.table, "numberOfHMetrics")
 
     @property
     def run_rise_angle(self) -> float:
@@ -216,8 +216,8 @@ class HheaTable(DefaultTbl):
         :return: The slope angle in degrees.
         :rtype: float
         """
-        rise = self.table.caretSlopeRise
-        run = self.table.caretSlopeRun
+        rise = self.caret_slope_rise
+        run = self.caret_slope_run
         run_rise_angle = math.degrees(math.atan(-run / rise))
         return run_rise_angle
 
