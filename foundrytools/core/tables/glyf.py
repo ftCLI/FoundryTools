@@ -8,10 +8,6 @@ from foundrytools.core.tables.default import DefaultTbl
 from foundrytools.lib.pathops import correct_glyf_contours
 
 
-class GlyfTableError(Exception):
-    """An exception class for errors related to the glyf table."""
-
-
 class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
     """This class extends the fontTools ``glyf`` table."""
 
@@ -91,18 +87,14 @@ class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         :rtype: set[str]
         """
         decomposed_glyphs = set()
-        try:
-            for glyph_name in self.ttfont.getGlyphOrder():
-                glyph = self.table[glyph_name]
-                if not glyph.isComposite():
-                    continue
-                self.decompose_glyph(glyph_name)
-                decomposed_glyphs.add(glyph_name)
+        for glyph_name in self.ttfont.getGlyphOrder():
+            glyph = self.table[glyph_name]
+            if not glyph.isComposite():
+                continue
+            self.decompose_glyph(glyph_name)
+            decomposed_glyphs.add(glyph_name)
 
-            return decomposed_glyphs
-
-        except Exception as e:
-            raise GlyfTableError(e) from e
+        return decomposed_glyphs
 
     def decompose_transformed(self) -> set[str]:
         """Decompose composite glyphs that have transformed components."""
