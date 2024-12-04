@@ -41,6 +41,11 @@ MIN_OS2_VERSION = 0
 MAX_OS2_VERSION = 5
 
 
+class InvalidOS2VersionError(Exception):
+    """Exception raised when trying to access a field that is not defined in the current OS/2
+    table version."""
+
+
 class FsSelection:
     """A wrapper class for the ``fsSelection`` field of the ``OS/2`` table."""
 
@@ -180,7 +185,7 @@ class FsSelection:
     def use_typo_metrics(self, value: bool) -> None:
         """Sets bit 7 (USE_TYPO_METRICS) of the ``OS/2.fsSelection`` field."""
         if self.os_2_table.version < 4 and value is True:
-            raise self.os_2_table.InvalidOS2VersionError(
+            raise InvalidOS2VersionError(
                 "fsSelection bit 7 (USE_TYPO_METRICS) is only defined in OS/2 table versions 4 and "
                 "up."
             )
@@ -200,7 +205,7 @@ class FsSelection:
     def wws_consistent(self, value: bool) -> None:
         """Sets bit 8 (WWS) of the ``OS/2.fsSelection`` field."""
         if self.os_2_table.version < 4 and value is True:
-            raise self.os_2_table.InvalidOS2VersionError(
+            raise InvalidOS2VersionError(
                 "fsSelection bit 8 (WWS) is only defined in OS/2 table versions 4 and up."
             )
         self.os_2_table.set_bit(field_name="fsSelection", pos=WWS_BIT, value=value)
@@ -219,7 +224,7 @@ class FsSelection:
     def oblique(self, value: bool) -> None:
         """Sets the bit 9 (OBLIQUE) of the ``OS/2.fsSelection`` field."""
         if self.os_2_table.version < 4:
-            raise self.os_2_table.InvalidOS2VersionError(
+            raise InvalidOS2VersionError(
                 "fsSelection bit 9 (OBLIQUE) is only defined in OS/2 table versions 4 and up."
             )
         self.os_2_table.set_bit(field_name="fsSelection", pos=OBLIQUE_BIT, value=value)
@@ -238,10 +243,6 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         super().__init__(ttfont=ttfont, table_tag=T_OS_2)
         self.fs_selection = FsSelection(self)
         self._copy = deepcopy(self.table)
-
-    class InvalidOS2VersionError(Exception):
-        """Exception raised when trying to access a field that is not defined in the current OS/2
-        table version."""
 
     @property
     def table(self) -> table_O_S_2f_2:

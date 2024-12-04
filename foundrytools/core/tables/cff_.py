@@ -24,10 +24,6 @@ HINTING_ATTRS = (
 )
 
 
-class CFFTableError(Exception):
-    """Exception raised when an error occurs in the CFF table."""
-
-
 class CFFTable(DefaultTbl):
     """This class extends the fontTools ``CFF`` table to add some useful methods."""
 
@@ -108,11 +104,8 @@ class CFFTable(DefaultTbl):
         """
         Restore the original hinting data to the ``CFF`` table.
         """
-        try:
-            for attr in HINTING_ATTRS:
-                setattr(self.private_dict, attr, self._raw_dict_copy.get(attr))
-        except Exception as e:
-            raise CFFTableError(f"Error restoring hinting data: {e}") from e
+        for attr in HINTING_ATTRS:
+            setattr(self.private_dict, attr, self._raw_dict_copy.get(attr))
 
     def set_names(self, **kwargs: dict[str, str]) -> None:
         """
@@ -203,12 +196,9 @@ class CFFTable(DefaultTbl):
         :param drop_hinting_data: If True, the hinting data will be removed from the font.
         :type drop_hinting_data: bool
         """
-        try:
-            self.table.cff.remove_hints()
-            if not drop_hinting_data:
-                self._restore_hinting_data()
-        except Exception as e:
-            raise CFFTableError(f"Error while removing hinting data: {e}") from e
+        self.table.cff.remove_hints()
+        if not drop_hinting_data:
+            self._restore_hinting_data()
 
     def round_coordinates(self, drop_hinting_data: bool = False) -> set[str]:
         """
