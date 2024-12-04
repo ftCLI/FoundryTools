@@ -411,6 +411,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :param value: The file path of the font.
         :type value: Path
         """
+        if isinstance(value, str):
+            value = Path(value)
         self._file = value
 
     @property
@@ -844,10 +846,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         if self.is_variable:
             raise NotImplementedError("Conversion to TrueType is not supported for variable fonts.")
 
-        try:
-            build_ttf(font=self.ttfont, max_err=max_err, reverse_direction=reverse_direction)
-        except Exception as e:
-            raise FontError(e) from e
+        build_ttf(font=self.ttfont, max_err=max_err, reverse_direction=reverse_direction)
 
     def to_otf(self, tolerance: float = 1.0, correct_contours: bool = True) -> None:
         """Converts a TrueType font to PostScript."""
@@ -857,17 +856,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             raise NotImplementedError(
                 "Conversion to PostScript is not supported for variable fonts."
             )
-        try:
-            self.glyf.decompose_all()
+        self.glyf.decompose_all()
 
-            charstrings = quadratics_to_cubics(
-                font=self.ttfont, tolerance=tolerance, correct_contours=correct_contours
-            )
-            build_otf(font=self.ttfont, charstrings_dict=charstrings)
+        charstrings = quadratics_to_cubics(
+            font=self.ttfont, tolerance=tolerance, correct_contours=correct_contours
+        )
+        build_otf(font=self.ttfont, charstrings_dict=charstrings)
 
-            self.os_2.recalc_avg_char_width()
-        except Exception as e:
-            raise FontError(e) from e
+        self.os_2.recalc_avg_char_width()
 
     def to_sfnt(self) -> None:
         """Convert a font to SFNT."""
@@ -891,10 +887,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         if self.head.units_per_em == target_upm:
             return
 
-        try:
-            scale_upem(self.ttfont, new_upem=target_upm)
-        except Exception as e:
-            raise FontError(e) from e
+        scale_upem(self.ttfont, new_upem=target_upm)
 
     def correct_contours(
         self,
@@ -936,23 +929,21 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         if self.is_variable:
             raise NotImplementedError("Contour correction is not supported for variable fonts.")
 
-        try:
-            if self.is_ps:
-                return self.cff.correct_contours(
-                    remove_hinting=remove_hinting,
-                    ignore_errors=ignore_errors,
-                    remove_unused_subroutines=remove_unused_subroutines,
-                    min_area=min_area,
-                )
-            if self.is_tt:
-                return self.glyf.correct_contours(
-                    remove_hinting=remove_hinting,
-                    ignore_errors=ignore_errors,
-                    min_area=min_area,
-                )
-            raise FontError("Unknown font type.")
-        except Exception as e:
-            raise FontError(e) from e
+        if self.is_ps:
+            return self.cff.correct_contours(
+                remove_hinting=remove_hinting,
+                ignore_errors=ignore_errors,
+                remove_unused_subroutines=remove_unused_subroutines,
+                min_area=min_area,
+            )
+        if self.is_tt:
+            return self.glyf.correct_contours(
+                remove_hinting=remove_hinting,
+                ignore_errors=ignore_errors,
+                min_area=min_area,
+            )
+
+        raise FontError("Unknown font type.")
 
     def calc_italic_angle(self, min_slant: float = 2.0) -> float:
         """
@@ -966,16 +957,13 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             occurs while calculating the italic angle.
         """
 
-        try:
-            glyph_set = self.ttfont.getGlyphSet()
-            pen = StatisticsPen(glyphset=glyph_set)
-            for g in ("H", "uni0048"):
-                with contextlib.suppress(KeyError):
-                    glyph_set[g].draw(pen)
-                    italic_angle = -1 * math.degrees(math.atan(pen.slant))
-                    if abs(italic_angle) >= abs(min_slant):
-                        return italic_angle
-                    return 0.0
-            raise FontError("The font does not contain the glyph 'H' or 'uni0048'.")
-        except Exception as e:
-            raise FontError(e) from e
+        glyph_set = self.ttfont.getGlyphSet()
+        pen = StatisticsPen(glyphset=glyph_set)
+        for g in ("H", "uni0048"):
+            with contextlib.suppress(KeyError):
+                glyph_set[g].draw(pen)
+                italic_angle = -1 * math.degrees(math.atan(pen.slant))
+                if abs(italic_angle) >= abs(min_slant):
+                    return italic_angle
+                return 0.0
+        raise FontError("The font does not contain the glyph 'H' or 'uni0048'.")
