@@ -404,7 +404,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._file
 
     @file.setter
-    def file(self, value: Path) -> None:
+    def file(self, value: Union[str, Path]) -> None:
         """
         Set the file path of the font.
 
