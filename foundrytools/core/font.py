@@ -17,6 +17,7 @@ from foundrytools.core.tables import (
     TABLES_LOOKUP,
     CFFTable,
     CmapTable,
+    FvarTable,
     GdefTable,
     GlyfTable,
     GsubTable,
@@ -235,24 +236,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     It provides a high-level interface for working with the underlying TTFont object and its
     tables.
-
-    :Example:
-
-    .. code-block:: python
-
-        from foundrytools import Font
-
-        font = Font("path/to/font.ttf")
-
-        # Check if the font is italic
-        if font.is_italic:
-            print("The font is italic.")
-
-        # Set the font as bold
-        font.is_bold = True
-
-        # Save the font
-        font.save("path/to/output.ttf")
     """
 
     def __init__(
@@ -341,6 +324,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def _init_tables(self) -> None:
         self._cff: Optional[CFFTable] = None
         self._cmap: Optional[CmapTable] = None
+        self._fvar: Optional[FvarTable] = None
         self._gdef: Optional[GdefTable] = None
         self._glyf: Optional[GlyfTable] = None
         self._gsub: Optional[GsubTable] = None
@@ -352,29 +336,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self._os_2: Optional[OS2Table] = None
         self._post: Optional[PostTable] = None
 
-    def __enter__(self) -> "Font":
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[type],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> None:
-        self.close()
-
-    def __repr__(self) -> str:
-        return f"<Font file={self.file}, bytesio={self.bytesio}, ttfont={self.ttfont}>"
-
     def _load_table(self, table_tag: str):  # type: ignore
-        """
-        Load a table from the font.
-
-        :param table_tag: The table tag.
-        :type table_tag: str
-        :return: The table object.
-        :rtype: Table
-        """
         if self.ttfont.get(table_tag) is None:
             raise KeyError(f"The '{table_tag}' table is not present in the font")
 
@@ -391,6 +353,20 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             raise KeyError(f"The '{table_tag}' table is not present in the font")
         return table
 
+    def __enter__(self) -> "Font":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[type],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        self.close()
+
+    def __repr__(self) -> str:
+        return f"<Font: ttfont={self.ttfont}, file={self.file}, bytesio={self.bytesio}>"
+
     @property
     def file(self) -> Optional[Path]:
         """
@@ -404,13 +380,15 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._file
 
     @file.setter
-    def file(self, value: Path) -> None:
+    def file(self, value: Union[str, Path]) -> None:
         """
         Set the file path of the font.
 
         :param value: The file path of the font.
         :type value: Path
         """
+        if isinstance(value, str):
+            value = Path(value)
         self._file = value
 
     @property
@@ -460,7 +438,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def temp_file(self) -> Path:
         """
-        A placeholder for the temporary file path of the font, in is needed for some operations.
+        A placeholder for the temporary file path of the font, in case is needed for some
+        operations.
 
         :return: The temporary file path of the font.
         :rtype: Path
@@ -486,6 +465,16 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :rtype: CmapTable
         """
         return self._get_table(const.T_CMAP)
+
+    @property
+    def fvar(self) -> FvarTable:
+        """
+        The ``fvar`` table handler.
+
+        :return: The loaded ``FvarTable``.
+        :rtype: FvarTable
+        """
+        return self._get_table(const.T_FVAR)
 
     @property
     def gdef(self) -> GdefTable:
