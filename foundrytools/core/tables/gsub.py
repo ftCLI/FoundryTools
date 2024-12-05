@@ -44,12 +44,11 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         :return: The UI name IDs.
         :rtype: set[int]
         """
-        return  set(
+        return {
             record.Feature.FeatureParams.UINameID
             for record in self.table.table.FeatureList.FeatureRecord
-            if record.Feature.FeatureParams
-            and hasattr(record.Feature.FeatureParams, "UINameID")
-        )
+            if record.Feature.FeatureParams and hasattr(record.Feature.FeatureParams, "UINameID")
+        }
 
     def rename_feature(self, feature_tag: str, new_feature_tag: str) -> bool:
         """
@@ -74,18 +73,9 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
                         continue
                     feature_record.FeatureTag = new_feature_tag
 
-            self.sort_feature_records_by_tag()
+            # Sort the feature records by tag. OTS warns if they are not sorted.
+            self.table.table.FeatureList.FeatureRecord.sort(key=lambda x: x.FeatureTag)
 
             return True
 
         return False
-
-    def sort_feature_records_by_tag(self) -> None:
-        """
-        Sorts the GSUB feature records by tag.
-
-        After renaming a feature, the feature records should be not
-        """
-        if hasattr(self.table.table, "FeatureList"):
-            self.table.table.FeatureList.FeatureRecord.sort(key=lambda x: x.FeatureTag)
-
