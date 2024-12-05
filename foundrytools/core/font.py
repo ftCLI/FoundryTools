@@ -11,7 +11,7 @@ from fontTools.pens.statisticsPen import StatisticsPen
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
 from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
-from fontTools.varLib.instancer import instantiateVariableFont, OverlapMode
+from fontTools.varLib.instancer import OverlapMode, instantiateVariableFont
 
 from foundrytools import constants as const
 from foundrytools.core.tables import (
