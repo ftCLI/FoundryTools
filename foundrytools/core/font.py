@@ -1,6 +1,6 @@
 import contextlib
 import math
-import collections.abc
+from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from types import TracebackType
@@ -35,9 +35,6 @@ from foundrytools.lib.ttf_builder import build_ttf
 from foundrytools.utils.path_tools import get_temp_file_path
 
 __all__ = ["Font", "FontError"]
-
-
-Generator = collections.abc.Generator
 
 
 class FontError(Exception):
