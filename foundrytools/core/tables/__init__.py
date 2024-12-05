@@ -1,6 +1,7 @@
 from foundrytools import constants
 from foundrytools.core.tables.cff_ import CFFTable
 from foundrytools.core.tables.cmap import CmapTable
+from foundrytools.core.tables.fvar import FvarTable
 from foundrytools.core.tables.gdef import GdefTable
 from foundrytools.core.tables.glyf import GlyfTable
 from foundrytools.core.tables.gsub import GsubTable
@@ -15,6 +16,7 @@ from foundrytools.core.tables.post import PostTable
 TABLES_LOOKUP = {
     constants.T_CFF: ("_cff", CFFTable),
     constants.T_CMAP: ("_cmap", CmapTable),
+    constants.T_FVAR: ("_fvar", FvarTable),
     constants.T_GDEF: ("_gdef", GdefTable),
     constants.T_GLYF: ("_glyf", GlyfTable),
     constants.T_GSUB: ("_gsub", GsubTable),
@@ -30,6 +32,7 @@ TABLES_LOOKUP = {
 __all__ = [
     "CFFTable",
     "CmapTable",
+    "FvarTable",
     "GdefTable",
     "GlyfTable",
     "GsubTable",

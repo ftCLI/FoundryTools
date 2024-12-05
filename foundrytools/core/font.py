@@ -17,6 +17,7 @@ from foundrytools.core.tables import (
     TABLES_LOOKUP,
     CFFTable,
     CmapTable,
+    FvarTable,
     GdefTable,
     GlyfTable,
     GsubTable,
@@ -323,6 +324,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def _init_tables(self) -> None:
         self._cff: Optional[CFFTable] = None
         self._cmap: Optional[CmapTable] = None
+        self._fvar: Optional[FvarTable] = None
         self._gdef: Optional[GdefTable] = None
         self._glyf: Optional[GlyfTable] = None
         self._gsub: Optional[GsubTable] = None
@@ -436,7 +438,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def temp_file(self) -> Path:
         """
-        A placeholder for the temporary file path of the font, in case is needed for some operations.
+        A placeholder for the temporary file path of the font, in case is needed for some
+        operations.
 
         :return: The temporary file path of the font.
         :rtype: Path
@@ -462,6 +465,16 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :rtype: CmapTable
         """
         return self._get_table(const.T_CMAP)
+
+    @property
+    def fvar(self) -> FvarTable:
+        """
+        The ``fvar`` table handler.
+
+        :return: The loaded ``FvarTable``.
+        :rtype: FvarTable
+        """
+        return self._get_table(const.T_FVAR)
 
     @property
     def gdef(self) -> GdefTable:
