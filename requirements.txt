@@ -2,7 +2,7 @@ afdko==4.0.2
 cffsubr==0.3.0
 defcon==0.10.3
 dehinter>=4.0.0
-fonttools[woff,pathops,unicode]==4.55.1
+fonttools[woff,pathops,unicode]==4.55.2
 setuptools==75.6.0
 ttfautohint-py==0.5.1
 ufo-extractor==0.8.1
