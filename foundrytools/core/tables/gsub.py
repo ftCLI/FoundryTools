@@ -37,17 +37,45 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         """
         self._table = value
 
-    def rename_feature(self, feature_tag: str, new_feature_tag: str) -> None:
+    def get_ui_name_ids(self) -> set[int]:
+        """
+        Returns a set of all the UI name IDs in the font's GSUB table
+
+        :return: The UI name IDs.
+        :rtype: set[int]
+        """
+        return {
+            record.Feature.FeatureParams.UINameID
+            for record in self.table.table.FeatureList.FeatureRecord
+            if record.Feature.FeatureParams and hasattr(record.Feature.FeatureParams, "UINameID")
+        }
+
+    def rename_feature(self, feature_tag: str, new_feature_tag: str) -> bool:
         """
         Rename a GSUB feature.
+
+        :Example:
+
+        >>> from foundrytools import Font
+        >>> font = Font("path/to/font.ttf")
+        >>> font.gsub.rename_feature("smcp", "ss20")
+        >>> font.save("path/to/font.ttf")
 
         :param feature_tag: The feature tag to rename.
         :type feature_tag: str
         :param new_feature_tag: The new feature tag.
         :type new_feature_tag: str
         """
-
-        if hasattr(self.table, "FeatureList"):
-            for feature_record in self.table.FeatureList.FeatureRecord:
+        if hasattr(self.table.table, "FeatureList"):
+            for feature_record in self.table.table.FeatureList.FeatureRecord:
                 if feature_record.FeatureTag == feature_tag:
+                    if feature_tag == new_feature_tag:
+                        continue
                     feature_record.FeatureTag = new_feature_tag
+
+            # Sort the feature records by tag. OTS warns if they are not sorted.
+            self.table.table.FeatureList.FeatureRecord.sort(key=lambda x: x.FeatureTag)
+
+            return True
+
+        return False
