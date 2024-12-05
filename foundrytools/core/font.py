@@ -11,6 +11,7 @@ from fontTools.pens.statisticsPen import StatisticsPen
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
 from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
+from fontTools.varLib.instancer import instantiateVariableFont, OverlapMode
 
 from foundrytools import constants as const
 from foundrytools.core.tables import (
@@ -857,6 +858,29 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         if self.is_sfnt:
             raise NotImplementedError("Font is already a SFNT font.")
         self.ttfont.flavor = None
+
+    def to_static(self, axis_limits: dict[str, float], update_font_names: bool = True) -> TTFont:
+        """
+        Create a static instance from a variable font.
+
+        :param axis_limits: A dictionary of axis limits to use when creating the static instance.
+        :type axis_limits: dict[str, float]
+        :param update_font_names: If ``True``, update the font names in the static instance.
+        :type update_font_names: bool
+        :return: A static instance of the font.
+        :rtype: TTFont
+        """
+        if self.is_static:
+            raise NotImplementedError("Font is already a static font.")
+
+        return instantiateVariableFont(
+            self.ttfont,
+            axisLimits=axis_limits,
+            inplace=False,
+            optimize=True,
+            overlap=OverlapMode.REMOVE_AND_IGNORE_ERRORS,
+            updateFontNames=update_font_names,
+        )
 
     def scale_upm(self, target_upm: int) -> None:
         """
