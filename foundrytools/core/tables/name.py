@@ -135,9 +135,9 @@ class NameTable(DefaultTbl):
         for name in names:
             self.table.removeNames(name.nameID, name.platformID, name.platEncID, name.langID)
 
-    def remove_unused_names(self) -> None:
+    def remove_unused_names(self) -> set[int]:
         """Removes unused NameRecords from the ``name`` table."""
-        self.table.removeUnusedNames(self.ttfont)
+        return self.table.removeUnusedNames(self.ttfont)
 
     def find_replace(
         self,
