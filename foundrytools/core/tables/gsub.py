@@ -1,8 +1,12 @@
+import logging
+
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables.G_S_U_B_ import table_G_S_U_B_
 
 from foundrytools.constants import T_GSUB
 from foundrytools.core.tables.default import DefaultTbl
+
+logger = logging.getLogger(__name__)
 
 
 class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
@@ -65,17 +69,41 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         :type feature_tag: str
         :param new_feature_tag: The new feature tag.
         :type new_feature_tag: str
+        :return: True if the feature was renamed, False otherwise.
+        :rtype: bool
         """
+        if feature_tag == new_feature_tag:
+            logger.warning("Old and new feature tags are the same. No changes made.")
+            return False
+
+        if new_feature_tag in self.get_feature_tags():
+            logger.warning(f"Feature tag '{new_feature_tag}' already exists. No changes made.")
+            return False
+
+        modified = False
         if hasattr(self.table.table, "FeatureList"):
             for feature_record in self.table.table.FeatureList.FeatureRecord:
                 if feature_record.FeatureTag == feature_tag:
-                    if feature_tag == new_feature_tag:
-                        continue
                     feature_record.FeatureTag = new_feature_tag
+                    modified = True
 
             # Sort the feature records by tag. OTS warns if they are not sorted.
+            self.sort_feature_records()
+
+        return modified
+
+    def get_feature_tags(self) -> set[str]:
+        """
+        Returns a list of all the feature tags in the font's GSUB table.
+
+        :return: The feature tags.
+        :rtype: list[str]
+        """
+        return {record.FeatureTag for record in self.table.table.FeatureList.FeatureRecord}
+
+    def sort_feature_records(self) -> None:
+        """
+        Sorts the feature records in the GSUB table by tag.
+        """
+        if hasattr(self.table.table, "FeatureList"):
             self.table.table.FeatureList.FeatureRecord.sort(key=lambda x: x.FeatureTag)
-
-            return True
-
-        return False
