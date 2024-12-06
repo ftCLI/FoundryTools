@@ -12,12 +12,12 @@ def run(font: Font) -> list[tuple[str, str]]:
     """
     Set the production names for the glyphs in the font.
 
-    The method iterates through each glyph in the old glyph order and determines its production
-    name based on its assigned or calculated Unicode value. If the production name is already
-    assigned, the glyph is skipped. If the production name is different from the original glyph
-    name and is not yet assigned, the glyph is renamed and added to the new glyph order list.
-    Finally, the font is updated with the new glyph order, the cmap table is rebuilt, and the
-    list of renamed glyphs is returned.
+    The method iterates through each glyph in the old glyph order and determines its production name
+    based on its assigned or calculated Unicode value. If the production name is already assigned,
+    the glyph is skipped. If the production name is different from the original glyph name and is
+    not yet assigned, the glyph is renamed and added to the new glyph order list. Finally, the font
+    is updated with the new glyph order, the cmap table is rebuilt, and the list of renamed glyphs
+    is returned.
 
     :return: A list of tuples containing the old and new glyph names.
     :rtype: List[Tuple[str, str]]

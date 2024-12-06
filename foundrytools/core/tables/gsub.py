@@ -52,7 +52,7 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
 
     def get_ui_name_ids(self) -> set[int]:
         """
-        Returns a set of all the UI name IDs in the font's GSUB table
+        Returns a set of all the UI name IDs in the font's GSUB table.
 
         :return: The UI name IDs.
         :rtype: set[int]
@@ -102,8 +102,6 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         return modified
 
     def sort_feature_records(self) -> None:
-        """
-        Sorts the feature records in the GSUB table by tag.
-        """
+        """Sorts the feature records in the GSUB table by tag."""
         if hasattr(self.table.table, "FeatureList"):
             self.table.table.FeatureList.FeatureRecord.sort(key=lambda x: x.FeatureTag)
