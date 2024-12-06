@@ -41,6 +41,15 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         """
         self._table = value
 
+    def get_feature_tags(self) -> set[str]:
+        """
+        Returns a list of all the feature tags in the font's GSUB table.
+
+        :return: The feature tags.
+        :rtype: list[str]
+        """
+        return {record.FeatureTag for record in self.table.table.FeatureList.FeatureRecord}
+
     def get_ui_name_ids(self) -> set[int]:
         """
         Returns a set of all the UI name IDs in the font's GSUB table
@@ -91,15 +100,6 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
             self.sort_feature_records()
 
         return modified
-
-    def get_feature_tags(self) -> set[str]:
-        """
-        Returns a list of all the feature tags in the font's GSUB table.
-
-        :return: The feature tags.
-        :rtype: list[str]
-        """
-        return {record.FeatureTag for record in self.table.table.FeatureList.FeatureRecord}
 
     def sort_feature_records(self) -> None:
         """
