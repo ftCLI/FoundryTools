@@ -48,6 +48,7 @@ def check_update_name_table(variable_font: Font) -> None:
     except Exception as e:
         raise UpdateNameTableError(str(e)) from e
 
+
 def check_instance_axes(variable_font: Font, instance: NamedInstance) -> None:
     """
     Check if the instance axes are valid.
@@ -60,8 +61,10 @@ def check_instance_axes(variable_font: Font, instance: NamedInstance) -> None:
     """
     axes = variable_font.fvar.get_axes_tags()
     if sorted(instance.coordinates.keys()) != sorted(axes):
-        raise BadInstanceError(f"Invalid axes: {instance.coordinates.keys()}: "
-                               f"valid axes are: {axes}")
+        raise BadInstanceError(
+            f"Invalid axes: {instance.coordinates.keys()}: " f"valid axes are: {axes}"
+        )
+
 
 def check_instance_coordinates(variable_font: Font, instance: NamedInstance) -> None:
     """
@@ -77,53 +80,53 @@ def check_instance_coordinates(variable_font: Font, instance: NamedInstance) -> 
         axis_min, axis_max = variable_font.fvar.get_axis_limits(axis)
         if not axis_min <= value <= axis_max:
             raise BadInstanceError(
-                    f"Instance coordinates are outside the axis limits: {axis}={value} "
-                    f"allowed range is {axis_min} to {axis_max}"
+                f"Instance coordinates are outside the axis limits: {axis}={value} "
+                f"allowed range is {axis_min} to {axis_max}"
             )
 
-def is_named_instance(variable_font: Font, instance: NamedInstance) -> bool:
-    """
-    Check if the instance is a named instance in the variable font.
 
-    :param variable_font: The variable font.
-    :type variable_font: Font
+def preprocess_instance(var_font: Font, instance: NamedInstance) -> None:
+    """
+    Preprocess the named instance to ensure that it has a valid postscriptNameID and subfamilyNameID
+    even if it is not a named instance in the variable font.
+
+    :param var_font: The variable font.
+    :type var_font: Font
     :param instance: The named instance.
     :type instance: NamedInstance
-    :return: ``True`` if the instance is a named instance, otherwise ``False``.
-    :rtype: bool
+    :return: The preprocessed named instance.
+    :rtype: NamedInstance
     """
-    return instance.coordinates in [i.coordinates for i in variable_font.fvar.get_instances()]
 
-def get_instance_file_name(variable_font: Font, instance: NamedInstance) -> str:
-    """
-    Get the file name for the static instance.
-
-    :param variable_font: The variable font.
-    :type variable_font: Font
-    :param instance: The named instance.
-    :type instance: NamedInstance
-    :return: The file name for the static instance.
-    :rtype: str
-    """
-    if hasattr(instance, "postscriptNameID") and instance.postscriptNameID < 65535:
-        instance_file_name = variable_font.name.table.getDebugName(instance.postscriptNameID)
-
-    else:
-        if hasattr(instance, "subfamilyNameID") and instance.subfamilyNameID > 0:
-            subfamily_name = variable_font.name.table.getDebugName(instance.subfamilyNameID)
+    named_instances = var_font.fvar.get_instances()
+    for i in named_instances:
+        print (i.__dict__)
+        if i.coordinates == instance.coordinates:
+            # Check if the named instance has a valid postscriptNameID and subfamilyNameID
+            instance.postscriptNameID = i.postscriptNameID if i.postscriptNameID < 65535 else None
+            instance.subfamilyNameID = i.subfamilyNameID if i.subfamilyNameID > 0 else None
+            break
         else:
-            subfamily_name = "_".join([f"{k}_{v}" for k, v in instance.coordinates.items()])
+            instance.postscriptNameID = var_font.name.table.addName("")
+            instance.subfamilyNameID = var_font.name.table.addName("")
 
-        if variable_font.name.table.getBestFamilyName() is not None:
-            family_name = variable_font.name.table.getBestFamilyName()
-        elif variable_font.file is not None:
-            family_name = variable_font.file.stem
+        family_name = str(var_font.name.table.getBestFamilyName())  # cast to string to handle None
+        subfamily_name = var_font.name.table.getDebugName(instance.subfamilyNameID)
+        postscript_name = var_font.name.table.getDebugName(instance.postscriptNameID)
+
+        if subfamily_name in (None, ""):
+            subfamily_name = "_".join(
+                [f"{k}_{v}" for k, v in instance.coordinates.items()]
+            )
+            var_font.name.set_name(instance.subfamilyNameID, subfamily_name)
         else:
-            family_name = "UnknownFamily"
+            # cast to string to handle None
+            subfamily_name = str(var_font.name.table.getDebugName(instance.subfamilyNameID))
 
-        instance_file_name = f"{family_name}-{subfamily_name}".replace(" ", "")
+        if postscript_name in (None, ""):
+            postscript_name = f"{family_name}-{subfamily_name}".replace(" ", "")
+            var_font.name.set_name(instance.postscriptNameID, postscript_name)
 
-    return instance_file_name
 
 def cleanup_static_font(static_font: Font) -> None:
     """
@@ -139,6 +142,7 @@ def cleanup_static_font(static_font: Font) -> None:
 
     static_font.name.remove_names(name_ids=[25])
     static_font.name.remove_unused_names()
+
 
 def run(font: Font, instances: list[NamedInstance], update_font_names: bool = True) -> bool:
     if not font.is_variable:
@@ -158,6 +162,7 @@ def run(font: Font, instances: list[NamedInstance], update_font_names: bool = Tr
             update_font_names = False
 
     for instance in requested_instances:
+        preprocess_instance(font, instance)
         try:
             check_instance_axes(font, instance)
             check_instance_coordinates(font, instance)
@@ -172,13 +177,7 @@ def run(font: Font, instances: list[NamedInstance], update_font_names: bool = Tr
 
         cleanup_static_font(static_font)
 
-        family_name = str(static_font.name.table.getBestFamilyName())  # Cast to str to handle None
-        if is_named_instance(font, instance) and update_font_names:
-            subfamily_name = str(static_font.name.table.getBestSubFamilyName())  # As above
-        else:
-            subfamily_name = "_".join([f"{k}_{v}" for k, v in instance.coordinates.items()])
-
-        file_name = f"{family_name}-{subfamily_name}".replace(" ", "")
+        file_name = font.name.table.getDebugName(instance.postscriptNameID)
         print(f"Exporting static font: {file_name}")
 
     return True
