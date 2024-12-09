@@ -1,11 +1,7 @@
-import logging
-from typing import Optional
-
-from fontTools.ttLib.tables._f_v_a_r import NamedInstance
+from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
+from fontTools.varLib.instancer import OverlapMode, instantiateVariableFont
 
 from foundrytools import Font
-
-logger = logging.getLogger(__name__)
 
 
 class Var2StaticError(Exception):
@@ -14,6 +10,10 @@ class Var2StaticError(Exception):
 
 class UpdateNameTableError(Exception):
     """Raised if the name table cannot be updated when creating a static instance."""
+
+
+class BadInstanceError(Exception):
+    """Raised if the instance is invalid."""
 
 
 def check_update_name_table(var_font: Font) -> None:
@@ -26,9 +26,57 @@ def check_update_name_table(var_font: Font) -> None:
         or if an error occurs during the creation of the static instance.
     """
     try:
-        var_font.to_static(instance=var_font.fvar.table.instances[0], update_font_names=True)
+        create_static_instance(var_font, var_font.fvar.table.instances[0], True)
     except Exception as e:
         raise UpdateNameTableError(str(e)) from e
+
+
+def get_existing_instance(
+    instances: list[NamedInstance], instance: NamedInstance
+) -> tuple[bool, NamedInstance]:
+    """
+    Returns a named instance if the instance coordinates are the same, otherwise the custom
+    instance.
+
+    :param instances: The list of named instances.
+    :type instances: list[NamedInstance]
+    :param instance: The named instance.
+    :type instance: NamedInstance
+    :return: A tuple with a boolean indicating if the instance is named and the instance object.
+    :rtype: tuple[bool, NamedInstance]
+    """
+    for existing_instance in instances:
+        if existing_instance.coordinates == instance.coordinates:
+            return True, existing_instance
+
+    return False, instance
+
+
+def create_static_instance(
+    var_font: Font, instance: NamedInstance, update_font_names: bool
+) -> Font:
+    """
+    Create a static instance from a variable font.
+
+    :param var_font: The variable font.
+    :type var_font: Font
+    :param instance: A named instance with axis values.
+    :type instance: NamedInstance
+    :param update_font_names: If ``True``, update the font names in the static instance.
+    :type update_font_names: bool
+    :return: A static instance of the font.
+    :rtype: TTFont
+    """
+    return Font(
+        instantiateVariableFont(
+            var_font.ttfont,
+            axisLimits=instance.coordinates,
+            inplace=False,
+            optimize=True,
+            overlap=OverlapMode.REMOVE_AND_IGNORE_ERRORS,
+            updateFontNames=update_font_names,
+        )
+    )
 
 
 def cleanup_static_font(static_font: Font) -> None:
@@ -49,7 +97,8 @@ def cleanup_static_font(static_font: Font) -> None:
 
 def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance) -> None:
     """
-    Update the name table of the static font.
+    Update the name table of the static font in case ``InstantiateVariableFont`` could not update
+    it, or if the instance is non-existing.
 
     :param var_font: The variable font.
     :type var_font: Font
@@ -59,19 +108,20 @@ def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance
     :type instance: NamedInstance
     """
     family_name = var_font.name.get_best_family_name()
-    subfamily_name = var_font.fvar.get_fallback_subfamily_name(instance)
+    subfamily_name = "_".join([f"{k}_{v}" for k, v in instance.coordinates.items()])
+    postscript_name = f"{family_name}-{subfamily_name}".replace(" ", "").replace(".", "_")
 
     static_font.name.set_name(1, f"{family_name} {subfamily_name}")
+    static_font.name.set_name(6, postscript_name)
     static_font.name.set_name(16, family_name)
     static_font.name.set_name(17, subfamily_name)
-    static_font.name.build_postscript_name()
     static_font.name.build_full_font_name()
     static_font.name.build_unique_identifier()
 
 
 def run(
     var_font: Font, instance: NamedInstance, update_font_names: bool = True
-) -> Optional[tuple[Font, str]]:
+) -> tuple[Font, str]:
     """
     Convert a variable font to a static font.
 
@@ -86,27 +136,43 @@ def run(
     """
 
     if not var_font.is_variable:
-        logger.error("The font is not a variable font.")
-        return None
+        raise Var2StaticError("The font is not a variable font.")
 
-    # If the instance coordinates are the same as an existing named instance, we use the
-    # existing instance instead of the original one. This allows to access the instance
-    # postscriptNameID and subfamilyNameID and to update the name table.
-    is_named_instance, instance = var_font.fvar.get_named_or_custom_instance(instance)
+    axes: list[Axis] = var_font.fvar.table.axes
+    instances: list[NamedInstance] = var_font.fvar.table.instances
+
+    # Check if the instance has valid axes and coordinates are within the axis limits
+    for axis_tag, value in instance.coordinates.items():
+        axis_obj = next((a for a in axes if a.axisTag == axis_tag), None)
+        if axis_obj is None:
+            raise BadInstanceError(f"Cannot create static font: '{axis_tag}' not present in fvar")
+        if not axis_obj.minValue <= value <= axis_obj.maxValue:
+            raise BadInstanceError(
+                f"Cannot create static font: '{axis_tag}' out of bounds "
+                f"(value: {value} min: {axis_obj.minValue} max: {axis_obj.maxValue})"
+            )
 
     try:
-        if is_named_instance:
-            static_font = Font(var_font.to_static(instance, update_font_names))
-        else:
-            static_font = Font(var_font.to_static(instance, False))
+        # If the instance coordinates are the same as an existing instance, we use the existing
+        # instance instead of the original one. This allows to access the instance postscriptNameID
+        # and subfamilyNameID and to update the name table.
+        is_existing_instance, instance = get_existing_instance(instances, instance)
 
-        cleanup_static_font(static_font)
-        if not is_named_instance or not update_font_names:
+        if is_existing_instance:
+            static_font = create_static_instance(var_font, instance, update_font_names)
+        else:
+            static_font = create_static_instance(var_font, instance, False)
+
+        # We update the name table with the instance coordinates if the instance is non-existing or
+        # if the name table cannot be updated.
+        if not is_existing_instance or not update_font_names:
             update_name_table(var_font, static_font, instance)
 
-        file_stem = var_font.fvar.get_instance_postscript_name(instance)
+        cleanup_static_font(static_font)
 
-        return static_font, file_stem
+        file_name = static_font.name.get_debug_name(6) + static_font.get_file_ext()
+
+        return static_font, file_name
 
     except Exception as e:
         raise Var2StaticError(str(e)) from e
