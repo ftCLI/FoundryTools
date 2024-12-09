@@ -313,6 +313,38 @@ class NameTable(DefaultTbl):
             )
         ]
 
+    def get_best_family_name(self) -> str:
+        """
+        Returns the best family name from the ``name`` table. The best family name is converted to
+        string to handle cases where the family name is None.
+
+        :return: The best family name.
+        :rtype: str
+        """
+        return str(self.table.getBestFamilyName())
+
+    def get_best_subfamily_name(self) -> str:
+        """
+        Returns the best subfamily name from the ``name`` table. The best subfamily name is
+        converted to string to handle cases where the subfamily name is None.
+
+        :return: The best subfamily name.
+        :rtype: str
+        """
+        return str(self.table.getBestSubFamilyName())
+
+    def get_debug_name(self, name_id: int) -> str:
+        """
+        Returns the NameRecord string with the specified NameID. The NameRecord is converted to
+        string to handle cases where the NameRecord is None.
+
+        :param name_id: The NameID of the NameRecord.
+        :type name_id: int
+        :return: The debug name of the NameRecord.
+        :rtype: str
+        """
+        return str(self.table.getDebugName(name_id))
+
     def build_unique_identifier(
         self, platform_id: Optional[int] = None, alternate: bool = False
     ) -> None:
@@ -334,13 +366,13 @@ class NameTable(DefaultTbl):
         if not alternate:
             font_revision = round(self.ttfont[T_HEAD].fontRevision, 3)
             vendor_id = self.ttfont[T_OS_2].achVendID
-            postscript_name = self.table.getDebugName(NameIds.POSTSCRIPT_NAME)
+            postscript_name = self.get_debug_name(NameIds.POSTSCRIPT_NAME)
             unique_id = f"{font_revision};{vendor_id};{postscript_name}"
         else:
             year_created = timestampToString(self.ttfont[T_HEAD].created).split(" ")[-1]
-            family_name = self.table.getBestFamilyName()
-            subfamily_name = self.table.getBestSubFamilyName()
-            manufacturer_name = self.table.getDebugName(NameIds.MANUFACTURER_NAME)
+            family_name = self.get_best_family_name()
+            subfamily_name = self.get_best_subfamily_name()
+            manufacturer_name = self.get_debug_name(NameIds.MANUFACTURER_NAME)
             unique_id = f"{manufacturer_name}: {family_name}-{subfamily_name}: {year_created}"
 
         self.set_name(
@@ -357,8 +389,8 @@ class NameTable(DefaultTbl):
         :type platform_id: Optional[int]
         """
 
-        family_name = self.table.getBestFamilyName()
-        subfamily_name = self.table.getBestSubFamilyName()
+        family_name = self.get_best_family_name()
+        subfamily_name = self.get_best_subfamily_name()
         full_font_name = f"{family_name} {subfamily_name}"
 
         self.set_name(
@@ -392,9 +424,9 @@ class NameTable(DefaultTbl):
         :type platform_id: Optional[int]
         """
 
-        family_name = self.table.getBestFamilyName()
-        subfamily_name = self.table.getBestSubFamilyName()
-        postscript_name = f"{family_name}-{subfamily_name}".replace(" ", "")
+        family_name = self.get_best_family_name()
+        subfamily_name = self.get_best_subfamily_name()
+        postscript_name = f"{family_name}-{subfamily_name}".replace(" ", "").replace(".", "_")
 
         self.set_name(
             name_id=NameIds.POSTSCRIPT_NAME, name_string=postscript_name, platform_id=platform_id
@@ -408,7 +440,7 @@ class NameTable(DefaultTbl):
         names = self.filter_names(name_ids=name_ids, platform_id=3)
         for name in names:
             try:
-                string = self.table.getDebugName(name.nameID)
+                string = str(self.table.getDebugName(name.nameID))
                 self.set_name(name_id=name.nameID, name_string=string, platform_id=1)
             except AttributeError:
                 continue

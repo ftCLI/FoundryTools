@@ -35,7 +35,7 @@ from foundrytools.lib.qu2cu import quadratics_to_cubics
 from foundrytools.lib.ttf_builder import build_ttf
 from foundrytools.utils.path_tools import get_temp_file_path
 
-__all__ = ["Font", "FontError"]
+__all__ = ["Font", "FontConversionError", "FontError"]
 
 
 class FontError(Exception):
@@ -851,6 +851,12 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         """
         if self.is_static:
             raise FontConversionError("Font is already a static font.")
+
+        try:
+            self.fvar.check_instance_axes(instance)
+            self.fvar.check_instance_coordinates(instance)
+        except Exception as e:
+            raise FontConversionError(str(e)) from e
 
         return instantiateVariableFont(
             self.ttfont,
