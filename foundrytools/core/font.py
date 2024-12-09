@@ -10,7 +10,7 @@ from fontTools.misc.cliTools import makeOutputFileName
 from fontTools.pens.statisticsPen import StatisticsPen
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
-from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
+from fontTools.ttLib.tables._f_v_a_r import NamedInstance
 from fontTools.varLib.instancer import OverlapMode, instantiateVariableFont
 
 from foundrytools import constants as const
@@ -35,11 +35,15 @@ from foundrytools.lib.qu2cu import quadratics_to_cubics
 from foundrytools.lib.ttf_builder import build_ttf
 from foundrytools.utils.path_tools import get_temp_file_path
 
-__all__ = ["Font", "FontError"]
+__all__ = ["Font", "FontConversionError", "FontError"]
 
 
 class FontError(Exception):
     """The ``FontError`` class is a custom exception class for font-related errors."""
+
+
+class FontConversionError(Exception):
+    """The ``FontConversionError`` class is a custom exception class for font conversion errors."""
 
 
 class StyleFlags:
@@ -235,8 +239,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     """
     The ``Font`` class is a wrapper around the ``TTFont`` class from ``fontTools``.
 
-    It provides a high-level interface for working with the underlying TTFont object and its
-    tables.
+    It provides a high-level interface for working with the underlying TTFont object and its tables.
     """
 
     def __init__(
@@ -780,30 +783,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         )
         return out_file
 
-    def get_axes(self) -> Optional[list[Axis]]:
-        """
-        Get axes from a variable font.
-
-        :return: A list of ``Axis`` objects.
-        """
-        if not self.is_variable:
-            return None
-
-        # Filter out the 'hidden' axes (flags != 0)
-        return [axis for axis in self.ttfont[const.T_FVAR].axes if axis.flags == 0]
-
-    def get_instances(self) -> Optional[list[NamedInstance]]:
-        """
-        Get named instances from a variable font.
-
-        :return: A list of ``NamedInstance`` objects.
-        :rtype: list[NamedInstance]
-        """
-        if not self.is_variable:
-            return None
-
-        return self.ttfont[const.T_FVAR].instances
-
     def to_woff(self) -> None:
         """Convert a font to WOFF."""
         if self.is_woff:
@@ -830,18 +809,18 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :type reverse_direction: bool
         """
         if self.is_tt:
-            raise NotImplementedError("Font is already a TrueType font.")
+            raise FontConversionError("Font is already a TrueType font.")
         if self.is_variable:
-            raise NotImplementedError("Conversion to TrueType is not supported for variable fonts.")
+            raise FontConversionError("Conversion to TrueType is not supported for variable fonts.")
 
         build_ttf(font=self.ttfont, max_err=max_err, reverse_direction=reverse_direction)
 
     def to_otf(self, tolerance: float = 1.0, correct_contours: bool = True) -> None:
         """Converts a TrueType font to PostScript."""
         if self.is_ps:
-            raise NotImplementedError("Font is already a PostScript font.")
+            raise FontConversionError("Font is already a PostScript font.")
         if self.is_variable:
-            raise NotImplementedError(
+            raise FontConversionError(
                 "Conversion to PostScript is not supported for variable fonts."
             )
         self.glyf.decompose_all()
@@ -856,26 +835,32 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def to_sfnt(self) -> None:
         """Convert a font to SFNT."""
         if self.is_sfnt:
-            raise NotImplementedError("Font is already a SFNT font.")
+            raise FontConversionError("Font is already a SFNT font.")
         self.ttfont.flavor = None
 
-    def to_static(self, axis_limits: dict[str, float], update_font_names: bool = True) -> TTFont:
+    def to_static(self, instance: NamedInstance, update_font_names: bool = True) -> TTFont:
         """
         Create a static instance from a variable font.
 
-        :param axis_limits: A dictionary of axis limits to use when creating the static instance.
-        :type axis_limits: dict[str, float]
+        :param instance: A named instance with axis values.
+        :type instance: NamedInstance
         :param update_font_names: If ``True``, update the font names in the static instance.
         :type update_font_names: bool
         :return: A static instance of the font.
         :rtype: TTFont
         """
         if self.is_static:
-            raise NotImplementedError("Font is already a static font.")
+            raise FontConversionError("Font is already a static font.")
+
+        try:
+            self.fvar.check_instance_axes(instance)
+            self.fvar.check_instance_coordinates(instance)
+        except Exception as e:
+            raise FontConversionError(str(e)) from e
 
         return instantiateVariableFont(
             self.ttfont,
-            axisLimits=axis_limits,
+            axisLimits=instance.coordinates,
             inplace=False,
             optimize=True,
             overlap=OverlapMode.REMOVE_AND_IGNORE_ERRORS,

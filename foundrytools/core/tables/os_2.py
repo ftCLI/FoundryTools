@@ -42,8 +42,10 @@ MAX_OS2_VERSION = 5
 
 
 class InvalidOS2VersionError(Exception):
-    """Exception raised when trying to access a field that is not defined in the current OS/2
-    table version."""
+    """
+    Exception raised when trying to access a field that is not defined in the current OS/2 table
+    version.
+    """
 
 
 class FsSelection:

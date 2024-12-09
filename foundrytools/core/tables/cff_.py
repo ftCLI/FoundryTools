@@ -101,9 +101,7 @@ class CFFTable(DefaultTbl):
             setattr(self.private_dict, attr, value)
 
     def _restore_hinting_data(self) -> None:
-        """
-        Restore the original hinting data to the ``CFF`` table.
-        """
+        """Restore the original hinting data to the ``CFF`` table."""
         for attr in HINTING_ATTRS:
             setattr(self.private_dict, attr, self._raw_dict_copy.get(attr))
 
