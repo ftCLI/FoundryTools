@@ -31,21 +31,42 @@ def check_update_name_table(var_font: Font) -> None:
         raise UpdateNameTableError(str(e)) from e
 
 
-def get_existing_instance(
-    instances: list[NamedInstance], instance: NamedInstance
-) -> tuple[bool, NamedInstance]:
+def check_instance(var_font: Font, instance: NamedInstance) -> None:
+    """
+    Check if the instance is valid.
+
+    :param var_font: The variable font.
+    :type var_font: Font
+    :param instance: The named instance.
+    :type instance: NamedInstance
+    :raises BadInstanceError: If the instance is invalid.
+    """
+    axes: list[Axis] = var_font.fvar.table.axes
+
+    for axis_tag, value in instance.coordinates.items():
+        axis_obj = next((a for a in axes if a.axisTag == axis_tag), None)
+        if axis_obj is None:
+            raise BadInstanceError(f"Cannot create static font: '{axis_tag}' not present in fvar")
+        if not axis_obj.minValue <= value <= axis_obj.maxValue:
+            raise BadInstanceError(
+                f"Cannot create static font: '{axis_tag}' out of bounds "
+                f"(value: {value} min: {axis_obj.minValue} max: {axis_obj.maxValue})"
+            )
+
+
+def get_existing_instance(var_font: Font, instance: NamedInstance) -> tuple[bool, NamedInstance]:
     """
     Returns a named instance if the instance coordinates are the same, otherwise the custom
     instance.
 
-    :param instances: The list of named instances.
-    :type instances: list[NamedInstance]
+    :param var_font: The variable font.
+    :type var_font: Font
     :param instance: The named instance.
     :type instance: NamedInstance
     :return: A tuple with a boolean indicating if the instance is named and the instance object.
     :rtype: tuple[bool, NamedInstance]
     """
-    for existing_instance in instances:
+    for existing_instance in var_font.fvar.table.instances:
         if existing_instance.coordinates == instance.coordinates:
             return True, existing_instance
 
@@ -138,25 +159,15 @@ def run(
     if not var_font.is_variable:
         raise Var2StaticError("The font is not a variable font.")
 
-    axes: list[Axis] = var_font.fvar.table.axes
-    instances: list[NamedInstance] = var_font.fvar.table.instances
-
-    # Check if the instance has valid axes and coordinates are within the axis limits
-    for axis_tag, value in instance.coordinates.items():
-        axis_obj = next((a for a in axes if a.axisTag == axis_tag), None)
-        if axis_obj is None:
-            raise BadInstanceError(f"Cannot create static font: '{axis_tag}' not present in fvar")
-        if not axis_obj.minValue <= value <= axis_obj.maxValue:
-            raise BadInstanceError(
-                f"Cannot create static font: '{axis_tag}' out of bounds "
-                f"(value: {value} min: {axis_obj.minValue} max: {axis_obj.maxValue})"
-            )
+    # Check if the instance has valid axes and coordinates are within the axis limits. If not, raise
+    # a BadInstanceError.
+    check_instance(var_font, instance)
 
     try:
         # If the instance coordinates are the same as an existing instance, we use the existing
         # instance instead of the original one. This allows to access the instance postscriptNameID
         # and subfamilyNameID and to update the name table.
-        is_existing_instance, instance = get_existing_instance(instances, instance)
+        is_existing_instance, instance = get_existing_instance(var_font, instance)
 
         if is_existing_instance:
             static_font = create_static_instance(var_font, instance, update_font_names)
@@ -171,7 +182,6 @@ def run(
         cleanup_static_font(static_font)
 
         file_name = static_font.name.get_debug_name(6) + static_font.get_file_ext()
-
         return static_font, file_name
 
     except Exception as e:
