@@ -124,7 +124,6 @@ def cleanup_static_font(static_font: Font) -> None:
     static_font.gsub.remap_ui_name_ids(name_ids_map)
 
 
-
 def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance) -> None:
     """
     Update the name table of the static font in case ``InstantiateVariableFont`` could not update
@@ -147,6 +146,7 @@ def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance
     static_font.name.set_name(NameIds.TYPO_FAMILY_NAME, family_name)
     static_font.name.set_name(NameIds.TYPO_SUBFAMILY_NAME, subfamily_name)
     static_font.name.build_full_font_name()
+
 
 def run(
     var_font: Font, instance: NamedInstance, update_font_names: bool = True

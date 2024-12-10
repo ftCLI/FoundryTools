@@ -450,7 +450,6 @@ class NameTable(DefaultTbl):
         """Removes all Macintosh-specific NameRecords from the ``name`` table."""
         self.table.removeNames(platformID=1)
 
-
     def remap_name_ids(self) -> dict[int, int]:
         """Remaps the NameIDs of the NameRecords in the ``name`` table."""
         names_to_remap = {name for name in self.table.names if name.nameID >= 256}
