@@ -58,8 +58,8 @@ def _ttf_components_overlap(glyph: _g_l_y_f.Glyph, glyph_set: _TTGlyphMapping) -
             _get_nth_component_path(i),
             _get_nth_component_path(j),
             pathops.PathOp.INTERSECTION,
-            clockwise=True,
-            fix_winding=True,
+            clockwise=True,  # type: ignore
+            fix_winding=True,  # type: ignore
         )
         for i, j in itertools.combinations(range(len(glyph.components)), 2)
     )
@@ -204,13 +204,13 @@ def simplify_path(path: pathops.Path, glyph_name: str, clockwise: bool) -> patho
     """
 
     try:
-        return pathops.simplify(path, fix_winding=True, clockwise=clockwise)
+        return pathops.simplify(path, fix_winding=True, clockwise=clockwise)  # type: ignore
     except pathops.PathOpsError:
         pass
 
     path = _round_path(path, rounder=noRound)
     try:
-        path = pathops.simplify(path, fix_winding=True, clockwise=clockwise)
+        path = pathops.simplify(path, fix_winding=True, clockwise=clockwise)  # type: ignore
         return path
     except pathops.PathOpsError as e:
         raise CorrectContoursError(f"Failed to remove overlaps from glyph {glyph_name!r}") from e

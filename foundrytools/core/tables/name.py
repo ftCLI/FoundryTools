@@ -1,3 +1,4 @@
+# pylint: disable=too-many-public-methods
 from collections.abc import Iterable
 from copy import deepcopy
 from typing import Optional
@@ -444,3 +445,18 @@ class NameTable(DefaultTbl):
                 self.set_name(name_id=name.nameID, name_string=string, platform_id=1)
             except AttributeError:
                 continue
+
+    def remove_mac_names(self) -> None:
+        """Removes all Macintosh-specific NameRecords from the ``name`` table."""
+        self.table.removeNames(platformID=1)
+
+    def remap_name_ids(self) -> dict[int, int]:
+        """Remaps the NameIDs of the NameRecords in the ``name`` table."""
+        names_to_remap = {name for name in self.table.names if name.nameID >= 256}
+        name_ids_map: dict[int, int] = {}
+
+        for name_id, name in enumerate(names_to_remap, start=256):
+            name_ids_map[name.nameID] = name_id
+            name.nameID = name_id
+
+        return name_ids_map

@@ -63,6 +63,19 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
             if record.Feature.FeatureParams and hasattr(record.Feature.FeatureParams, "UINameID")
         }
 
+    def remap_ui_name_ids(self, name_ids_map: dict[int, int]) -> None:
+        """
+        Remap the UI name IDs in the GSUB table.
+
+        :param name_ids_map: A dictionary with the old and new UI name IDs.
+        :type name_ids_map: dict[int, int]
+        """
+        for record in self.table.table.FeatureList.FeatureRecord:
+            if record.Feature.FeatureParams and hasattr(record.Feature.FeatureParams, "UINameID"):
+                record.Feature.FeatureParams.UINameID = name_ids_map.get(
+                    record.Feature.FeatureParams.UINameID, record.Feature.FeatureParams.UINameID
+                )
+
     def rename_feature(self, feature_tag: str, new_feature_tag: str) -> bool:
         """
         Rename a GSUB feature.
