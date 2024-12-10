@@ -2,6 +2,7 @@ from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
 from fontTools.varLib.instancer import OverlapMode, instantiateVariableFont
 
 from foundrytools import Font
+from foundrytools.constants import NameIds
 
 
 class Var2StaticError(Exception):
@@ -102,7 +103,7 @@ def create_static_instance(
 
 def cleanup_static_font(static_font: Font) -> None:
     """
-    Clean up the static font by removing unnecessary tables and data.
+    Clean up the static font by removing tables left by ``InstantiateVariableFont``.
 
     :param static_font: The static font to clean up.
     :type static_font: Font
@@ -112,8 +113,16 @@ def cleanup_static_font(static_font: Font) -> None:
         if table_tag in static_font.ttfont:
             del static_font.ttfont[table_tag]
 
+    static_font.name.build_unique_identifier()
+
+    # Remove unnecessary NameRecords and Macintosh-specific NameRecords, and remap the name IDs in
+    # the GSUB table.
     static_font.name.remove_names(name_ids=[25])
+    static_font.name.remove_mac_names()
     static_font.name.remove_unused_names()
+    name_ids_map = static_font.name.remap_name_ids()
+    static_font.gsub.remap_ui_name_ids(name_ids_map)
+
 
 
 def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance) -> None:
@@ -132,13 +141,12 @@ def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance
     subfamily_name = "_".join([f"{k}_{v}" for k, v in instance.coordinates.items()])
     postscript_name = f"{family_name}-{subfamily_name}".replace(" ", "").replace(".", "_")
 
-    static_font.name.set_name(1, f"{family_name} {subfamily_name}")
-    static_font.name.set_name(6, postscript_name)
-    static_font.name.set_name(16, family_name)
-    static_font.name.set_name(17, subfamily_name)
+    # Build the name table of the static font.
+    static_font.name.set_name(NameIds.FAMILY_NAME, f"{family_name} {subfamily_name}")
+    static_font.name.set_name(NameIds.POSTSCRIPT_NAME, postscript_name)
+    static_font.name.set_name(NameIds.TYPO_FAMILY_NAME, family_name)
+    static_font.name.set_name(NameIds.TYPO_SUBFAMILY_NAME, subfamily_name)
     static_font.name.build_full_font_name()
-    static_font.name.build_unique_identifier()
-
 
 def run(
     var_font: Font, instance: NamedInstance, update_font_names: bool = True
@@ -159,11 +167,11 @@ def run(
     if not var_font.is_variable:
         raise Var2StaticError("The font is not a variable font.")
 
-    # Check if the instance has valid axes and coordinates are within the axis limits. If not, raise
-    # a BadInstanceError.
-    check_instance(var_font, instance)
-
     try:
+        # Checks if the instance has valid axes and coordinates are within the axis limits. If not,
+        # raises a BadInstanceError.
+        check_instance(var_font, instance)
+
         # If the instance coordinates are the same as an existing instance, we use the existing
         # instance instead of the original one. This allows to access the instance postscriptNameID
         # and subfamilyNameID and to update the name table.
