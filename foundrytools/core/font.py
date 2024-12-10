@@ -10,8 +10,6 @@ from fontTools.misc.cliTools import makeOutputFileName
 from fontTools.pens.statisticsPen import StatisticsPen
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
-from fontTools.ttLib.tables._f_v_a_r import NamedInstance
-from fontTools.varLib.instancer import OverlapMode, instantiateVariableFont
 
 from foundrytools import constants as const
 from foundrytools.core.tables import (
@@ -838,35 +836,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             raise FontConversionError("Font is already a SFNT font.")
         self.ttfont.flavor = None
 
-    def to_static(self, instance: NamedInstance, update_font_names: bool = True) -> TTFont:
-        """
-        Create a static instance from a variable font.
-
-        :param instance: A named instance with axis values.
-        :type instance: NamedInstance
-        :param update_font_names: If ``True``, update the font names in the static instance.
-        :type update_font_names: bool
-        :return: A static instance of the font.
-        :rtype: TTFont
-        """
-        if self.is_static:
-            raise FontConversionError("Font is already a static font.")
-
-        try:
-            self.fvar.check_instance_axes(instance)
-            self.fvar.check_instance_coordinates(instance)
-        except Exception as e:
-            raise FontConversionError(str(e)) from e
-
-        return instantiateVariableFont(
-            self.ttfont,
-            axisLimits=instance.coordinates,
-            inplace=False,
-            optimize=True,
-            overlap=OverlapMode.REMOVE_AND_IGNORE_ERRORS,
-            updateFontNames=update_font_names,
-        )
-
     def scale_upm(self, target_upm: int) -> None:
         """
         Scale the font to the specified Units Per Em (UPM) value.
@@ -897,7 +866,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         direction of contours.
 
         This tool is an implementation of the ``removeOverlaps`` function in the ``fontTools``
-        library to add support for correcting contours windings and removing tiny paths.
+        library to add support for correcting contours winding and removing tiny paths.
 
         If one or more contours are modified, the glyf or CFF table will be rebuilt.
         If no contours are modified, the font will remain unchanged and the method will return an
