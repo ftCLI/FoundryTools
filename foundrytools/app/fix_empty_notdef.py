@@ -137,27 +137,27 @@ def run(font: Font) -> bool:
             logger.warning("The '.notdef' glyph is not empty")
             return False
 
-        width = otRound(font.head.units_per_em / 1000 * WIDTH_CONSTANT)
+        width = otRound(font.t_head.units_per_em / 1000 * WIDTH_CONSTANT)
         height = width * HEIGHT_CONSTANT
         thickness = otRound(width / THICKNESS_CONSTANT)
 
         if font.is_ps:
             cs_width = (
                 None
-                if width == font.cff.private_dict.defaultWidthX
-                else width - font.cff.private_dict.nominalWidthX
+                if width == font.t_cff_.private_dict.defaultWidthX
+                else width - font.t_cff_.private_dict.nominalWidthX
             )
             charstring = draw_notdef_cff(
                 font=font, width=width, height=height, thickness=thickness, cs_width=cs_width
             )
             charstring.compile()
-            font.cff.top_dict.CharStrings[NOTDEF].setBytecode(charstring.bytecode)
+            font.t_cff_.top_dict.CharStrings[NOTDEF].setBytecode(charstring.bytecode)
 
         if font.is_tt:
             glyph = draw_notdef_glyf(font=font, width=width, height=height, thickness=thickness)
-            font.glyf.table[NOTDEF] = glyph
+            font.t_glyf.table[NOTDEF] = glyph
 
-        font.hmtx.table[NOTDEF] = (width, 0)
+        font.t_hmtx.table[NOTDEF] = (width, 0)
 
         return True
 

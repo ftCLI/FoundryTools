@@ -26,7 +26,7 @@ def run(font: Font) -> list[tuple[str, str]]:
 
     try:
         old_glyph_order: list[str] = font.ttfont.getGlyphOrder()
-        reversed_cmap = font.cmap.table.buildReversed()
+        reversed_cmap = font.t_cmap.table.buildReversed()
         new_glyph_order: list[str] = []
         renamed_glyphs: list[tuple[str, str]] = []
 
@@ -57,7 +57,7 @@ def run(font: Font) -> list[tuple[str, str]]:
 
         rename_map = dict(zip(old_glyph_order, new_glyph_order))
         PostProcessor.rename_glyphs(otf=font.ttfont, rename_map=rename_map)
-        font.cmap.rebuild_character_map(remap_all=True)
+        font.t_cmap.rebuild_character_map(remap_all=True)
 
         return renamed_glyphs
 

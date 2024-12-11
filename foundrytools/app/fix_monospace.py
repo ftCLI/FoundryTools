@@ -24,7 +24,7 @@ def _get_glyph_metrics_stats(font: Font) -> dict[str, Union[bool, int]]:
     :return: A dictionary containing the metrics.
     :rtype: dict[str, Union[bool, int]]
     """
-    glyph_metrics = font.hmtx.table.metrics
+    glyph_metrics = font.t_hmtx.table.metrics
     # NOTE: `range(a, b)` includes `a` and does not include `b`.
     #       Here we don't include 0-31 as well as 127
     #       because these are control characters.
@@ -53,7 +53,7 @@ def _get_glyph_metrics_stats(font: Font) -> dict[str, Union[bool, int]]:
             if unicodedata.category(chr(value)).startswith(("L", "M", "N", "P", "S", "Zs")):
                 relevant_glyph_names.add(name)
         # Remove character glyphs that are mark glyphs.
-        gdef = font.gdef.table
+        gdef = font.t_gdef.table
         if gdef and gdef.table.GlyphClassDef:
             marks = {name for name, c in gdef.table.GlyphClassDef.classDefs.items() if c == 3}
             relevant_glyph_names.difference_update(marks)
@@ -93,15 +93,15 @@ def run(font: Font) -> bool:
         width_max = glyph_metrics["width_max"]
 
         if seems_monospaced:
-            font.post.fixed_pitch = True
-            font.os_2.table.panose.bFamilyType = 2
-            font.os_2.table.panose.bProportion = 9
-            font.hhea.advance_width_max = width_max
+            font.t_post.fixed_pitch = True
+            font.t_os_2.table.panose.bFamilyType = 2
+            font.t_os_2.table.panose.bProportion = 9
+            font.t_hhea.advance_width_max = width_max
 
-            modified = font.os_2.is_modified or font.post.is_modified or font.hhea.is_modified
+            modified = font.t_os_2.is_modified or font.t_post.is_modified or font.t_hhea.is_modified
 
-            if font.is_ps and not font.cff.top_dict.isFixedPitch:
-                font.cff.top_dict.isFixedPitch = True
+            if font.is_ps and not font.t_cff_.top_dict.isFixedPitch:
+                font.t_cff_.top_dict.isFixedPitch = True
                 modified = True
 
             return modified

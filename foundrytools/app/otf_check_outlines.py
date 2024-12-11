@@ -28,7 +28,7 @@ def run(font: Font, drop_hinting_data: bool = False) -> bool:
         with restore_flavor(font.ttfont):
             # Make a copy of the hinting data before checking the outlines, in case we need to
             # restore it later.
-            hinthing_data = font.cff.get_hinting_data() if not drop_hinting_data else None
+            hinthing_data = font.t_cff_.get_hinting_data() if not drop_hinting_data else None
 
             font.save(font.temp_file)
             checkoutlinesufo.run(args=[font.temp_file.as_posix(), "--error-correction-mode"])
@@ -37,7 +37,7 @@ def run(font: Font, drop_hinting_data: bool = False) -> bool:
 
             if hinthing_data and not drop_hinting_data:
                 font.reload()  # DO NOT REMOVE
-                font.cff.set_hinting_data(**hinthing_data)
+                font.t_cff_.set_hinting_data(**hinthing_data)
 
             return True
 
