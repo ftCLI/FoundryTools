@@ -134,13 +134,13 @@ class StyleFlags:
         regular: Optional[bool] = None,
     ) -> None:
         if bold is not None:
-            self.font.os_2.fs_selection.bold = bold
-            self.font.head.mac_style.bold = bold
+            self.font.t_os_2.fs_selection.bold = bold
+            self.font.t_head.mac_style.bold = bold
         if italic is not None:
-            self.font.os_2.fs_selection.italic = italic
-            self.font.head.mac_style.italic = italic
+            self.font.t_os_2.fs_selection.italic = italic
+            self.font.t_head.mac_style.italic = italic
         if regular is not None:
-            self.font.os_2.fs_selection.regular = regular
+            self.font.t_os_2.fs_selection.regular = regular
 
     @property
     def is_bold(self) -> bool:
@@ -156,7 +156,7 @@ class StyleFlags:
         :rtype: bool
         """
         try:
-            return self.font.os_2.fs_selection.bold and self.font.head.mac_style.bold
+            return self.font.t_os_2.fs_selection.bold and self.font.t_head.mac_style.bold
         except Exception as e:
             raise FontError("An error occurred while checking if the font is bold") from e
 
@@ -179,7 +179,7 @@ class StyleFlags:
         :rtype: bool
         """
         try:
-            return self.font.os_2.fs_selection.italic and self.font.head.mac_style.italic
+            return self.font.t_os_2.fs_selection.italic and self.font.t_head.mac_style.italic
         except Exception as e:
             raise FontError("An error occurred while checking if the font is italic") from e
 
@@ -197,7 +197,7 @@ class StyleFlags:
         :rtype: bool
         """
         try:
-            return self.font.os_2.fs_selection.oblique
+            return self.font.t_os_2.fs_selection.oblique
         except Exception as e:
             raise FontError("An error occurred while checking if the font is oblique") from e
 
@@ -205,7 +205,7 @@ class StyleFlags:
     def is_oblique(self, value: bool) -> None:
         """Set the oblique bit in the OS/2 table."""
         try:
-            self.font.os_2.fs_selection.oblique = value
+            self.font.t_os_2.fs_selection.oblique = value
         except Exception as e:
             raise FontError("An error occurred while setting the oblique bit") from e
 
@@ -218,7 +218,7 @@ class StyleFlags:
         :rtype: bool
         """
         try:
-            return self.font.os_2.fs_selection.regular
+            return self.font.t_os_2.fs_selection.regular
         except Exception as e:
             raise FontError("An error occurred while checking if the font is regular") from e
 
@@ -230,7 +230,7 @@ class StyleFlags:
                 self._set_font_style(regular=True, bold=False, italic=False)
             else:
                 # Prevent setting the regular bit if the font is bold or italic
-                self.font.os_2.fs_selection.regular = not (self.is_bold or self.is_italic)
+                self.font.t_os_2.fs_selection.regular = not (self.is_bold or self.is_italic)
 
 
 class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
@@ -449,7 +449,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._temp_file
 
     @property
-    def cff(self) -> CFFTable:
+    def t_cff_(self) -> CFFTable:
         """
         The ``CFF `` table handler.
 
@@ -459,7 +459,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_CFF)
 
     @property
-    def cmap(self) -> CmapTable:
+    def t_cmap(self) -> CmapTable:
         """
         The ``cmap`` table handler.
 
@@ -469,7 +469,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_CMAP)
 
     @property
-    def fvar(self) -> FvarTable:
+    def t_fvar(self) -> FvarTable:
         """
         The ``fvar`` table handler.
 
@@ -479,7 +479,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_FVAR)
 
     @property
-    def gdef(self) -> GdefTable:
+    def t_gdef(self) -> GdefTable:
         """
         The ``GDEF`` table handler.
 
@@ -489,7 +489,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_GDEF)
 
     @property
-    def glyf(self) -> GlyfTable:
+    def t_glyf(self) -> GlyfTable:
         """
         The ``glyf`` table handler.
 
@@ -499,7 +499,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_GLYF)
 
     @property
-    def gsub(self) -> GsubTable:
+    def t_gsub(self) -> GsubTable:
         """
         The ``GSUB`` table handler.
 
@@ -509,7 +509,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_GSUB)
 
     @property
-    def head(self) -> HeadTable:
+    def t_head(self) -> HeadTable:
         """
         The ``head`` table handler.
 
@@ -519,7 +519,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_HEAD)
 
     @property
-    def hhea(self) -> HheaTable:
+    def t_hhea(self) -> HheaTable:
         """
         The ``hhea`` table handler.
 
@@ -529,7 +529,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_HHEA)
 
     @property
-    def hmtx(self) -> HmtxTable:
+    def t_hmtx(self) -> HmtxTable:
         """
         The ``hmtx`` table handler.
 
@@ -539,7 +539,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_HMTX)
 
     @property
-    def kern(self) -> KernTable:
+    def t_kern(self) -> KernTable:
         """
         The ``kern`` table handler.
 
@@ -549,7 +549,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_KERN)
 
     @property
-    def name(self) -> NameTable:
+    def t_name(self) -> NameTable:
         """
         The ``name`` table handler.
 
@@ -559,7 +559,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_NAME)
 
     @property
-    def os_2(self) -> OS2Table:
+    def t_os_2(self) -> OS2Table:
         """
         The ``OS/2`` table handler.
 
@@ -569,7 +569,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._get_table(const.T_OS_2)
 
     @property
-    def post(self) -> PostTable:
+    def t_post(self) -> PostTable:
         """
         The ``post`` table handler.
 
@@ -821,14 +821,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             raise FontConversionError(
                 "Conversion to PostScript is not supported for variable fonts."
             )
-        self.glyf.decompose_all()
+        self.t_glyf.decompose_all()
 
         charstrings = quadratics_to_cubics(
             font=self.ttfont, tolerance=tolerance, correct_contours=correct_contours
         )
         build_otf(font=self.ttfont, charstrings_dict=charstrings)
 
-        self.os_2.recalc_avg_char_width()
+        self.t_os_2.recalc_avg_char_width()
 
     def to_sfnt(self) -> None:
         """Convert a font to SFNT."""
@@ -849,7 +849,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
                 f"units_per_em must be in the range {const.MAX_UPM} to {const.MAX_UPM}."
             )
 
-        if self.head.units_per_em == target_upm:
+        if self.t_head.units_per_em == target_upm:
             return
 
         scale_upem(self.ttfont, new_upem=target_upm)
@@ -895,14 +895,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             raise NotImplementedError("Contour correction is not supported for variable fonts.")
 
         if self.is_ps:
-            return self.cff.correct_contours(
+            return self.t_cff_.correct_contours(
                 remove_hinting=remove_hinting,
                 ignore_errors=ignore_errors,
                 remove_unused_subroutines=remove_unused_subroutines,
                 min_area=min_area,
             )
         if self.is_tt:
-            return self.glyf.correct_contours(
+            return self.t_glyf.correct_contours(
                 remove_hinting=remove_hinting,
                 ignore_errors=ignore_errors,
                 min_area=min_area,

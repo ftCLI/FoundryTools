@@ -84,7 +84,7 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
 
         >>> from foundrytools import Font
         >>> font = Font("path/to/font.ttf")
-        >>> font.gsub.rename_feature("smcp", "ss20")
+        >>> font.t_gsub.rename_feature("smcp", "ss20")
         >>> font.save("path/to/font.ttf")
 
         :param feature_tag: The feature tag to rename.

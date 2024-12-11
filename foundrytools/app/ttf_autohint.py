@@ -30,7 +30,7 @@ def run(font: Font) -> bool:
             font.save(buffer, reorder_tables=None)
             data = ttfautohint(in_buffer=buffer.getvalue(), no_info=True)
             hinted_font = TTFont(BytesIO(data), recalcTimestamp=False)
-            hinted_font[T_HEAD].modified = font.head.modified_timestamp
+            hinted_font[T_HEAD].modified = font.t_head.modified_timestamp
             font.ttfont = hinted_font
             font.ttfont.flavor = flavor
             return True

@@ -38,14 +38,14 @@ def run(
     try:
         is_italic = font.flags.is_italic
         is_oblique = font.flags.is_oblique
-        post_italic_angle = font.post.italic_angle
-        hhea_run_rise = (font.hhea.caret_slope_run, font.hhea.caret_slope_rise)
-        run_rise_angle = font.hhea.run_rise_angle
+        post_italic_angle = font.t_post.italic_angle
+        hhea_run_rise = (font.t_hhea.caret_slope_run, font.t_hhea.caret_slope_rise)
+        run_rise_angle = font.t_hhea.run_rise_angle
 
         # Calculate the italic angle and the caret slope run and rise values.
         calculated_slant = font.calc_italic_angle(min_slant=min_slant)
-        calculated_run = font.hhea.calc_caret_slope_run(italic_angle=calculated_slant)
-        calculated_rise = font.hhea.calc_caret_slope_rise(italic_angle=calculated_slant)
+        calculated_run = font.t_hhea.calc_caret_slope_run(italic_angle=calculated_slant)
+        calculated_rise = font.t_hhea.calc_caret_slope_rise(italic_angle=calculated_slant)
 
         # Check if the ``is_italic`` attribute is correctly set.
         should_be_italic = italic and calculated_slant != 0.0
@@ -60,7 +60,7 @@ def run(
 
         # Check if the ``is_oblique`` attribute is correctly set. The oblique bit is only
         # defined in ``OS/2`` table version 4 and later.
-        should_be_oblique = oblique and calculated_slant != 0.0 and font.os_2.version >= 4
+        should_be_oblique = oblique and calculated_slant != 0.0 and font.t_os_2.version >= 4
         oblique_bit_check = is_oblique == should_be_oblique
         if not oblique_bit_check:
             font.flags.is_oblique = should_be_oblique
@@ -73,7 +73,7 @@ def run(
         # Check if the italic is correctly set in the ``post`` table.
         italic_angle_check = otRound(post_italic_angle) == otRound(calculated_slant)
         if not italic_angle_check:
-            font.post.italic_angle = calculated_slant
+            font.t_post.italic_angle = calculated_slant
         result["italic_angle"] = {
             "old": post_italic_angle,
             "new": calculated_slant,
@@ -83,8 +83,8 @@ def run(
         # Check if the run/rise values are correctly set in the ``hhea`` table.
         run_rise_check = otRound(run_rise_angle) == otRound(calculated_slant)
         if not run_rise_check:
-            font.hhea.caret_slope_run = calculated_run
-            font.hhea.caret_slope_rise = calculated_rise
+            font.t_hhea.caret_slope_run = calculated_run
+            font.t_hhea.caret_slope_rise = calculated_rise
         result["run_rise"] = {
             "old": hhea_run_rise,
             "new": (calculated_run, calculated_rise),
@@ -92,10 +92,10 @@ def run(
         }
 
         if font.is_ps:
-            cff_italic_angle = font.cff.top_dict.ItalicAngle
+            cff_italic_angle = font.t_cff_.top_dict.ItalicAngle
             cff_italic_angle_check = otRound(cff_italic_angle) == otRound(calculated_slant)
             if not cff_italic_angle_check:
-                font.cff.top_dict.ItalicAngle = otRound(calculated_slant)
+                font.t_cff_.top_dict.ItalicAngle = otRound(calculated_slant)
             result["cff_italic_angle"] = {
                 "old": cff_italic_angle,
                 "new": calculated_slant,

@@ -32,7 +32,7 @@ def check_update_name_table(var_font: Font) -> None:
         or if an error occurs during the creation of the static instance.
     """
     try:
-        create_static_instance(var_font, var_font.fvar.table.instances[0], True)
+        create_static_instance(var_font, var_font.t_fvar.table.instances[0], True)
     except Exception as e:
         raise UpdateNameTableError(str(e)) from e
 
@@ -47,7 +47,7 @@ def check_instance(var_font: Font, instance: NamedInstance) -> None:
     :type instance: NamedInstance
     :raises BadInstanceError: If the instance is invalid.
     """
-    axes: list[Axis] = var_font.fvar.table.axes
+    axes: list[Axis] = var_font.t_fvar.table.axes
 
     for axis_tag, value in instance.coordinates.items():
         axis_obj = next((a for a in axes if a.axisTag == axis_tag), None)
@@ -72,7 +72,7 @@ def get_existing_instance(var_font: Font, instance: NamedInstance) -> tuple[bool
     :return: A tuple with a boolean indicating if the instance is named and the instance object.
     :rtype: tuple[bool, NamedInstance]
     """
-    for existing_instance in var_font.fvar.table.instances:
+    for existing_instance in var_font.t_fvar.table.instances:
         if existing_instance.coordinates == instance.coordinates:
             return True, existing_instance
 
@@ -125,29 +125,29 @@ def cleanup_static_font(static_font: Font) -> None:
         if table_tag in static_font.ttfont:
             del static_font.ttfont[table_tag]
 
-    static_font.name.build_unique_identifier()
+    static_font.t_name.build_unique_identifier()
 
     # Remove unnecessary NameRecords and Macintosh-specific NameRecords, and remap the name IDs in
     # the GSUB table.
-    static_font.name.remove_names(name_ids=[25])
-    static_font.name.remove_mac_names()
+    static_font.t_name.remove_names(name_ids=[25])
+    static_font.t_name.remove_mac_names()
     _remove_unused_names(static_font)  # This is faster than removeUnusedNames.
-    name_ids_map = static_font.name.remap_name_ids()
+    name_ids_map = static_font.t_name.remap_name_ids()
     if T_GSUB in static_font.ttfont:
-        static_font.gsub.remap_ui_name_ids(name_ids_map)
+        static_font.t_gsub.remap_ui_name_ids(name_ids_map)
 
 
 def _remove_unused_names(static_font: Font) -> None:
     """
     The method ``removeUnusedNames`` is very slow. This should be enough for most cases.
     """
-    ui_name_ids = static_font.gsub.get_ui_name_ids()
+    ui_name_ids = static_font.t_gsub.get_ui_name_ids()
     name_ids_to_remove = [
         name.nameID
-        for name in static_font.name.table.names
+        for name in static_font.t_name.table.names
         if name.nameID >= 256 and name.nameID not in ui_name_ids
     ]
-    static_font.name.remove_names(name_ids=name_ids_to_remove)
+    static_font.t_name.remove_names(name_ids=name_ids_to_remove)
 
 
 def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance) -> None:
@@ -162,16 +162,16 @@ def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance
     :param instance: The named instance.
     :type instance: NamedInstance
     """
-    family_name = var_font.name.get_best_family_name()
+    family_name = var_font.t_name.get_best_family_name()
     subfamily_name = "_".join([f"{k}_{v}" for k, v in instance.coordinates.items()])
     postscript_name = f"{family_name}-{subfamily_name}".replace(" ", "").replace(".", "_")
 
     # Build the name table of the static font.
-    static_font.name.set_name(NameIds.FAMILY_NAME, f"{family_name} {subfamily_name}")
-    static_font.name.set_name(NameIds.POSTSCRIPT_NAME, postscript_name)
-    static_font.name.set_name(NameIds.TYPO_FAMILY_NAME, family_name)
-    static_font.name.set_name(NameIds.TYPO_SUBFAMILY_NAME, subfamily_name)
-    static_font.name.build_full_font_name()
+    static_font.t_name.set_name(NameIds.FAMILY_NAME, f"{family_name} {subfamily_name}")
+    static_font.t_name.set_name(NameIds.POSTSCRIPT_NAME, postscript_name)
+    static_font.t_name.set_name(NameIds.TYPO_FAMILY_NAME, family_name)
+    static_font.t_name.set_name(NameIds.TYPO_SUBFAMILY_NAME, subfamily_name)
+    static_font.t_name.build_full_font_name()
 
 
 def run(
@@ -220,7 +220,7 @@ def run(
 
         cleanup_static_font(static_font)
 
-        file_name = static_font.name.get_debug_name(NameIds.POSTSCRIPT_NAME)
+        file_name = static_font.t_name.get_debug_name(NameIds.POSTSCRIPT_NAME)
         file_name += static_font.get_file_ext()
         return static_font, file_name
 

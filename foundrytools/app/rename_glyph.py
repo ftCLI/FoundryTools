@@ -38,7 +38,7 @@ def run(font: Font, old_name: str, new_name: str) -> bool:
 
         rename_map = dict(zip(old_glyph_order, new_glyph_order))
         PostProcessor.rename_glyphs(otf=font.ttfont, rename_map=rename_map)
-        font.cmap.rebuild_character_map(remap_all=True)
+        font.t_cmap.rebuild_character_map(remap_all=True)
 
         return new_glyph_order != old_glyph_order
 

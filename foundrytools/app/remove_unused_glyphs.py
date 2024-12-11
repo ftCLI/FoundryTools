@@ -19,7 +19,7 @@ def run(font: Font) -> set[str]:
         options = Options(**SUBSETTER_DEFAULTS)
         options.recalc_timestamp = font.ttfont.recalcTimestamp
         old_glyph_order = font.ttfont.getGlyphOrder()
-        unicodes = font.cmap.get_all_codepoints()
+        unicodes = font.t_cmap.get_all_codepoints()
         subsetter = Subsetter(options=options)
         subsetter.populate(unicodes=unicodes)
         subsetter.subset(font.ttfont)

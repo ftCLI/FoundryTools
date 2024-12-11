@@ -21,7 +21,7 @@ def run(font: Font, drop_hinting_data: bool = False) -> bool:
         raise NotImplementedError("Not a PostScript font.")
 
     try:
-        font.cff.remove_hinting(drop_hinting_data=drop_hinting_data)
+        font.t_cff_.remove_hinting(drop_hinting_data=drop_hinting_data)
         return True
     except Exception as e:
         raise OTFDehintError(e) from e
