@@ -21,6 +21,9 @@ def check_update_name_table(var_font: Font) -> None:
     """
     Check if the name table can be updated when creating a static instance.
 
+    This method should be called once by third-party applications before starting the conversion
+    process. Calling it at every iteration is not necessary and slows down the process.
+
     :param var_font: The variable font to check and update.
     :type var_font: Font
     :raises UpdateNameTableError: If the 'STAT' table, Axis Values, or named instances are missing,
