@@ -61,15 +61,6 @@ class NameTable(DefaultTbl):
         """
         return self._copy.compile(self.ttfont) != self.table.compile(self.ttfont)
 
-    def get_manufacturer_name(self) -> str:
-        """
-        Returns the manufacturer name from the ``name`` table.
-
-        :return: The manufacturer name.
-        :rtype: str
-        """
-        return self.table.getDebugName(NameIds.MANUFACTURER_NAME)
-
     def set_name(
         self,
         name_id: int,
