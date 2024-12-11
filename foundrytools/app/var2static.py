@@ -103,7 +103,8 @@ def create_static_instance(
 
 def cleanup_static_font(static_font: Font) -> None:
     """
-    Clean up the static font by removing tables left by ``InstantiateVariableFont``.
+    Clean up the static font by removing tables left by ``InstantiateVariableFont`` and remapping
+    the name IDs.
 
     :param static_font: The static font to clean up.
     :type static_font: Font
@@ -119,9 +120,22 @@ def cleanup_static_font(static_font: Font) -> None:
     # the GSUB table.
     static_font.name.remove_names(name_ids=[25])
     static_font.name.remove_mac_names()
-    static_font.name.remove_unused_names()
+    _remove_unused_names(static_font)  # This is faster than removeUnusedNames.
     name_ids_map = static_font.name.remap_name_ids()
     static_font.gsub.remap_ui_name_ids(name_ids_map)
+
+
+def _remove_unused_names(static_font: Font) -> None:
+    """
+    The method ``removeUnusedNames`` is very slow. This should be enough for most cases.
+    """
+    ui_name_ids = static_font.gsub.get_ui_name_ids()
+    name_ids_to_remove = [
+        name.nameID
+        for name in static_font.name.table.names
+        if name.nameID >= 256 and name.nameID not in ui_name_ids
+    ]
+    static_font.name.remove_names(name_ids=name_ids_to_remove)
 
 
 def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance) -> None:
