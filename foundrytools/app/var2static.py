@@ -1,8 +1,10 @@
+from typing import cast
+
 from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
 from fontTools.varLib.instancer import OverlapMode, instantiateVariableFont
 
 from foundrytools import Font
-from foundrytools.constants import NameIds
+from foundrytools.constants import T_GSUB, NameIds
 
 
 class Var2StaticError(Exception):
@@ -78,7 +80,7 @@ def get_existing_instance(var_font: Font, instance: NamedInstance) -> tuple[bool
 
 
 def create_static_instance(
-    var_font: Font, instance: NamedInstance, update_font_names: bool
+    var_font: Font, instance: NamedInstance, update_font_names: bool, overlap: int = 1
 ) -> Font:
     """
     Create a static instance from a variable font.
@@ -89,16 +91,22 @@ def create_static_instance(
     :type instance: NamedInstance
     :param update_font_names: If ``True``, update the font names in the static instance.
     :type update_font_names: bool
+    :param overlap: The overlap mode. Defaults to 1 (KEEP_AND_SET_FLAGS).
+    :type overlap: OverlapMode
     :return: A static instance of the font.
-    :rtype: TTFont
+    :rtype: Font
     """
+
+    # We need to cast the overlap mode to the correct type.
+    overlap = cast(OverlapMode, overlap)
+
     return Font(
         instantiateVariableFont(
             var_font.ttfont,
             axisLimits=instance.coordinates,
             inplace=False,
             optimize=True,
-            overlap=OverlapMode.REMOVE_AND_IGNORE_ERRORS,
+            overlap=overlap,
             updateFontNames=update_font_names,
         )
     )
@@ -125,7 +133,8 @@ def cleanup_static_font(static_font: Font) -> None:
     static_font.name.remove_mac_names()
     _remove_unused_names(static_font)  # This is faster than removeUnusedNames.
     name_ids_map = static_font.name.remap_name_ids()
-    static_font.gsub.remap_ui_name_ids(name_ids_map)
+    if T_GSUB in static_font.ttfont:
+        static_font.gsub.remap_ui_name_ids(name_ids_map)
 
 
 def _remove_unused_names(static_font: Font) -> None:
@@ -166,7 +175,10 @@ def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance
 
 
 def run(
-    var_font: Font, instance: NamedInstance, update_font_names: bool = True
+    var_font: Font,
+    instance: NamedInstance,
+    update_font_names: bool = True,
+    overlap: int = 1,
 ) -> tuple[Font, str]:
     """
     Convert a variable font to a static font.
@@ -177,6 +189,8 @@ def run(
     :type instance: NamedInstance
     :param update_font_names: Whether to update the font names in the name table. Defaults to True.
     :type update_font_names: bool
+    :param overlap: The overlap mode. Defaults to 1 (KEEP_AND_SET_FLAGS).
+    :type overlap: int
     :return: The static font and the file stem.
     :rtype: Optional[tuple[Font, str]]
     """
@@ -195,9 +209,9 @@ def run(
         is_existing_instance, instance = get_existing_instance(var_font, instance)
 
         if is_existing_instance:
-            static_font = create_static_instance(var_font, instance, update_font_names)
+            static_font = create_static_instance(var_font, instance, update_font_names, overlap)
         else:
-            static_font = create_static_instance(var_font, instance, False)
+            static_font = create_static_instance(var_font, instance, False, overlap)
 
         # We update the name table with the instance coordinates if the instance is non-existing or
         # if the name table cannot be updated.
@@ -206,7 +220,8 @@ def run(
 
         cleanup_static_font(static_font)
 
-        file_name = static_font.name.get_debug_name(6) + static_font.get_file_ext()
+        file_name = static_font.name.get_debug_name(NameIds.POSTSCRIPT_NAME)
+        file_name += static_font.get_file_ext()
         return static_font, file_name
 
     except Exception as e:
