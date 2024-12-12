@@ -4,6 +4,7 @@ from typing import Optional
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.textTools import num2binary
 from fontTools.otlLib.maxContextCalc import maxCtxFont
+from fontTools.pens.boundsPen import BoundsPen
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables.O_S_2f_2 import table_O_S_2f_2
 
@@ -22,7 +23,6 @@ from foundrytools.lib.unicode import (
     count_block_codepoints,
 )
 from foundrytools.utils.bits_tools import is_nth_bit_set
-from foundrytools.utils.misc import get_glyph_bounds
 
 ITALIC_BIT = 0
 UNDERSCORE_BIT = 1
@@ -689,52 +689,6 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         """
         self.table.setCodePageRanges(bits)
 
-    def recalc_x_height(self, glyph_name: str = "x") -> int:
-        """
-        Recalculates and sets the ``OS/2.sxHeight`` value.
-
-        ``sxHeight`` is only defined in ``OS/2`` table versions 2 and up.
-
-        :param glyph_name: The glyph name to use for the x-height calculation. Default is "x".
-        :type glyph_name: str
-        :return: The calculated x-height value.
-        :rtype: int
-        :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
-        """
-        if not self.version >= 2:
-            raise InvalidOS2VersionError(
-                "sxHeight is only defined in OS/2 table versions 2 and up."
-            )
-        try:
-            x_height = otRound(get_glyph_bounds(font=self.ttfont, glyph_name=glyph_name)["yMax"])
-        except KeyError:
-            x_height = 0
-        self.x_height = x_height
-        return x_height
-
-    def recalc_cap_height(self, glyph_name: str = "H") -> int:
-        """
-        Recalculates and sets the ``OS/2.sCapHeight`` value.
-
-        ``sCapHeight`` is only defined in ``OS/2`` table versions 2 and up.
-
-        :param glyph_name: The glyph name to use for the cap height calculation. Default is "H".
-        :type glyph_name: str
-        :return: The calculated cap height value.
-        :rtype: int
-        :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
-        """
-        if not self.version >= 2:
-            raise InvalidOS2VersionError(
-                "sCapHeight is only defined in OS/2 table versions 2 and up."
-            )
-        try:
-            cap_height = otRound(get_glyph_bounds(font=self.ttfont, glyph_name=glyph_name)["yMax"])
-        except KeyError:
-            cap_height = 0
-        self.cap_height = cap_height
-        return cap_height
-
     def recalc_avg_char_width(self) -> int:
         """
         Recalculates the ``OS/2.xAvgCharWidth`` value.
@@ -812,6 +766,15 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
                 f"The target version must be greater than the current version ({current_version})."
             )
 
+        # Used to recalc xHeight and capHeight
+        def _get_glyph_height(glyph_name: str) -> int:
+            glyph_set = self.ttfont.getGlyphSet()
+            if glyph_name not in glyph_set:
+                return 0
+            bounds_pen = BoundsPen(glyphSet=glyph_set)
+            glyph_set[glyph_name].draw(bounds_pen)
+            return otRound(bounds_pen.bounds[3])
+
         self.version = target_version
 
         if current_version < 1:
@@ -821,8 +784,8 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
             return
 
         if current_version < 2:
-            self.recalc_x_height()
-            self.recalc_cap_height()
+            self.x_height = _get_glyph_height("x")
+            self.cap_height = _get_glyph_height("H")
             self.table.usDefaultChar = 0
             self.table.usBreakChar = 32
             self.recalc_max_context()
