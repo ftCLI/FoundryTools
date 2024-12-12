@@ -1,6 +1,7 @@
 from cffsubr import subroutinize
 
 from foundrytools import Font
+from foundrytools.utils.misc import restore_flavor
 
 
 class SubroutinizeError(Exception):
@@ -20,8 +21,9 @@ def run(font: Font) -> bool:
     if not font.is_ps:
         raise NotImplementedError("Not a PostScript font.")
 
-    try:
-        subroutinize(font.ttfont)
-        return True
-    except Exception as e:
-        raise SubroutinizeError(e) from e
+    with restore_flavor(font.ttfont):
+        try:
+            subroutinize(font.ttfont)
+            return True
+        except Exception as e:
+            raise SubroutinizeError(e) from e
