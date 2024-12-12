@@ -17,10 +17,16 @@ HINTING_ATTRS = (
     "OtherBlues",
     "FamilyBlues",
     "FamilyOtherBlues",
-    "StdHW",
-    "StdVW",
+    "BlueScale",
+    "BlueShift",
+    "BlueFuzz",
     "StemSnapH",
     "StemSnapV",
+    "StdHW",
+    "StdVW",
+    "ForceBold",
+    "LanguageGroup",
+    "ExpansionFactor",
 )
 
 

@@ -1,6 +1,7 @@
 from cffsubr import desubroutinize
 
 from foundrytools import Font
+from foundrytools.utils.misc import restore_flavor
 
 
 class DesubroutinizeError(Exception):
@@ -20,8 +21,9 @@ def run(font: Font) -> bool:
     if not font.is_ps:
         raise NotImplementedError("Not a PostScript font.")
 
-    try:
-        desubroutinize(font.ttfont)
-        return True
-    except Exception as e:
-        raise DesubroutinizeError(e) from e
+    with restore_flavor(font.ttfont):
+        try:
+            desubroutinize(font.ttfont)
+            return True
+        except Exception as e:
+            raise DesubroutinizeError(e) from e
