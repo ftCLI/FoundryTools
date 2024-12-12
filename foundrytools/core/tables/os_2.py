@@ -759,11 +759,10 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :rtype: set[tuple[int, str, str]]
         :raises: KeyError: If the font does not have a cmap table.
         """
-        try:
-            cmap_table = self.ttfont[T_CMAP]
-        except KeyError as e:
-            raise KeyError("Font does not have a cmap table") from e
+        if T_CMAP not in self.ttfont:
+            raise KeyError("Font does not have a cmap table")
 
+        cmap_table = self.ttfont[T_CMAP]
         unicodes = set()
         has_cmap_32 = False
 
