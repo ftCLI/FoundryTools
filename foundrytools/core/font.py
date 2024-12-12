@@ -7,6 +7,7 @@ from types import TracebackType
 from typing import Any, Optional, Union
 
 from fontTools.misc.cliTools import makeOutputFileName
+from fontTools.pens.boundsPen import BoundsPen
 from fontTools.pens.statisticsPen import StatisticsPen
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
@@ -932,3 +933,29 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
                     return italic_angle
                 return 0.0
         raise FontError("The font does not contain the glyph 'H' or 'uni0048'.")
+
+    def get_glyph_bounds(self, glyph_name: str) -> dict[str, float]:
+        """
+        Get the bounding box of a glyph.
+
+        :param glyph_name: The glyph name.
+        :type glyph_name: str
+        :return: The bounding box of the glyph.
+        :rtype: dict[str, float]
+        """
+        glyph_set = self.ttfont.getGlyphSet()
+
+        if glyph_name not in glyph_set:
+            raise ValueError(f"Glyph '{glyph_name}' does not exist in the font.")
+
+        bounds_pen = BoundsPen(glyphSet=glyph_set)
+
+        glyph_set[glyph_name].draw(bounds_pen)
+        bounds = {
+            "xMin": bounds_pen.bounds[0],
+            "yMin": bounds_pen.bounds[1],
+            "xMax": bounds_pen.bounds[2],
+            "yMax": bounds_pen.bounds[3],
+        }
+
+        return bounds
