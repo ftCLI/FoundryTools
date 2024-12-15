@@ -5,7 +5,6 @@ from afdko.otfautohint.autohint import FontInstance, fontWrapper, openFont
 from afdko.otfautohint.hinter import glyphHinter
 from afdko.otfautohint.report import Report
 
-
 LATIN_UPPERCASE = [chr(i) for i in range(65, 91)]
 LATIN_LOWERCASE = [chr(i) for i in range(97, 123)]
 
