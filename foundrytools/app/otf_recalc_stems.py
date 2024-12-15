@@ -5,6 +5,7 @@ from afdko.otfautohint.autohint import FontInstance, fontWrapper, openFont
 from afdko.otfautohint.hinter import glyphHinter
 from afdko.otfautohint.report import Report
 
+
 LATIN_UPPERCASE = [chr(i) for i in range(65, 91)]
 LATIN_LOWERCASE = [chr(i) for i in range(97, 123)]
 
@@ -55,9 +56,7 @@ def get_report(
     return h_stems, v_stems
 
 
-def run(
-    file_path: Path,
-) -> tuple[int, int, list[int], list[int]]:
+def run(file_path: Path) -> tuple[int, int, list[int], list[int]]:
     """
     Recalculates the StdHW, StdVW, StemSnapH, and StemSnapV values for a font file.
 
