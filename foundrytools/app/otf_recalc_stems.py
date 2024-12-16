@@ -1,4 +1,50 @@
+__doc__ = """
+Recalculates the StdHW, StdVW, StemSnapH, and StemSnapV values for a font file.
+
+This module provides functions to analyze and recalculate the standard horizontal and vertical stem
+widths (StdHW and StdVW) and the horizontal and vertical stem snap arrays (StemSnapH and StemSnapV)
+for a given font file. The recalculation process involves the following steps:
+
+1. **Grouping Widths with Neighbors**:
+    - The `_group_widths_with_neighbors` function groups report entries based on their width and
+    proximity to neighboring widths. It takes a report containing tuples of a unique identifier,
+    a width, and a list of associated strings. Entries are grouped together if their widths are
+    within a specified maximum distance from each other.
+
+2. **Extracting Representative Stem Values**:
+    - The `_get_first_n_stems` function extracts a specified number of representative stem values
+    from the grouped stems. It ensures that the selected values maintain a minimum difference of
+    five units to provide optimal results, as per technical recommendations.
+
+3. **Sorting Groups**:
+    - The `_sort_groups_by_count_sum` and `_sort_groups_by_max_count` functions sort the groups of
+    stems based on the sum of counts and the maximum count within each group, respectively.
+
+4. **Generating Reports**:
+    - The `_get_report` function generates a report of horizontal and vertical stems for the given
+    font file. It uses the `afdko.otfautohint` library to parse the font file and extract stem
+    information.
+
+5. **Running the Recalculation**:
+    - The `run` function orchestrates the entire recalculation process. It takes the path to the
+    font file and various parameters, generates the stem reports, groups the widths, extracts the
+    representative stem values, and returns the new StdHW, StdVW, StemSnapH, and StemSnapV values.
+
+Parameters:
+    - file_path (Path): The path to the font file.
+    - report_all_stems (bool): Whether to include stems formed by curved line segments.
+        Defaults to False.
+    - max_distance (int): The maximum distance between widths to consider as part of the same group.
+        Defaults to 2.
+    - max_h_stems (int): The number of horizontal stem values to extract. Defaults to 2.
+    - max_v_stems (int): The number of vertical stem values to extract. Defaults to 2.
+
+Returns:
+    - tuple: A tuple containing the new StdHW, StdVW, StemSnapH, and StemSnapV values.
+"""
+
 from pathlib import Path
+from typing import Optional
 
 from afdko.otfautohint.__main__ import ReportOptions, _validate_path, get_stemhist_options
 from afdko.otfautohint.autohint import FontInstance, fontWrapper, openFont
@@ -11,22 +57,94 @@ LATIN_LOWERCASE = [chr(i) for i in range(97, 123)]
 CURVED_UC = ["C", "G", "O", "Q", "S"]
 CURVED_LC = ["a", "c", "e", "g", "o", "s"]
 
+STRAIGHT_UC = [c for c in LATIN_UPPERCASE if c not in CURVED_UC]
+STRAIGHT_LC = [c for c in LATIN_LOWERCASE if c not in CURVED_LC]
 
-def get_report(
-    file_path: Path, glyph_list: list[str], report_all_stems: bool = False
+
+def _group_widths_with_neighbors(
+    report: list[tuple[int, int, list[str]]], max_distance: int = 2
+) -> list[list[tuple[int, int]]]:
+    """
+    Groups report entries based on their width and proximity to neighboring widths.
+
+    This function takes a report containing tuples of a unique identifier, a width,
+    and a list of associated strings. It groups entries together based on their widths
+    and their proximity to neighboring widths within a specified maximum distance.
+    Neighboring widths in the range `[width - max_distance, width + max_distance]`
+    are identified, and groups are sorted by an identifier in descending order.
+
+    Parameters:
+        report: list of tuples, where each tuple contains:
+            - A unique identifier (int)
+            - A width value (int)
+            - Associated strings (list of str)
+        max_distance: (int, optional) Maximum proximity range to consider neighbors.
+            Defaults to 2.
+
+    Returns:
+        list of lists: Nested list where each sub-list contains tuples representing
+        grouped width-proximity neighbors. Each tuple contains:
+            - A unique identifier (int)
+            - A width value (int)
+    """
+    groups = []  # This will store the resulting groups
+
+    # Create a mapping of widths to their respective entries
+    width_map = {entry[1]: (entry[0], entry[1]) for entry in report}
+
+    # Iterate over each entry in the report
+    for _, width, _ in report:
+        group = []
+        # Find all widths within the range [width - max_distance, width + max_distance]
+        for neighbor_width in range(width - max_distance, width + max_distance + 1):
+            if neighbor_width in width_map:
+                group.append(width_map[neighbor_width])
+        # Sort the group by width
+        group.sort(key=lambda x: x[0], reverse=True)
+        groups.append(group)  # Append the built group to the result
+
+    return groups
+
+
+def _get_first_n_stems(groups: list[list[tuple[int, int]]], number_of_stems: int) -> list[int]:
+    """
+    Extracts a specified number of representative stem values from groups of stems,
+    ensuring that selected values maintain a minimum difference of five units to
+    provide optimal results as per technical recommendations.
+
+    :param groups: A list of grouped stems, where each group contains a list of tuples
+        comprising stem value and count.
+    :type groups: list
+    :param number_of_stems: The number of stem values to extract from the groups.
+    :type number_of_stems: int
+    :return: A list of representative stem values.
+    :rtype: list[int]
+    """
+    # https://adobe-type-tools.github.io/font-tech-notes/pdfs/5049.StemSnap.pdf
+    # It is important that only the mean value of groups of stems be entered in the array. Entering
+    # values that are too close together, such as [ 121, 122, ... 172, 174...] might produce
+    # undesirable results. Hence, it is recommended that values be a minimum of five units apart.
+
+    stem_snap: list[int] = []
+    for group in _sort_groups_by_max_count(groups):
+        max_value = max(group, key=lambda x: x[0])[1]
+        if any(abs(max_value - used) < 5 for used in stem_snap):
+            continue
+        stem_snap.append(max_value)
+    return sorted(stem_snap[:number_of_stems])
+
+
+def _sort_groups_by_count_sum(groups: list[list[tuple[int, int]]]) -> list[list[tuple[int, int]]]:
+    return sorted(groups, key=lambda x: sum(e[0] for e in x), reverse=True)
+
+
+def _sort_groups_by_max_count(groups: list[list[tuple[int, int]]]) -> list[list[tuple[int, int]]]:
+    return sorted(groups, key=lambda x: max(e[0] for e in x), reverse=True)
+
+
+def _get_report(
+    file_path: Path, glyph_list: Optional[list[str]], report_all_stems: bool = False
 ) -> tuple[list[tuple[int, int, list[str]]], list[tuple[int, int, list[str]]]]:
-    """
-    Retrieves stem data from a font file for a given list of glyphs.
-
-    :param file_path: The path to the font file.
-    :type file_path: Path
-    :param glyph_list: A list of glyphs to use for stem data.
-    :type glyph_list: list
-    :param report_all_stems: Include stems formed by curved line segments; by default, includes only
-        stems formed by straight line segments.
-    :return: A tuple containing the horizontal and vertical stem data.
-    :rtype: tuple[list[tuple[int, int, list[str]]], list[tuple[int, int, list[str]]]]
-    """
     file_path = _validate_path(file_path)
     _, parsed_args = get_stemhist_options(args=[file_path])
     options = ReportOptions(parsed_args)
@@ -55,42 +173,38 @@ def get_report(
     return h_stems, v_stems
 
 
-def run(file_path: Path) -> tuple[int, int, list[int], list[int]]:
+def run(
+    file_path: Path,
+    report_all_stems: bool = False,
+    max_distance: int = 1,
+    max_h_stems: int = 2,
+    max_v_stems: int = 2,
+) -> tuple[int, int, Optional[list[int]], Optional[list[int]]]:
     """
     Recalculates the StdHW, StdVW, StemSnapH, and StemSnapV values for a font file.
 
     :param file_path: The path to the font file.
     :type file_path: Path
+    :param report_all_stems: Include stems formed by curved line segments; by default, includes only
+        stems formed by straight line segments.
+    :type report_all_stems: bool
+    :param max_distance: The maximum distance between widths to consider as part of the same group.
+    :type max_distance: int
+    :param max_h_stems: The number of horizontal stem values to extract.
+    :type max_h_stems: int
+    :param max_v_stems: The number of vertical stem values to extract.
+    :type max_v_stems: int
     :return: A tuple containing the new StdHW, StdVW, StemSnapH, and StemSnapV values.
     :rtype: tuple[int, int, list[int], list[int]]
     """
+    horizontal_report, vertical_report = _get_report(file_path, None, report_all_stems)
 
-    uc_horizontal_straight, _ = get_report(file_path, LATIN_UPPERCASE, report_all_stems=False)
-    lc_horizontal_straight, _ = get_report(file_path, LATIN_LOWERCASE, report_all_stems=False)
-    _, uc_vertical_straight = get_report(file_path, LATIN_UPPERCASE, report_all_stems=False)
-    _, lc_vertical_straight = get_report(file_path, LATIN_LOWERCASE, report_all_stems=False)
+    h_groups = _group_widths_with_neighbors(horizontal_report, max_distance=max_distance)
+    v_groups = _group_widths_with_neighbors(vertical_report, max_distance=max_distance)
 
-    uc_horizontal_curved, _ = get_report(file_path, CURVED_UC, report_all_stems=True)
-    lc_horizontal_curved, _ = get_report(file_path, CURVED_LC, report_all_stems=True)
-    _, uc_vertical_curved = get_report(file_path, CURVED_UC, report_all_stems=True)
-    _, lc_vertical_curved = get_report(file_path, CURVED_LC, report_all_stems=True)
-
-    straight_uc_h_stem = uc_horizontal_straight[0]
-    straight_lc_h_stem = lc_horizontal_straight[0]
-    straight_uc_v_stem = uc_vertical_straight[0]
-    straight_lc_v_stem = lc_vertical_straight[0]
-
-    curved_uc_h_stem = uc_horizontal_curved[0]
-    curved_lc_h_stem = lc_horizontal_curved[0]
-    curved_uc_v_stem = uc_vertical_curved[0]
-    curved_lc_v_stem = lc_vertical_curved[0]
-
-    horizontal_stems = [straight_uc_h_stem, straight_lc_h_stem, curved_uc_h_stem, curved_lc_h_stem]
-    std_h_w = max(horizontal_stems, key=lambda x: x[0])[1]
-    stem_snap_h = sorted([x[1] for x in horizontal_stems])
-
-    vertical_stems = [straight_uc_v_stem, straight_lc_v_stem, curved_uc_v_stem, curved_lc_v_stem]
-    std_v_w = max(vertical_stems, key=lambda x: x[0])[1]
-    stem_snap_v = sorted([x[1] for x in vertical_stems])
+    std_h_w = _get_first_n_stems(h_groups, 1)[0]
+    stem_snap_h = _get_first_n_stems(h_groups, max_h_stems) if max_h_stems > 1 else None
+    std_v_w = _get_first_n_stems(v_groups, 1)[0]
+    stem_snap_v = _get_first_n_stems(v_groups, max_v_stems) if max_v_stems > 1 else None
 
     return std_h_w, std_v_w, stem_snap_h, stem_snap_v
