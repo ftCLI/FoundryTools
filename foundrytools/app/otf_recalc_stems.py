@@ -108,25 +108,27 @@ def _group_widths_with_neighbors(
 
 def _get_first_n_stems(groups: list[list[tuple[int, int]]], number_of_stems: int) -> list[int]:
     """
-    Extracts a specified number of representative stem values from groups of stems,
-    ensuring that selected values maintain a minimum difference of five units to
-    provide optimal results as per technical recommendations.
+    Extracts a specified number of representative stem values from groups of stems, ensuring that
+    selected values maintain a minimum difference of five units to provide optimal results as per
+    technical recommendations.
 
-    :param groups: A list of grouped stems, where each group contains a list of tuples
-        comprising stem value and count.
+    From: https://adobe-type-tools.github.io/font-tech-notes/pdfs/5049.StemSnap.pdf
+
+    "It is important that only the mean value of groups of stems be entered in the array. Entering
+    values that are too close together, such as [ 121, 122, ... 172, 174...] might produce
+    undesirable results. Hence, it is recommended that values be a minimum of five units apart."
+
+    :param groups: A list of grouped stems, where each group contains a list of tuples comprising
+        stem value and count.
     :type groups: list
     :param number_of_stems: The number of stem values to extract from the groups.
     :type number_of_stems: int
     :return: A list of representative stem values.
     :rtype: list[int]
     """
-    # https://adobe-type-tools.github.io/font-tech-notes/pdfs/5049.StemSnap.pdf
-    # It is important that only the mean value of groups of stems be entered in the array. Entering
-    # values that are too close together, such as [ 121, 122, ... 172, 174...] might produce
-    # undesirable results. Hence, it is recommended that values be a minimum of five units apart.
 
     stem_snap: list[int] = []
-    for group in _sort_groups_by_max_count(groups):
+    for group in _sort_groups_by_count_sum(groups):
         max_value = max(group, key=lambda x: x[0])[1]
         if any(abs(max_value - used) < 5 for used in stem_snap):
             continue
