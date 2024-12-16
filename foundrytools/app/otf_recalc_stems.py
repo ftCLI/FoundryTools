@@ -51,14 +51,37 @@ from afdko.otfautohint.autohint import FontInstance, fontWrapper, openFont
 from afdko.otfautohint.hinter import glyphHinter
 from afdko.otfautohint.report import Report
 
-LATIN_UPPERCASE = [chr(i) for i in range(65, 91)]
-LATIN_LOWERCASE = [chr(i) for i in range(97, 123)]
+__all__ = ["run"]
 
-CURVED_UC = ["C", "G", "O", "Q", "S"]
-CURVED_LC = ["a", "c", "e", "g", "o", "s"]
+def _get_report(
+    file_path: Path, glyph_list: Optional[list[str]], report_all_stems: bool = False
+) -> tuple[list[tuple[int, int, list[str]]], list[tuple[int, int, list[str]]]]:
+    file_path = _validate_path(file_path)
+    _, parsed_args = get_stemhist_options(args=[file_path])
+    options = ReportOptions(parsed_args)
+    options.report_all_stems = report_all_stems
+    options.report_zones = False
+    options.glyphList = glyph_list
 
-STRAIGHT_UC = [c for c in LATIN_UPPERCASE if c not in CURVED_UC]
-STRAIGHT_LC = [c for c in LATIN_LOWERCASE if c not in CURVED_LC]
+    font = openFont(file_path, options=options)
+    font_instance = FontInstance(font=font, inpath=file_path, outpath=file_path)
+
+    fw = fontWrapper(options=options, fil=[font_instance])
+    dict_record = fw.dictManager.getDictRecord()
+
+    hinter = glyphHinter(options=options, dictRecord=dict_record)
+    hinter.initialize(options=options, dictRecord=dict_record)
+    gmap = map(hinter.hint, fw)
+
+    report = Report()
+    for name, r in gmap:
+        report.glyphs[name] = r
+
+    h_stems, v_stems, _, _ = report._get_lists(options)
+    h_stems.sort(key=report._sort_count)
+    v_stems.sort(key=report._sort_count)
+
+    return h_stems, v_stems
 
 
 def _group_widths_with_neighbors(
@@ -106,7 +129,18 @@ def _group_widths_with_neighbors(
     return groups
 
 
-def _get_first_n_stems(groups: list[list[tuple[int, int]]], number_of_stems: int) -> list[int]:
+def _sort_groups_by_count_sum(groups: list[list[tuple[int, int]]]) -> list[list[tuple[int, int]]]:
+    return sorted(groups, key=lambda x: sum(e[0] for e in x), reverse=True)
+
+
+def _sort_groups_by_max_count(groups: list[list[tuple[int, int]]]) -> list[list[tuple[int, int]]]:
+    return sorted(groups, key=lambda x: max(e[0] for e in x), reverse=True)
+
+
+def _get_first_n_stems(
+    groups: list[list[tuple[int, int]]],
+    number_of_stems: int,
+) -> list[int]:
     """
     Extracts a specified number of representative stem values from groups of stems, ensuring that
     selected values maintain a minimum difference of five units to provide optimal results as per
@@ -135,44 +169,6 @@ def _get_first_n_stems(groups: list[list[tuple[int, int]]], number_of_stems: int
         stem_snap.append(max_value)
     return sorted(stem_snap[:number_of_stems])
 
-
-def _sort_groups_by_count_sum(groups: list[list[tuple[int, int]]]) -> list[list[tuple[int, int]]]:
-    return sorted(groups, key=lambda x: sum(e[0] for e in x), reverse=True)
-
-
-def _sort_groups_by_max_count(groups: list[list[tuple[int, int]]]) -> list[list[tuple[int, int]]]:
-    return sorted(groups, key=lambda x: max(e[0] for e in x), reverse=True)
-
-
-def _get_report(
-    file_path: Path, glyph_list: Optional[list[str]], report_all_stems: bool = False
-) -> tuple[list[tuple[int, int, list[str]]], list[tuple[int, int, list[str]]]]:
-    file_path = _validate_path(file_path)
-    _, parsed_args = get_stemhist_options(args=[file_path])
-    options = ReportOptions(parsed_args)
-    options.report_all_stems = report_all_stems
-    options.report_zones = False
-    options.glyphList = glyph_list
-
-    font = openFont(file_path, options=options)
-    font_instance = FontInstance(font=font, inpath=file_path, outpath=file_path)
-
-    fw = fontWrapper(options=options, fil=[font_instance])
-    dict_record = fw.dictManager.getDictRecord()
-
-    hinter = glyphHinter(options=options, dictRecord=dict_record)
-    hinter.initialize(options=options, dictRecord=dict_record)
-    gmap = map(hinter.hint, fw)
-
-    report = Report()
-    for name, r in gmap:
-        report.glyphs[name] = r
-
-    h_stems, v_stems, _, _ = report._get_lists(options)
-    h_stems.sort(key=report._sort_count)
-    v_stems.sort(key=report._sort_count)
-
-    return h_stems, v_stems
 
 
 def run(
