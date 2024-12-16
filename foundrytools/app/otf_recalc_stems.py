@@ -53,6 +53,7 @@ from afdko.otfautohint.report import Report
 
 __all__ = ["run"]
 
+
 def _get_report(
     file_path: Path, glyph_list: Optional[list[str]], report_all_stems: bool = False
 ) -> tuple[list[tuple[int, int, list[str]]], list[tuple[int, int, list[str]]]]:
@@ -168,7 +169,6 @@ def _get_first_n_stems(
             continue
         stem_snap.append(max_value)
     return sorted(stem_snap[:number_of_stems])
-
 
 
 def run(
