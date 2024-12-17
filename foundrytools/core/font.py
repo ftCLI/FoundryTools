@@ -236,9 +236,23 @@ class StyleFlags:
 
 class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
     """
-    The ``Font`` class is a wrapper around the ``TTFont`` class from ``fontTools``.
+    The ``Font`` class is a high-level wrapper around the ``TTFont`` class from ``fontTools``,
+    providing an interface for managing font files and their tables.
 
-    It provides a high-level interface for working with the underlying TTFont object and its tables.
+    It supports loading fonts from various sources, including file paths, ``BytesIO`` objects, and
+    ``TTFont`` objects.
+
+    The class offers methods for converting between different font formats, scaling units per em,
+    correcting contours, and calculating italic angles.
+
+    It also provides properties for accessing and manipulating font tables.
+
+    .. code-block:: python
+
+        from foundrytools import Font
+
+        font = Font("path/to/font.ttf")
+        font.t_cmap.get_all_codepoints()
     """
 
     def __init__(
@@ -325,6 +339,10 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         )
 
     def _init_tables(self) -> None:
+        """
+        Initialize all font table attributes to None. This method sets up the initial state
+        for each table in the font, ensuring that they are ready to be loaded when accessed.
+        """
         self._cff: Optional[CFFTable] = None
         self._cmap: Optional[CmapTable] = None
         self._fvar: Optional[FvarTable] = None
@@ -446,7 +464,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_cff_(self) -> CFFTable:
         """
-        The ``CFF `` table handler.
+        The ``CFF`` table wrapper.
 
         :return: The loaded ``CFFTable``.
         :rtype: CFFTable
@@ -456,7 +474,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_cmap(self) -> CmapTable:
         """
-        The ``cmap`` table handler.
+        The ``cmap`` table wrapper.
 
         :return: The loaded ``CmapTable``.
         :rtype: CmapTable
@@ -466,7 +484,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_fvar(self) -> FvarTable:
         """
-        The ``fvar`` table handler.
+        The ``fvar`` table wrapper.
 
         :return: The loaded ``FvarTable``.
         :rtype: FvarTable
@@ -476,7 +494,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_gdef(self) -> GdefTable:
         """
-        The ``GDEF`` table handler.
+        The ``GDEF`` table wrapper.
 
         :return: The loaded ``GdefTable``.
         :rtype: GdefTable
@@ -486,7 +504,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_glyf(self) -> GlyfTable:
         """
-        The ``glyf`` table handler.
+        The ``glyf`` table wrapper.
 
         :return: The loaded ``GlyfTable``.
         :rtype: GlyfTable
@@ -496,7 +514,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_gsub(self) -> GsubTable:
         """
-        The ``GSUB`` table handler.
+        The ``GSUB`` table wrapper.
 
         :return: The loaded ``GsubTable``.
         :rtype: GsubTable
@@ -506,7 +524,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_head(self) -> HeadTable:
         """
-        The ``head`` table handler.
+        The ``head`` table wrapper.
 
         :return: The loaded ``HeadTable``.
         :rtype: HeadTable
@@ -516,7 +534,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_hhea(self) -> HheaTable:
         """
-        The ``hhea`` table handler.
+        The ``hhea`` table wrapper.
 
         :return: The loaded ``HheaTable``.
         :rtype: HheaTable
@@ -526,7 +544,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_hmtx(self) -> HmtxTable:
         """
-        The ``hmtx`` table handler.
+        The ``hmtx`` table wrapper.
 
         :return: The loaded ``HmtxTable``.
         :rtype: HmtxTable
@@ -536,7 +554,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_kern(self) -> KernTable:
         """
-        The ``kern`` table handler.
+        The ``kern`` table wrapper.
 
         :return: The loaded ``KernTable``.
         :rtype: KernTable
@@ -546,7 +564,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_name(self) -> NameTable:
         """
-        The ``name`` table handler.
+        The ``name`` table wrapper.
 
         :return: The loaded ``NameTable``.
         :rtype: NameTable
@@ -556,7 +574,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_os_2(self) -> OS2Table:
         """
-        The ``OS/2`` table handler.
+        The ``OS/2`` table wrapper.
 
         :return: The loaded ``OS2Table``.
         :rtype: OS2Table
@@ -566,7 +584,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def t_post(self) -> PostTable:
         """
-        The ``post`` table handler.
+        The ``post`` table wrapper.
 
         :return: The loaded ``PostTable``.
         :rtype: PostTable
@@ -577,8 +595,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def is_ps(self) -> bool:
         """
         A read-only property for checking if the font has PostScript outlines. The font has
-        PostScript outlines if the ``sfntVersion`` attribute of the ``TTFont`` object is equal to
-        ``OTTO``.
+        PostScript outlines if the ``sfntVersion`` attribute of the ``TTFont`` object is ``OTTO``.
 
         :return: ``True`` if the font sfntVersion is ``OTTO``, ``False`` otherwise.
         :rtype: bool
@@ -589,7 +606,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def is_tt(self) -> bool:
         """
         A read-only property for checking if the font has TrueType outlines. The font has TrueType
-        outlines if the ``sfntVersion`` attribute of the ``TTFont`` object is equal to ``\0\1\0\0``.
+        outlines if the ``sfntVersion`` attribute of the ``TTFont`` object is ``\0\1\0\0``.
 
         :return: ``True`` if the font sfntVersion is ``\0\1\0\0``, ``False`` otherwise.
         :rtype: bool
@@ -600,7 +617,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def is_woff(self) -> bool:
         """
         A read-only property for checking if the font is a WOFF font. The font is a WOFF font if the
-        ``flavor`` attribute of the ``TTFont`` object is equal to ``woff``.
+        ``flavor`` attribute of the ``TTFont`` object is ``woff``.
 
         :return: ``True`` if the font flavor is ``woff``, ``False`` otherwise.
         :rtype: bool
@@ -611,7 +628,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def is_woff2(self) -> bool:
         """
         A read-only property for checking if the font is a WOFF2 font. The font is a WOFF2 font if
-        the ``flavor`` attribute of the ``TTFont`` object is equal to ``woff2``.
+        the ``flavor`` attribute of the ``TTFont`` object is ``woff2``.
 
         :return: ``True`` if the font flavor is ``woff2``, ``False`` otherwise.
         :rtype: bool
@@ -777,16 +794,24 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return out_file
 
     def to_woff(self) -> None:
-        """Convert a font to WOFF."""
+        """
+        Convert a font to WOFF.
+
+        :raises FontConversionError: If the font is already a WOFF font.
+        """
         if self.is_woff:
-            raise NotImplementedError("Font is already a WOFF font.")
+            raise FontConversionError("Font is already a WOFF font.")
 
         self.ttfont.flavor = const.WOFF_FLAVOR
 
     def to_woff2(self) -> None:
-        """Convert a font to WOFF2."""
+        """
+        Convert a font to WOFF2.
+
+        :raises FontConversionError: If the font is already a WOFF2 font.
+        """
         if self.is_woff2:
-            raise NotImplementedError("Font is already a WOFF2 font.")
+            raise FontConversionError("Font is already a WOFF2 font.")
 
         self.ttfont.flavor = const.WOFF2_FLAVOR
 
@@ -800,6 +825,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :param reverse_direction: If ``True``, reverse the direction of the contours. Defaults to
             ``True``.
         :type reverse_direction: bool
+        :raises FontConversionError: If the font is already a TrueType font or if the font is a
+            variable font.
         """
         if self.is_tt:
             raise FontConversionError("Font is already a TrueType font.")
@@ -809,7 +836,18 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         build_ttf(font=self.ttfont, max_err=max_err, reverse_direction=reverse_direction)
 
     def to_otf(self, tolerance: float = 1.0, correct_contours: bool = True) -> None:
-        """Converts a TrueType font to PostScript."""
+        """
+        Converts a TrueType font to PostScript.
+
+        :param tolerance: The tolerance value used to convert quadratic curves to cubic curves.
+            Defaults to 1.0.
+        :type tolerance: float
+        :param correct_contours: If ``True``, correct the contours of the font by removing overlaps
+            and tiny paths and correcting the direction of contours. Defaults to ``True``.
+        :type correct_contours: bool
+        :raises FontConversionError: If the font is already a PostScript font or if the font is a
+            variable font.
+        """
         if self.is_ps:
             raise FontConversionError("Font is already a PostScript font.")
         if self.is_variable:
@@ -826,7 +864,11 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self.t_os_2.recalc_avg_char_width()
 
     def to_sfnt(self) -> None:
-        """Convert a font to SFNT."""
+        """
+        Convert a font to SFNT.
+
+        :raises FontConversionError: If the font is already a SFNT font.
+        """
         if self.is_sfnt:
             raise FontConversionError("Font is already a SFNT font.")
         self.ttfont.flavor = None
