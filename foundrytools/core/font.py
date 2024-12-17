@@ -339,21 +339,15 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self._os_2: Optional[OS2Table] = None
         self._post: Optional[PostTable] = None
 
-    def _load_table(self, table_tag: str):  # type: ignore
-        if self.ttfont.get(table_tag) is None:
-            raise KeyError(f"The '{table_tag}' table is not present in the font")
-
+    def _get_table(self, table_tag: str):  # type: ignore
         table_attr, table_cls = TABLES_LOOKUP[table_tag]
         if getattr(self, table_attr) is None:
+            if self.ttfont.get(table_tag) is None:
+                raise KeyError(f"The '{table_tag}' table is not present in the font")
             setattr(self, table_attr, table_cls(self.ttfont))
-
-    def _get_table(self, table_tag: str):  # type: ignore
-        table_attr, _ = TABLES_LOOKUP[table_tag]
-        if getattr(self, table_attr) is None:
-            self._load_table(table_tag)
         table = getattr(self, table_attr)
         if table is None:
-            raise KeyError(f"The '{table_tag}' table is not present in the font")
+            raise KeyError(f"An error occurred while loading the '{table_tag}' table")
         return table
 
     def __enter__(self) -> "Font":
