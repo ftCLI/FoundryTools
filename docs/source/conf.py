@@ -21,11 +21,14 @@ extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
 templates_path = ["_templates"]
 exclude_patterns = []  # type: ignore
 # -- Options for HTML output -------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
-# Automatically extract typehints when specified and place them in
-# descriptions of the relevant function/method.
-autodoc_typehints = "description"
+autodoc_default_options = {
+    'members': True,
+    'private-members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+}
 
+autodoc_typehints = "description"
 autodoc_class_signature = "separated"
 html_static_path = ["_static"]
 html_logo = "_static/logo.png"
