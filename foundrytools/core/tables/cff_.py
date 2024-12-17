@@ -31,11 +31,14 @@ HINTING_ATTRS = (
 
 
 class CFFTable(DefaultTbl):
-    """This class extends the fontTools ``CFF`` table to add some useful methods."""
+    """
+    A class that wraps and manages the CFF table of a font, providing methods to manipulate
+    hinting data, font names, and glyph contours.
+    """
 
     def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``CFF `` table handler.
+        Initializes the ``CFF`` table wrapper.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -46,20 +49,14 @@ class CFFTable(DefaultTbl):
     @property
     def table(self) -> table_C_F_F_:
         """
-        Returns the ``CFF`` table.
-
-        :return: The ``CFF`` table.
-        :rtype: table_C_F_F_
+        The wrapped ``table_C_F_F_`` object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table_C_F_F_) -> None:
         """
-        Sets the ``CFF`` table.
-
-        :param value: The ``CFF`` table.
-        :type value: table_C_F_F_
+        Wraps a new ``table_C_F_F_`` object.
         """
         self._table = value
 
