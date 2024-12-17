@@ -19,8 +19,7 @@ release = "0.1.0"
 extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
 
 templates_path = ["_templates"]
-exclude_patterns = []
-
+exclude_patterns = []  # type: ignore
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 # Automatically extract typehints when specified and place them in
