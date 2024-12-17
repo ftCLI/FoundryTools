@@ -35,8 +35,10 @@ compatibility with industry standards for font hinting and optimization.
 
 Parameters:
 - `file_path` (Path): The path to the font file.
-- `report_all_stems` (bool): Whether to include stems formed by curved line segments. Defaults to False.
-- `max_distance` (int): The maximum distance between widths to consider as part of the same group. Defaults to 2.
+- `report_all_stems` (bool): Whether to include stems formed by curved line segments. Defaults to
+    False.
+- `max_distance` (int): The maximum distance between widths to consider as part of the same group.
+    Defaults to 2.
 - `max_h_stems` (int): The number of horizontal stem values to extract. Defaults to 2.
 - `max_v_stems` (int): The number of vertical stem values to extract. Defaults to 2.
 
