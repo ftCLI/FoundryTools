@@ -31,5 +31,4 @@ autodoc_default_options = {
 autodoc_typehints = "description"
 autodoc_class_signature = "separated"
 html_static_path = ["_static"]
-html_logo = "_static/logo.png"
-html_theme = "furo"
+html_theme = "sphinx_rtd_theme"
