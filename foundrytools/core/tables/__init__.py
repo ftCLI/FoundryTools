@@ -1,3 +1,30 @@
+"""
+The ``foundrytools.core.tables`` module contains classes for handling ``fontTools.ttLib.tables``
+objects.
+
+Each table wrapper provides a set of methods for accessing and modifying the table data.
+
+.. code-block:: python
+
+    from foundrytools import Font
+
+    font = Font("path/to/font.otf")
+    font.t_cff_.round_coordinates()
+    font.os_2.recalc_unicode_ranges()
+
+Wrapped tables are accessible via the ``table`` property of the table wrapper.
+
+.. code-block:: python
+
+    from foundrytools import Font
+
+    font = Font("path/to/font.otf")
+
+    # Access the wrapped ``fontTools.ttLib.tables._c_m_a_p.table__c_m_a_p`` object
+    font.t_cmap.table.buildReversed()
+"""
+
+
 from foundrytools import constants
 from foundrytools.core.tables.cff_ import CFFTable
 from foundrytools.core.tables.cmap import CmapTable
