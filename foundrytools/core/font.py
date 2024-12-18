@@ -237,22 +237,109 @@ class StyleFlags:
 class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
     """
     The ``Font`` class is a high-level wrapper around the ``TTFont`` class from ``fontTools``,
-    providing an interface for managing font files and their tables.
+    providing an interface for manipulating fonts and their tables.
 
-    It supports loading fonts from various sources, including file paths, ``BytesIO`` objects, and
-    ``TTFont`` objects.
+    The wrapped ``TTFont`` object is accessible via the ``ttfont`` attribute.
 
-    The class offers methods for converting between different font formats, scaling units per em,
-    correcting contours, and calculating italic angles.
+    Tables
+    ------
 
-    It also provides properties for accessing and manipulating font tables.
+    The ``Font`` class provides wrappers (properties prefixed with ``t_``, such as ``t_cff_``, ``t_cmap``,
+    ``t_os_2``, etc.) for easy access to the most common font tables. Each table wrapper provides a
+    set of methods for accessing and modifying the table data.
+
+    :Example:
 
     .. code-block:: python
 
         from foundrytools import Font
 
-        font = Font("path/to/font.ttf")
-        font.t_cmap.get_all_codepoints()
+        font = Font("path/to/font.otf")
+        font.t_cff_.round_coordinates()
+        font.t_os_2.recalc_unicode_ranges()
+
+    Please see the Tables section for more information on the available table wrappers.
+
+    Flags
+    -----
+
+    The ``Font`` class provides a ``flags`` attribute for working with font flags (e.g., bold, italic,
+    oblique). The ``flags`` attribute is an instance of the ``StyleFlags`` class.
+
+    :Example:
+
+    .. code-block:: python
+
+        from foundrytools import Font
+
+        font = Font("path/to/font.otf")
+
+        # Check if the font is bold
+        if font.flags.is_bold:
+            print("The font is bold.")
+
+        # Set the font as italic
+        font.flags.is_italic = True
+
+    Properties
+    ----------
+
+    The ``Font`` class provides the following properties, prefixed with ``is_``, for checking the font
+    format:
+
+    - ``is_ps``: Check if the font has PostScript outlines.
+    - ``is_tt``: Check if the font has TrueType outlines.
+    - ``is_woff``: Check if the font is a WOFF font.
+    - ``is_woff2``: Check if the font is a WOFF2 font.
+    - ``is_sfnt``: Check if the font is an SFNT font.
+    - ``is_static``: Check if the font is a static font.
+    - ``is_variable``: Check if the font is a variable font.
+
+    :Example:
+
+    .. code-block:: python
+
+        from foundrytools import Font
+
+        font = Font("path/to/font.otf")
+
+        if font.is_ps:
+            print("The font has PostScript outlines.")
+
+        if font.is_tt:
+            print("The font has TrueType outlines.")
+
+        if font.is_woff:
+            print("The font is a WOFF font.")
+
+
+    Font conversion methods
+    -----------------------
+
+    The ``Font`` class provides methods for converting fonts to different formats:
+
+    - ``to_otf``: Converts a TrueType font to PostScript.
+    - ``to_ttf``: Convert a PostScript font to TrueType.
+    - ``to_woff``: Converts a SFNT font to WOFF.
+    - ``to_woff2``: Convert a SFNT font to WOFF2.
+    - ``to_sfnt``: Converts a WOFF or WOFF2 font to SFNT.
+
+
+    Methods
+    -------
+
+    The ``Font`` class provides few methods for saving the font to a file, closing the font, and
+    converting the font to a different format.
+
+    To keep the core package lightweight, most complex operations are performed using the
+    table wrappers or the available utilities in the ``foundrytools.app`` package.
+
+    Anyway, the ``Font`` class provides the following methods to save, close, and convert the font:
+
+    - ``save``: Save the font to a file.
+    - ``close``: Close the font.
+    - ``convert``: Convert the font to a different format.
+
     """
 
     def __init__(
