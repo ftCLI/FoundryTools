@@ -1,8 +1,7 @@
 """
 This module provides functionality to recalculate the standard horizontal and vertical stem widths
-(StdHW and StdVW) and the horizontal and vertical stem snap arrays (StemSnapH and StemSnapV) for
-OpenType font files. The recalculation process is essential for optimizing font rendering and
-ensuring consistent visual appearance across different platforms and devices.
+(**StdHW** and **StdVW**) and the horizontal and vertical stem snap arrays (**StemSnapH** and
+**StemSnapV**) for OpenType font files.
 
 The module includes the following key functions:
 
@@ -30,20 +29,7 @@ The module includes the following key functions:
    parameters, generates the stem reports, groups the widths, extracts the representative stem
    values, and returns the new StdHW, StdVW, StemSnapH, and StemSnapV values.
 
-The module relies on the `afdko.otfautohint` library for font parsing and stem extraction, ensuring
-compatibility with industry standards for font hinting and optimization.
-
-Parameters:
-- `file_path` (Path): The path to the font file.
-- `report_all_stems` (bool): Whether to include stems formed by curved line segments. Defaults to
-    False.
-- `max_distance` (int): The maximum distance between widths to consider as part of the same group.
-    Defaults to 2.
-- `max_h_stems` (int): The number of horizontal stem values to extract. Defaults to 2.
-- `max_v_stems` (int): The number of vertical stem values to extract. Defaults to 2.
-
-Returns:
-- A tuple containing the new StdHW, StdVW, StemSnapH, and StemSnapV values.
+The module relies on the `afdko.otfautohint` library for font parsing and stem extraction.
 """
 
 from pathlib import Path
