@@ -12,9 +12,8 @@ documentation for details.
 
 
 .. toctree::
-   font
-   tables
-   app
+   core_package
+   app_package
    font_finder
    :maxdepth: 2
    :caption: Contents:
