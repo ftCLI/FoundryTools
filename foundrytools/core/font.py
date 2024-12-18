@@ -244,9 +244,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     Tables
     ------
 
-    The ``Font`` class provides wrappers (properties prefixed with ``t_``, such as ``t_cff_``, ``t_cmap``,
-    ``t_os_2``, etc.) for easy access to the most common font tables. Each table wrapper provides a
-    set of methods for accessing and modifying the table data.
+    The ``Font`` class provides wrappers (properties prefixed with ``t_``, such as ``t_cff_``,
+    ``t_cmap``, ``t_os_2``, etc.) for easy access to the most common font tables. Each table wrapper
+    provides a set of methods for accessing and modifying the table data.
 
     :Example:
 
@@ -263,8 +263,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     Flags
     -----
 
-    The ``Font`` class provides a ``flags`` attribute for working with font flags (e.g., bold, italic,
-    oblique). The ``flags`` attribute is an instance of the ``StyleFlags`` class.
+    The ``Font`` class provides a ``flags`` attribute for working with font flags (e.g., regular,
+    bold, italic, oblique). The ``flags`` attribute is an instance of the ``StyleFlags`` class.
 
     :Example:
 
@@ -284,8 +284,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     Properties
     ----------
 
-    The ``Font`` class provides the following properties, prefixed with ``is_``, for checking the font
-    format:
+    The ``Font`` class provides the following properties, prefixed with ``is_``, for checking the
+    font format:
 
     - ``is_ps``: Check if the font has PostScript outlines.
     - ``is_tt``: Check if the font has TrueType outlines.
