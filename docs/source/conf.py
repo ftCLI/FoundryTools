@@ -22,10 +22,10 @@ templates_path = ["_templates"]
 exclude_patterns = []  # type: ignore
 # -- Options for HTML output -------------------------------------------------
 autodoc_default_options = {
-    'members': True,
-    'private-members': True,
-    'undoc-members': True,
-    'show-inheritance': True,
+    "members": True,
+    "private-members": True,
+    "undoc-members": True,
+    "show-inheritance": True,
 }
 
 autodoc_typehints = "description"

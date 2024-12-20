@@ -560,16 +560,16 @@ def _glyph_name_from_uni_str(uni_str: str) -> Optional[str]:
     return None
 
 
-def prod_name_from_uni_str(uni_str: str) -> Optional[str]:
+def production_name_from_unicode(uni_str: str) -> Optional[str]:
     """
     Get the production name of a glyph from its Unicode value.
 
     :Example:
-        >>> prod_name_from_uni_str("0x0041")
+        >>> production_name_from_unicode("0x0041")
         'A'
-        >>> prod_name_from_uni_str("0x10FFFF")
+        >>> production_name_from_unicode("0x10FFFF")
         'u10FFFF'
-        >>> prod_name_from_uni_str("0x1F600")
+        >>> production_name_from_unicode("0x1F600")
         None
 
     :param uni_str: The Unicode value of the glyph.
@@ -600,7 +600,7 @@ def prod_name_from_glyph_name(glyph_name: str) -> Optional[str]:
         uni_str = _uni_str_from_glyph_name(glyph_name)
     if not uni_str:
         return None
-    return prod_name_from_uni_str(uni_str)
+    return production_name_from_unicode(uni_str)
 
 
 def friendly_name_from_uni_str(uni_str: str) -> Optional[str]:
@@ -761,7 +761,7 @@ def _get_multi_mapped_glyphs(
     return multi_mapped
 
 
-def get_uni_str(glyph_name: str, reversed_cmap: _ReversedCmap) -> Optional[str]:
+def unicode_from_glyph_name(glyph_name: str, reversed_cmap: _ReversedCmap) -> Optional[str]:
     """
     Attempt to retrieve a Unicode string, using various fallback mechanisms.
 
@@ -777,9 +777,9 @@ def get_uni_str(glyph_name: str, reversed_cmap: _ReversedCmap) -> Optional[str]:
     :return: The Unicode string of the glyph.
     :rtype: Optional[str]
     """
-    uni_str = _uni_str_from_reversed_cmap(glyph_name, reversed_cmap)
-    if not uni_str:
-        uni_str = NAMES_TO_UNICODES.get(glyph_name)
-    if not uni_str:
-        uni_str = _uni_str_from_glyph_name(glyph_name)
-    return uni_str
+    unicode_string = _uni_str_from_reversed_cmap(glyph_name, reversed_cmap)
+    if not unicode_string:
+        unicode_string = NAMES_TO_UNICODES.get(glyph_name)
+    if not unicode_string:
+        unicode_string = _uni_str_from_glyph_name(glyph_name)
+    return unicode_string

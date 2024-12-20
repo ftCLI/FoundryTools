@@ -24,7 +24,6 @@ Wrapped tables are accessible via the ``table`` property of the table wrapper.
     font.t_cmap.table.buildReversed()
 """
 
-
 from foundrytools import constants
 from foundrytools.core.tables.cff_ import CFFTable
 from foundrytools.core.tables.cmap import CmapTable
