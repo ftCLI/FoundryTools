@@ -1,7 +1,7 @@
 from ufo2ft.postProcessor import PostProcessor
 
 from foundrytools import Font
-from foundrytools.lib.unicode import unicode_from_glyph_name, production_name_from_unicode
+from foundrytools.lib.unicode import production_name_from_unicode, unicode_from_glyph_name
 
 
 class SetProdNamesError(Exception):
