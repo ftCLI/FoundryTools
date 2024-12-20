@@ -791,6 +791,19 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self.flags = StyleFlags(self)
         buf.close()
 
+    def rebuild(self) -> None:
+        """Rebuild the font by saving it as XML to a temporary stream and then loading it back."""
+        recalc_bboxes = self.ttfont.recalcBBoxes
+        recalc_timestamp = self.ttfont.recalcTimestamp
+        buf = BytesIO()
+        self.ttfont.saveXML(buf)
+        buf.seek(0)
+        self.ttfont = TTFont(recalcBBoxes=recalc_bboxes, recalcTimestamp=recalc_timestamp)
+        self.ttfont.importXML(buf)
+        self._init_tables()
+        self.flags = StyleFlags(self)
+        buf.close()
+
     def get_file_ext(self) -> str:
         """
         Get the real extension of the font (e.g., ``.otf``, ``.ttf``, ``.woff``, ``.woff2``).
