@@ -1,46 +1,35 @@
-__doc__ = """
-Recalculates the StdHW, StdVW, StemSnapH, and StemSnapV values for a font file.
+"""
+This module provides functionality to recalculate the standard horizontal and vertical stem widths
+(**StdHW** and **StdVW**) and the horizontal and vertical stem snap arrays (**StemSnapH** and
+**StemSnapV**) for OpenType font files.
 
-This module provides functions to analyze and recalculate the standard horizontal and vertical stem
-widths (StdHW and StdVW) and the horizontal and vertical stem snap arrays (StemSnapH and StemSnapV)
-for a given font file. The recalculation process involves the following steps:
+The module includes the following key functions:
 
-1. **Grouping Widths with Neighbors**:
-    - The `_group_widths_with_neighbors` function groups report entries based on their width and
-    proximity to neighboring widths. It takes a report containing tuples of a unique identifier,
-    a width, and a list of associated strings. Entries are grouped together if their widths are
-    within a specified maximum distance from each other.
+1. **_get_report**:
+   Generates a report of horizontal and vertical stems for a given font file. It uses the
+   `afdko.otfautohint` library to parse the font file and extract stem information. The report
+   can optionally include stems formed by curved line segments.
 
-2. **Extracting Representative Stem Values**:
-    - The `_get_first_n_stems` function extracts a specified number of representative stem values
-    from the grouped stems. It ensures that the selected values maintain a minimum difference of
-    five units to provide optimal results, as per technical recommendations.
+2. **_group_widths_with_neighbors**:
+   Groups report entries based on their width and proximity to neighboring widths. Entries are
+   grouped together if their widths are within a specified maximum distance from each other. This
+   helps in identifying clusters of similar stem widths.
 
-3. **Sorting Groups**:
-    - The `_sort_groups_by_count_sum` and `_sort_groups_by_max_count` functions sort the groups of
-    stems based on the sum of counts and the maximum count within each group, respectively.
+3. **_get_first_n_stems**:
+   Extracts a specified number of representative stem values from the grouped stems. It ensures
+   that the selected values maintain a minimum difference of five units to provide optimal results,
+   as per technical recommendations.
 
-4. **Generating Reports**:
-    - The `_get_report` function generates a report of horizontal and vertical stems for the given
-    font file. It uses the `afdko.otfautohint` library to parse the font file and extract stem
-    information.
+4. **_sort_groups_by_count_sum and _sort_groups_by_max_count**:
+   Sort the groups of stems based on the sum of counts and the maximum count within each group,
+   respectively. These sorting functions help in prioritizing the most significant stem groups.
 
-5. **Running the Recalculation**:
-    - The `run` function orchestrates the entire recalculation process. It takes the path to the
-    font file and various parameters, generates the stem reports, groups the widths, extracts the
-    representative stem values, and returns the new StdHW, StdVW, StemSnapH, and StemSnapV values.
+5. **run**:
+   Orchestrates the entire recalculation process. It takes the path to the font file and various
+   parameters, generates the stem reports, groups the widths, extracts the representative stem
+   values, and returns the new StdHW, StdVW, StemSnapH, and StemSnapV values.
 
-Parameters:
-    - file_path (Path): The path to the font file.
-    - report_all_stems (bool): Whether to include stems formed by curved line segments.
-        Defaults to False.
-    - max_distance (int): The maximum distance between widths to consider as part of the same group.
-        Defaults to 2.
-    - max_h_stems (int): The number of horizontal stem values to extract. Defaults to 2.
-    - max_v_stems (int): The number of vertical stem values to extract. Defaults to 2.
-
-Returns:
-    - tuple: A tuple containing the new StdHW, StdVW, StemSnapH, and StemSnapV values.
+The module relies on the `afdko.otfautohint` library for font parsing and stem extraction.
 """
 
 from pathlib import Path
