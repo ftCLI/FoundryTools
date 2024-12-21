@@ -74,35 +74,6 @@ class NameIds(IntEnum):
     VARIATIONS_POSTSCRIPT_NAME_PREFIX = 25
 
 
-SUBSETTER_DEFAULTS = {
-    "drop_tables": [],
-    "passthrough_tables": True,
-    "hinting_tables": ["*"],
-    "layout_features": ["*"],
-    "legacy_kern": True,
-    "layout_closure": True,
-    "layout_scripts": ["*"],
-    "ignore_missing_unicodes": True,
-    "hinting": True,
-    "glyph_names": True,
-    "legacy_cmap": True,
-    "symbol_cmap": True,
-    "name_IDs": ["*"],
-    "name_legacy": True,
-    "name_languages": ["*"],
-    "retain_gids": False,
-    "notdef_glyph": True,
-    "notdef_outline": True,
-    "recalc_bounds": True,
-    "recalc_timestamp": False,
-    "prune_unicode_ranges": True,
-    "prune_codepage_ranges": True,
-    "recalc_average_width": True,
-    "recalc_max_context": True,
-    "canonical_order": False,
-}
-
-
 NAME_IDS_TO_DESCRIPTION = {
     0: "Copyright Notice",
     1: "Family name",

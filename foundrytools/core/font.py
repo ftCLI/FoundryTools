@@ -4,13 +4,18 @@ from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
+import defcon
+from cffsubr import desubroutinize, subroutinize
+from extractor import extractUFO
 from fontTools.misc.cliTools import makeOutputFileName
 from fontTools.pens.boundsPen import BoundsPen
 from fontTools.pens.statisticsPen import StatisticsPen
+from fontTools.subset import Options, Subsetter
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.scaleUpem import scale_upem
+from ufo2ft.postProcessor import PostProcessor
 
 from foundrytools import constants as const
 from foundrytools.core.tables import (
@@ -32,9 +37,40 @@ from foundrytools.core.tables import (
 from foundrytools.lib.otf_builder import build_otf
 from foundrytools.lib.qu2cu import quadratics_to_cubics
 from foundrytools.lib.ttf_builder import build_ttf
+from foundrytools.lib.unicode import production_name_from_unicode, unicode_from_glyph_name
+from foundrytools.utils.misc import restore_flavor
 from foundrytools.utils.path_tools import get_temp_file_path
 
 __all__ = ["Font", "FontConversionError", "FontError"]
+
+
+SUBSETTER_DEFAULTS = {
+    "drop_tables": [],
+    "passthrough_tables": True,
+    "hinting_tables": ["*"],
+    "layout_features": ["*"],
+    "legacy_kern": True,
+    "layout_closure": True,
+    "layout_scripts": ["*"],
+    "ignore_missing_unicodes": True,
+    "hinting": True,
+    "glyph_names": True,
+    "legacy_cmap": True,
+    "symbol_cmap": True,
+    "name_IDs": ["*"],
+    "name_legacy": True,
+    "name_languages": ["*"],
+    "retain_gids": False,
+    "notdef_glyph": True,
+    "notdef_outline": True,
+    "recalc_bounds": True,
+    "recalc_timestamp": False,
+    "prune_unicode_ranges": True,
+    "prune_codepage_ranges": True,
+    "recalc_average_width": True,
+    "recalc_max_context": True,
+    "canonical_order": False,
+}
 
 
 class FontError(Exception):
@@ -1095,3 +1131,232 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         }
 
         return bounds
+
+    def remove_glyphs(
+        self,
+        glyph_names_to_remove: Optional[set[str]],
+        glyph_ids_to_remove: Optional[set[int]],
+    ) -> set[str]:
+        """
+        Removes glyphs from the font using the fontTools subsetter.
+
+        :param glyph_names_to_remove: A set of glyph names to remove.
+        :type glyph_names_to_remove: Optional[set[str]]
+        :param glyph_ids_to_remove: A set of glyph IDs to remove.
+        :type glyph_ids_to_remove: Optional[set[int]]
+        :return: A set of glyph names that were removed.
+        :rtype: set[str]
+        """
+        old_glyph_order = self.ttfont.getGlyphOrder()
+        if not glyph_names_to_remove and not glyph_ids_to_remove:
+            raise ValueError("No glyph names or glyph IDs provided to remove.")
+
+        glyph_names_to_remove = glyph_names_to_remove or set()
+
+        # Convert glyph IDs to glyph names to populate the subsetter with only one parameter.
+        if glyph_ids_to_remove:
+            for glyph_id in glyph_ids_to_remove:
+                if glyph_id < 0 or glyph_id >= len(old_glyph_order):
+                    continue
+                glyph_names_to_remove.add(old_glyph_order[glyph_id])
+
+        if not glyph_names_to_remove:
+            return set()
+
+        remaining_glyphs = {gn for gn in old_glyph_order if gn not in glyph_names_to_remove}
+        options = Options(**SUBSETTER_DEFAULTS)
+        options.recalc_timestamp = self.ttfont.recalcTimestamp
+
+        subsetter = Subsetter(options=options)
+        subsetter.populate(glyphs=remaining_glyphs)
+        subsetter.subset(self.ttfont)
+
+        new_glyph_order = self.ttfont.getGlyphOrder()
+        return set(old_glyph_order).difference(new_glyph_order)
+
+    def remove_unused_glyphs(self) -> set[str]:
+        """
+        Remove glyphs that are not reachable by Unicode values or by substitution rules in the font.
+
+        :return: A set of glyph names that were removed.
+        :rtype: set[str]
+        """
+        options = Options(**SUBSETTER_DEFAULTS)
+        options.recalc_timestamp = self.ttfont.recalcTimestamp
+        old_glyph_order = self.ttfont.getGlyphOrder()
+        unicodes = self.t_cmap.get_all_codepoints()
+        subsetter = Subsetter(options=options)
+        subsetter.populate(unicodes=unicodes)
+        subsetter.subset(self.ttfont)
+        new_glyph_order = self.ttfont.getGlyphOrder()
+
+        return set(old_glyph_order) - set(new_glyph_order)
+
+    def rename_glyph(self, old_name: str, new_name: str) -> bool:
+        """
+        Rename a single glyph in the font.
+
+        :param old_name: The old glyph name.
+        :type old_name: str
+        :param new_name: The new glyph name.
+        :type new_name: str
+        :return: ``True`` if the glyph was renamed, ``False`` otherwise.
+        :rtype: bool
+        """
+        old_glyph_order = self.ttfont.getGlyphOrder()
+        new_glyph_order = []
+
+        if old_name not in old_glyph_order:
+            raise ValueError(f"Glyph '{old_name}' not found in the font.")
+
+        if new_name in old_glyph_order:
+            raise ValueError(f"Glyph '{new_name}' already exists in the font.")
+
+        for glyph_name in old_glyph_order:
+            if glyph_name == old_name:
+                new_glyph_order.append(new_name)
+            else:
+                new_glyph_order.append(glyph_name)
+
+        rename_map = dict(zip(old_glyph_order, new_glyph_order))
+        PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
+        self.t_cmap.rebuild_character_map(remap_all=True)
+
+        return new_glyph_order != old_glyph_order
+
+    def rename_glyphs(self, new_glyph_order: list[str]) -> bool:
+        """
+        Rename the glyphs in the font based on the new glyph order.
+
+        :param new_glyph_order: The new glyph order.
+        :type new_glyph_order: List[str]
+        :return: ``True`` if the glyphs were renamed, ``False`` otherwise.
+        :rtype: bool
+        """
+        old_glyph_order = self.ttfont.getGlyphOrder()
+        if new_glyph_order == old_glyph_order:
+            return False
+        rename_map = dict(zip(old_glyph_order, new_glyph_order))
+        PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
+        self.t_cmap.rebuild_character_map(remap_all=True)
+
+        return True
+
+    def set_production_names(self) -> list[tuple[str, str]]:
+        """
+        Set the production names for the glyphs in the font.
+
+        The method iterates through each glyph in the old glyph order and determines its production
+        name based on its assigned or calculated Unicode value. If the production name is already
+        assigned, the glyph is skipped. If the production name is different from the original glyph
+        name and is not yet assigned, the glyph is renamed and added to the new glyph order list.
+        Finally, the font is updated with the new glyph order, the cmap table is rebuilt, and the
+        list of renamed glyphs is returned.
+
+        :return: A list of tuples containing the old and new glyph names.
+        :rtype: List[Tuple[str, str]]
+        :raises SetProdNamesError: If an error occurs during the process.
+        """
+
+        old_glyph_order: list[str] = self.ttfont.getGlyphOrder()
+        reversed_cmap = self.t_cmap.table.buildReversed()
+        new_glyph_order: list[str] = []
+        renamed_glyphs: list[tuple[str, str]] = []
+
+        for glyph_name in old_glyph_order:
+            unicode_string = unicode_from_glyph_name(glyph_name, reversed_cmap)
+            # If still no uni_str, the glyph name is unmodified.
+            if not unicode_string:
+                new_glyph_order.append(glyph_name)
+                continue
+
+            # In case the production name could not be found, the glyph is already named with
+            # the production name, or the production name is already assigned, we skip the
+            # renaming process.
+            production_name = production_name_from_unicode(unicode_string)
+            if (
+                not production_name
+                or production_name == glyph_name
+                or production_name in old_glyph_order
+            ):
+                new_glyph_order.append(glyph_name)
+                continue
+
+            new_glyph_order.append(production_name)
+            renamed_glyphs.append((glyph_name, production_name))
+
+        if not renamed_glyphs:
+            return []
+
+        rename_map = dict(zip(old_glyph_order, new_glyph_order))
+        PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
+        self.t_cmap.rebuild_character_map(remap_all=True)
+
+        return renamed_glyphs
+
+    def sort_glyphs(
+        self, sort_by: Literal["unicode", "alphabetical", "cannedDesign"] = "unicode"
+    ) -> bool:
+        """
+        Reorder the glyphs based on the Unicode values, alphabetical order, or canned design order.
+
+        :param sort_by: The sorting method. Can be one of the following values: 'unicode',
+            'alphabetical', or 'cannedDesign'. Defaults to 'unicode'.
+        :type sort_by: Literal['unicode', 'alphabetical', 'cannedDesign']
+        :return: ``True`` if the glyphs were reordered, ``False`` otherwise.
+        :rtype: bool
+        """
+        ufo = defcon.Font()
+        extractUFO(self.file, destination=ufo, doFeatures=False, doInfo=False, doKerning=False)
+        old_glyph_order = self.ttfont.getGlyphOrder()
+        new_glyph_order = ufo.unicodeData.sortGlyphNames(
+            glyphNames=old_glyph_order,
+            sortDescriptors=[{"type": sort_by}],
+        )
+
+        # Ensure that the '.notdef' glyph is always the first glyph in the font as required by
+        # the OpenType specification. If the '.notdef' glyph is not the first glyph, compiling
+        # the CFF table will fail.
+        # https://learn.microsoft.com/en-us/typography/opentype/spec/recom#glyph-0-the-notdef-glyph
+        if ".notdef" in new_glyph_order:
+            new_glyph_order.remove(".notdef")
+            new_glyph_order.insert(0, ".notdef")
+
+        if old_glyph_order == new_glyph_order:
+            return False
+
+        self.ttfont.reorderGlyphs(new_glyph_order=new_glyph_order)
+
+        return True
+
+    def subroutinize(self) -> bool:
+        """
+        Subroutinize the CFF table of a font.
+
+        A context manager is used to allow subroutinization of WOFF and WOFF2 fonts. The context
+        manager temporarily sets the flavor of the font to 'None' before subroutinizing the font.
+        Then restores the original flavor after the subroutinization process.
+
+        :return: True if the subroutinization process was successful.
+        :rtype: bool
+        """
+        if not self.is_ps:
+            raise NotImplementedError("Not a PostScript font.")
+
+        with restore_flavor(self.ttfont):
+            subroutinize(self.ttfont)
+            return True
+
+    def desubroutinize(self) -> bool:
+        """
+        Desubroutinize the CFF table of a font.
+
+        :return: True if the font was desubroutinized successfully.
+        :rtype: bool
+        """
+        if not self.is_ps:
+            raise NotImplementedError("Not a PostScript font.")
+
+        with restore_flavor(self.ttfont):
+            desubroutinize(self.ttfont)
+            return True
