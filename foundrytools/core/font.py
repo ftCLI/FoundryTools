@@ -2,9 +2,10 @@
 Font Class: High-Level Wrapper for fontTools
 ============================================
 
-Overview
---------
-The `Font` class is a high-level wrapper around the `TTFont` class from the **fontTools** library, providing a user-friendly interface for working with font files and their data. It simplifies font manipulation and offers various utilities for accessing and modifying font-specific properties.
+Overview -------- The `Font` class is a high-level wrapper around the `TTFont` class from the
+**fontTools** library, providing a user-friendly interface for working with font files and their
+data. It simplifies font manipulation and offers various utilities for accessing and modifying
+font-specific properties.
 
 Features
 --------
@@ -19,13 +20,15 @@ Initialization
 The class is initialized with the following parameters:
 
 - **`font_source`**:
-  A path to a font file (as ``str`` or ``Path``), a ``BytesIO`` object, or an existing `TTFont` instance.
+  A path to a font file (as ``str`` or ``Path``), a ``BytesIO`` object, or an existing `TTFont`
+  instance.
 
-- **`lazy`** *(Optional[bool], Default: None)*:
-  Controls whether font data is loaded lazily (on-demand) or eagerly (immediately). The default value `None` falls somewhere between.
+- **`lazy`** *(Optional[bool], Default: None)*: Controls whether font data is loaded lazily (
+on-demand) or eagerly (immediately). The default value `None` falls somewhere between.
 
 - **`recalc_bboxes`** *(bool, Default: True)*:
-  Recalculates `glyf`, `CFF`, `head` bounding box values, and `hhea`/`vhea` min/max values when saving the font.
+  Recalculates `glyf`, `CFF`, `head` bounding box values, and `hhea`/`vhea` min/max values when
+  saving the font.
 
 - **`recalc_timestamp`** *(bool, Default: False)*:
   Updates the font's `modified` timestamp in the `head` table when saving.
@@ -63,7 +66,8 @@ Supported methods for loading fonts:
 - `_init_from_ttfont`: Loads from an already initialized `TTFont`.
 
 **Table Initialization**
-The `_init_tables` method initializes placeholders for various font tables (glyphs, metadata, etc.). Examples include:
+The `_init_tables` method initializes placeholders for various font tables (glyphs, metadata, etc.).
+Examples include:
 - `_cff`: Compact Font Format table.
 - `_cmap`: Character-to-glyph mapping table.
 - `_head`: Font-wide metadata (e.g., bounding box, timestamp).
@@ -71,7 +75,8 @@ The `_init_tables` method initializes placeholders for various font tables (glyp
 These are lazy-loaded to ensure efficient memory usage.
 
 **Table Access**
-The `_get_table` method dynamically retrieves specific font tables by their tags (e.g., `'glyf'`, `'head'`) when needed.
+The `_get_table` method dynamically retrieves specific font tables by their tags(e.g., `'glyf'`,
+`'head'`) when needed.
 
 If the table does not exist or can't be loaded, it raises a `KeyError`.
 
@@ -109,9 +114,9 @@ The following properties provide accessible abstractions of internal font data:
 - **`is_variable`** *(bool)*:
   Indicates if the font is a variable font by checking for the presence of an `fvar` table.
 
-Advanced Features
------------------
-- **Context Management**: The `Font` class supports the `with` statement. On entering the context, it returns the `Font` instance, and upon exiting, it releases allocated resources (e.g., closing files, clearing temporary data).
+Advanced Features ----------------- - **Context Management**: The `Font` class supports the
+`with` statement. On entering the context, it returns the `Font` instance, and upon exiting,
+it releases allocated resources (e.g., closing files, clearing temporary data).
 
 - **Rebuilding and Reloading**:
   - `reload`: Reload the font by saving it to a temporary storage and reloading from it.
@@ -130,7 +135,8 @@ Advanced Features
   - `rename_glyph`: Rename specific glyphs in the font.
 
 - **Contour and Hinting**:
-  - `correct_contours`: Adjusts glyph contours for overlaps, contour direction errors, and small paths.
+  - `correct_contours`: Adjusts glyph contours for overlaps, contour direction errors, and small
+  paths.
   - `scale_upm`: Scales the font's units per em (UPM).
 
 - **Sorting and Managing Glyph Order**:
@@ -141,12 +147,8 @@ Error Handling
 --------------
 The `Font` class raises specific exceptions when invalid states or inputs are encountered, such as:
 - **`FontError`**: Raised when invalid font sources or errors related to glyph data occur.
-- **`FontConversionError`**: Raised when invalid font conversions are attempted (e.g., converting a variable font into TrueType).
-
-Conclusion
-----------
-The `Font` class provides a simplified yet powerful abstraction for working with fonts using `fontTools`. With support for multiple input types, lazy/eager data loading, table management, and efficient resource usage, it serves as a robust solution for font manipulation and customization in Python.
-
+- **`FontConversionError`**: Raised when invalid font conversions are attempted (e.g., converting a
+variable font into TrueType).
 """
 
 import contextlib
