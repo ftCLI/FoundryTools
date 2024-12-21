@@ -1,107 +1,151 @@
 """
-The ``Font`` class is a high-level wrapper around the ``TTFont`` class from ``fontTools``,
-providing an interface for manipulating fonts and their tables.
+Font Class: High-Level Wrapper for fontTools
+============================================
 
-The wrapped ``TTFont`` object is accessible via the ``ttfont`` attribute.
+Overview
+--------
+The `Font` class is a high-level wrapper around the `TTFont` class from the **fontTools** library, providing a user-friendly interface for working with font files and their data. It simplifies font manipulation and offers various utilities for accessing and modifying font-specific properties.
 
-Tables
-------
+Features
+--------
+- Load fonts from multiple sources including file paths, `BytesIO` objects, and `TTFont` instances.
+- Manipulate font tables, attributes, and metadata.
+- Provides Pythonic getter and setter properties for accessing internal font data.
+- Support for lazy or eager loading of font data structures.
+- Works as a context manager to automatically manage resources.
 
-The ``Font`` class provides wrappers (properties prefixed with ``t_``, such as ``t_cff_``,
-``t_cmap``, ``t_os_2``, etc.) for easy access to the most common font tables. Each table wrapper
-provides a set of methods for accessing and modifying the table data.
+Initialization
+--------------
+The class is initialized with the following parameters:
 
-:Example:
+- **`font_source`**:
+  A path to a font file (as ``str`` or ``Path``), a ``BytesIO`` object, or an existing `TTFont` instance.
+
+- **`lazy`** *(Optional[bool], Default: None)*:
+  Controls whether font data is loaded lazily (on-demand) or eagerly (immediately). The default value `None` falls somewhere between.
+
+- **`recalc_bboxes`** *(bool, Default: True)*:
+  Recalculates `glyf`, `CFF`, `head` bounding box values, and `hhea`/`vhea` min/max values when saving the font.
+
+- **`recalc_timestamp`** *(bool, Default: False)*:
+  Updates the font's `modified` timestamp in the `head` table when saving.
+
+Example Usage:
 
 .. code-block:: python
 
-    from foundrytools import Font
+    from io import BytesIO
 
-    font = Font("path/to/font.otf")
-    font.t_cff_.round_coordinates()
-    font.t_os_2.recalc_unicode_ranges()
+    # Loading a font from a file
+    font = Font("path/to/font.ttf")
+    print(font.file)  # Path to the file
+    print(font.ttfont)  # Access the underlying TTFont object
 
-Please see the Tables section for more information on the available table wrappers.
+    # Loading a font from BytesIO
+    with open("path/to/font.ttf", "rb") as f:
+        font_data = BytesIO(f.read())
+    font = Font(font_data)
+    print(font.bytesio)  # BytesIO object access
 
-Flags
------
+    # Using the class as a context manager
+    with Font("path/to/font.ttf") as font:
+        print(font.ttfont)
 
-The ``Font`` class provides a ``flags`` attribute for working with font flags (e.g., regular,
-bold, italic, oblique). The ``flags`` attribute is an instance of the ``StyleFlags`` class.
+Core Methods and Attributes
+---------------------------
 
-:Example:
+**Font Loading**
+The `_init_font` method performs automatic loading of fonts based on the `font_source` parameter.
 
-.. code-block:: python
+Supported methods for loading fonts:
+- `_init_from_file`: Loads from a file.
+- `_init_from_bytesio`: Loads from an in-memory `BytesIO` object.
+- `_init_from_ttfont`: Loads from an already initialized `TTFont`.
 
-    from foundrytools import Font
+**Table Initialization**
+The `_init_tables` method initializes placeholders for various font tables (glyphs, metadata, etc.). Examples include:
+- `_cff`: Compact Font Format table.
+- `_cmap`: Character-to-glyph mapping table.
+- `_head`: Font-wide metadata (e.g., bounding box, timestamp).
 
-    font = Font("path/to/font.otf")
+These are lazy-loaded to ensure efficient memory usage.
 
-    # Check if the font is bold
-    if font.flags.is_bold:
-        print("The font is bold.")
+**Table Access**
+The `_get_table` method dynamically retrieves specific font tables by their tags (e.g., `'glyf'`, `'head'`) when needed.
 
-    # Set the font as italic
-    font.flags.is_italic = True
+If the table does not exist or can't be loaded, it raises a `KeyError`.
 
 Properties
 ----------
+The following properties provide accessible abstractions of internal font data:
 
-The ``Font`` class provides the following properties, prefixed with ``is_``, for checking the
-font format:
+- **`file`**:
+  - Returns the font's file path (or ``None`` if not loaded from file).
+  - Provides a setter to update the file path.
 
-- ``is_ps``: Check if the font has PostScript outlines.
-- ``is_tt``: Check if the font has TrueType outlines.
-- ``is_woff``: Check if the font is a WOFF font.
-- ``is_woff2``: Check if the font is a WOFF2 font.
-- ``is_sfnt``: Check if the font is an SFNT font.
-- ``is_static``: Check if the font is a static font.
-- ``is_variable``: Check if the font is a variable font.
+- **`bytesio`**:
+  - Returns the in-memory `BytesIO` object containing the font data.
+  - Provides a setter to update the `BytesIO` object.
 
-:Example:
+- **`ttfont`**:
+  - Returns the underlying `TTFont` representation of the font.
+  - Provides a setter for replacing the `TTFont` object.
 
-.. code-block:: python
+- **`is_ps`** *(bool)*:
+  Indicates if the font contains PostScript outlines based on `TTFont.sfntVersion`.
 
-    from foundrytools import Font
+- **`is_tt`** *(bool)*:
+  Indicates if the font contains TrueType outlines based on `TTFont.sfntVersion`.
 
-    font = Font("path/to/font.otf")
+- **`is_woff`** *(bool)*:
+  Indicates if the font is in the WOFF format by checking the `flavor` attribute.
 
-    if font.is_ps:
-        print("The font has PostScript outlines.")
+- **`is_woff2`** *(bool)*:
+  Indicates if the font is in the WOFF2 format by checking the `flavor` attribute.
 
-    if font.is_tt:
-        print("The font has TrueType outlines.")
+- **`is_static`** *(bool)*:
+  Indicates if the font is a static font by checking for the absence of an `fvar` table.
 
-    if font.is_woff:
-        print("The font is a WOFF font.")
+- **`is_variable`** *(bool)*:
+  Indicates if the font is a variable font by checking for the presence of an `fvar` table.
 
+Advanced Features
+-----------------
+- **Context Management**: The `Font` class supports the `with` statement. On entering the context, it returns the `Font` instance, and upon exiting, it releases allocated resources (e.g., closing files, clearing temporary data).
 
-Font conversion methods
------------------------
+- **Rebuilding and Reloading**:
+  - `reload`: Reload the font by saving it to a temporary storage and reloading from it.
+  - `rebuild`: Save the font as XML temporarily and then re-import it for a fresh start.
 
-The ``Font`` class provides methods for converting fonts to different formats:
+- **Conversion Utilities**:
+  - `to_woff`: Converts the font into WOFF format.
+  - `to_woff2`: Converts the font into WOFF2 format.
+  - `to_ttf`: Converts a PostScript font into TrueType.
+  - `to_otf`: Converts a TrueType font into PostScript.
+  - `to_sfnt`: Converts the font into an SFNT (unwrapped) format.
 
-- ``to_otf``: Converts a TrueType font to PostScript.
-- ``to_ttf``: Convert a PostScript font to TrueType.
-- ``to_woff``: Converts a SFNT font to WOFF.
-- ``to_woff2``: Convert a SFNT font to WOFF2.
-- ``to_sfnt``: Converts a WOFF or WOFF2 font to SFNT.
+- **Glyph Operations**:
+  - `get_glyph_bounds`: Retrieves glyph boundary coordinates for a given glyph name.
+  - `remove_unused_glyphs`: Removes glyphs that are unreachable by Unicode values or lookup rules.
+  - `rename_glyph`: Rename specific glyphs in the font.
 
+- **Contour and Hinting**:
+  - `correct_contours`: Adjusts glyph contours for overlaps, contour direction errors, and small paths.
+  - `scale_upm`: Scales the font's units per em (UPM).
 
-Methods
--------
+- **Sorting and Managing Glyph Order**:
+  - `sort_glyphs`: Sorts glyphs based on Unicode values, alphabetical order, or custom design order.
+  - `rename_glyphs`: Renames multiple glyphs in the font to match new glyph orderings.
 
-The ``Font`` class provides few methods for saving the font to a file, closing the font, and
-converting the font to a different format.
+Error Handling
+--------------
+The `Font` class raises specific exceptions when invalid states or inputs are encountered, such as:
+- **`FontError`**: Raised when invalid font sources or errors related to glyph data occur.
+- **`FontConversionError`**: Raised when invalid font conversions are attempted (e.g., converting a variable font into TrueType).
 
-To keep the core package lightweight, most complex operations are performed using the
-table wrappers or the available utilities in the ``foundrytools.app`` package.
-
-Anyway, the ``Font`` class provides the following methods to save, close, and convert the font:
-
-- ``save``: Save the font to a file.
-- ``close``: Close the font.
-- ``convert``: Convert the font to a different format.
+Conclusion
+----------
+The `Font` class provides a simplified yet powerful abstraction for working with fonts using `fontTools`. With support for multiple input types, lazy/eager data loading, table management, and efficient resource usage, it serves as a robust solution for font manipulation and customization in Python.
 
 """
 
