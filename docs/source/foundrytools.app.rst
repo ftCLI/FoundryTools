@@ -62,14 +62,6 @@ otf\_dehint
    :show-inheritance:
    :private-members:
 
-otf\_desubroutinize
--------------------
-
-.. automodule:: foundrytools.app.otf_desubroutinize
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
 
 otf\_recalc\_stems
 ------------------
@@ -80,68 +72,6 @@ otf\_recalc\_stems
    :show-inheritance:
    :private-members:
 
-otf\_subroutinize
------------------
-
-.. automodule:: foundrytools.app.otf_subroutinize
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
-
-remove\_glyphs
---------------
-
-.. automodule:: foundrytools.app.remove_glyphs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
-
-remove\_unused\_glyphs
-----------------------
-
-.. automodule:: foundrytools.app.remove_unused_glyphs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
-
-rename\_glyph
--------------
-
-.. automodule:: foundrytools.app.rename_glyph
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
-
-rename\_glyphs
---------------
-
-.. automodule:: foundrytools.app.rename_glyphs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
-
-set\_production\_names
-----------------------
-
-.. automodule:: foundrytools.app.set_production_names
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
-
-sort\_glyphs
-------------
-
-.. automodule:: foundrytools.app.sort_glyphs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
 
 ttf\_autohint
 -------------
