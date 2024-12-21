@@ -393,6 +393,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     The ``Font`` class is a high-level wrapper around the ``TTFont`` class from ``fontTools``,
     providing an interface for manipulating fonts and their tables.
     """
+
     def __init__(
         self,
         font_source: Union[str, Path, BytesIO, TTFont],
