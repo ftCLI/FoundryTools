@@ -1,10 +1,117 @@
+"""
+The ``Font`` class is a high-level wrapper around the ``TTFont`` class from ``fontTools``,
+providing an interface for manipulating fonts and their tables.
+
+The wrapped ``TTFont`` object is accessible via the ``ttfont`` attribute.
+
+Tables
+------
+
+The ``Font`` class provides wrappers (properties prefixed with ``t_``, such as ``t_cff_``,
+``t_cmap``, ``t_os_2``, etc.) for easy access to the most common font tables. Each table wrapper
+provides a set of methods for accessing and modifying the table data.
+
+:Example:
+
+.. code-block:: python
+
+    from foundrytools import Font
+
+    font = Font("path/to/font.otf")
+    font.t_cff_.round_coordinates()
+    font.t_os_2.recalc_unicode_ranges()
+
+Please see the Tables section for more information on the available table wrappers.
+
+Flags
+-----
+
+The ``Font`` class provides a ``flags`` attribute for working with font flags (e.g., regular,
+bold, italic, oblique). The ``flags`` attribute is an instance of the ``StyleFlags`` class.
+
+:Example:
+
+.. code-block:: python
+
+    from foundrytools import Font
+
+    font = Font("path/to/font.otf")
+
+    # Check if the font is bold
+    if font.flags.is_bold:
+        print("The font is bold.")
+
+    # Set the font as italic
+    font.flags.is_italic = True
+
+Properties
+----------
+
+The ``Font`` class provides the following properties, prefixed with ``is_``, for checking the
+font format:
+
+- ``is_ps``: Check if the font has PostScript outlines.
+- ``is_tt``: Check if the font has TrueType outlines.
+- ``is_woff``: Check if the font is a WOFF font.
+- ``is_woff2``: Check if the font is a WOFF2 font.
+- ``is_sfnt``: Check if the font is an SFNT font.
+- ``is_static``: Check if the font is a static font.
+- ``is_variable``: Check if the font is a variable font.
+
+:Example:
+
+.. code-block:: python
+
+    from foundrytools import Font
+
+    font = Font("path/to/font.otf")
+
+    if font.is_ps:
+        print("The font has PostScript outlines.")
+
+    if font.is_tt:
+        print("The font has TrueType outlines.")
+
+    if font.is_woff:
+        print("The font is a WOFF font.")
+
+
+Font conversion methods
+-----------------------
+
+The ``Font`` class provides methods for converting fonts to different formats:
+
+- ``to_otf``: Converts a TrueType font to PostScript.
+- ``to_ttf``: Convert a PostScript font to TrueType.
+- ``to_woff``: Converts a SFNT font to WOFF.
+- ``to_woff2``: Convert a SFNT font to WOFF2.
+- ``to_sfnt``: Converts a WOFF or WOFF2 font to SFNT.
+
+
+Methods
+-------
+
+The ``Font`` class provides few methods for saving the font to a file, closing the font, and
+converting the font to a different format.
+
+To keep the core package lightweight, most complex operations are performed using the
+table wrappers or the available utilities in the ``foundrytools.app`` package.
+
+Anyway, the ``Font`` class provides the following methods to save, close, and convert the font:
+
+- ``save``: Save the font to a file.
+- ``close``: Close the font.
+- ``convert``: Convert the font to a different format.
+
+"""
+
 import contextlib
 import math
 from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal, Optional, TypedDict, Union
 
 import defcon
 from cffsubr import desubroutinize, subroutinize
@@ -79,6 +186,17 @@ class FontError(Exception):
 
 class FontConversionError(Exception):
     """The ``FontConversionError`` class is a custom exception class for font conversion errors."""
+
+
+class GlyphBounds(TypedDict):
+    """
+    A type representing the bounds of a glyph.
+    """
+
+    x_min: float
+    y_min: float
+    x_max: float
+    y_max: float
 
 
 class StyleFlags:
@@ -274,110 +392,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     """
     The ``Font`` class is a high-level wrapper around the ``TTFont`` class from ``fontTools``,
     providing an interface for manipulating fonts and their tables.
-
-    The wrapped ``TTFont`` object is accessible via the ``ttfont`` attribute.
-
-    Tables
-    ------
-
-    The ``Font`` class provides wrappers (properties prefixed with ``t_``, such as ``t_cff_``,
-    ``t_cmap``, ``t_os_2``, etc.) for easy access to the most common font tables. Each table wrapper
-    provides a set of methods for accessing and modifying the table data.
-
-    :Example:
-
-    .. code-block:: python
-
-        from foundrytools import Font
-
-        font = Font("path/to/font.otf")
-        font.t_cff_.round_coordinates()
-        font.t_os_2.recalc_unicode_ranges()
-
-    Please see the Tables section for more information on the available table wrappers.
-
-    Flags
-    -----
-
-    The ``Font`` class provides a ``flags`` attribute for working with font flags (e.g., regular,
-    bold, italic, oblique). The ``flags`` attribute is an instance of the ``StyleFlags`` class.
-
-    :Example:
-
-    .. code-block:: python
-
-        from foundrytools import Font
-
-        font = Font("path/to/font.otf")
-
-        # Check if the font is bold
-        if font.flags.is_bold:
-            print("The font is bold.")
-
-        # Set the font as italic
-        font.flags.is_italic = True
-
-    Properties
-    ----------
-
-    The ``Font`` class provides the following properties, prefixed with ``is_``, for checking the
-    font format:
-
-    - ``is_ps``: Check if the font has PostScript outlines.
-    - ``is_tt``: Check if the font has TrueType outlines.
-    - ``is_woff``: Check if the font is a WOFF font.
-    - ``is_woff2``: Check if the font is a WOFF2 font.
-    - ``is_sfnt``: Check if the font is an SFNT font.
-    - ``is_static``: Check if the font is a static font.
-    - ``is_variable``: Check if the font is a variable font.
-
-    :Example:
-
-    .. code-block:: python
-
-        from foundrytools import Font
-
-        font = Font("path/to/font.otf")
-
-        if font.is_ps:
-            print("The font has PostScript outlines.")
-
-        if font.is_tt:
-            print("The font has TrueType outlines.")
-
-        if font.is_woff:
-            print("The font is a WOFF font.")
-
-
-    Font conversion methods
-    -----------------------
-
-    The ``Font`` class provides methods for converting fonts to different formats:
-
-    - ``to_otf``: Converts a TrueType font to PostScript.
-    - ``to_ttf``: Convert a PostScript font to TrueType.
-    - ``to_woff``: Converts a SFNT font to WOFF.
-    - ``to_woff2``: Convert a SFNT font to WOFF2.
-    - ``to_sfnt``: Converts a WOFF or WOFF2 font to SFNT.
-
-
-    Methods
-    -------
-
-    The ``Font`` class provides few methods for saving the font to a file, closing the font, and
-    converting the font to a different format.
-
-    To keep the core package lightweight, most complex operations are performed using the
-    table wrappers or the available utilities in the ``foundrytools.app`` package.
-
-    Anyway, the ``Font`` class provides the following methods to save, close, and convert the font:
-
-    - ``save``: Save the font to a file.
-    - ``close``: Close the font.
-    - ``convert``: Convert the font to a different format.
-
     """
-
     def __init__(
         self,
         font_source: Union[str, Path, BytesIO, TTFont],
@@ -1009,6 +1024,70 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             raise FontConversionError("Font is already a SFNT font.")
         self.ttfont.flavor = None
 
+    def calc_italic_angle(self, min_slant: float = 2.0) -> float:
+        """
+        Calculates the italic angle of a font by measuring the slant of the glyph 'H' or 'uni0048'.
+
+        :param min_slant: The minimum slant value to consider the font italic. Defaults to 2.0.
+        :type min_slant: float
+        :return: The italic angle of the font.
+        :rtype: float
+        :raises FontError: If the font does not contain the glyph 'H' or 'uni0048' or if an error
+            occurs while calculating the italic angle.
+        """
+
+        glyph_set = self.ttfont.getGlyphSet()
+        pen = StatisticsPen(glyphset=glyph_set)
+        for g in ("H", "uni0048"):
+            with contextlib.suppress(KeyError):
+                glyph_set[g].draw(pen)
+                italic_angle = -1 * math.degrees(math.atan(pen.slant))
+                if abs(italic_angle) >= abs(min_slant):
+                    return italic_angle
+                return 0.0
+        raise FontError("The font does not contain the glyph 'H' or 'uni0048'.")
+
+    def get_glyph_bounds(self, glyph_name: str) -> GlyphBounds:
+        """
+        Get the bounding box of a glyph.
+
+        :param glyph_name: The glyph name.
+        :type glyph_name: str
+        :return: The bounding box of the glyph.
+        :rtype: dict[str, float]
+        """
+        glyph_set = self.ttfont.getGlyphSet()
+
+        if glyph_name not in glyph_set:
+            raise ValueError(f"Glyph '{glyph_name}' does not exist in the font.")
+
+        bounds_pen = BoundsPen(glyphSet=glyph_set)
+
+        glyph_set[glyph_name].draw(bounds_pen)
+        bounds = GlyphBounds(
+            x_min=bounds_pen.bounds[0],
+            y_min=bounds_pen.bounds[1],
+            x_max=bounds_pen.bounds[2],
+            y_max=bounds_pen.bounds[3],
+        )
+
+        return bounds
+
+    def get_glyph_bounds_many(self, glyph_names: set[str]) -> dict[str, GlyphBounds]:
+        """
+        Get the bounding box of multiple glyphs.
+
+        :param glyph_names: A set of glyph names.
+        :type glyph_names: set[str]
+        :return: A dictionary of glyph names and their bounding boxes.
+        :rtype: dict[str, GlyphBounds]
+        """
+        bounds_dict = {}
+
+        for glyph_name in glyph_names:
+            bounds_dict[glyph_name] = self.get_glyph_bounds(glyph_name)
+        return bounds_dict
+
     def scale_upm(self, target_upm: int) -> None:
         """
         Scale the font to the specified Units Per Em (UPM) value.
@@ -1082,55 +1161,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             )
 
         raise FontError("Unknown font type.")
-
-    def calc_italic_angle(self, min_slant: float = 2.0) -> float:
-        """
-        Calculates the italic angle of a font by measuring the slant of the glyph 'H' or 'uni0048'.
-
-        :param min_slant: The minimum slant value to consider the font italic. Defaults to 2.0.
-        :type min_slant: float
-        :return: The italic angle of the font.
-        :rtype: float
-        :raises FontError: If the font does not contain the glyph 'H' or 'uni0048' or if an error
-            occurs while calculating the italic angle.
-        """
-
-        glyph_set = self.ttfont.getGlyphSet()
-        pen = StatisticsPen(glyphset=glyph_set)
-        for g in ("H", "uni0048"):
-            with contextlib.suppress(KeyError):
-                glyph_set[g].draw(pen)
-                italic_angle = -1 * math.degrees(math.atan(pen.slant))
-                if abs(italic_angle) >= abs(min_slant):
-                    return italic_angle
-                return 0.0
-        raise FontError("The font does not contain the glyph 'H' or 'uni0048'.")
-
-    def get_glyph_bounds(self, glyph_name: str) -> dict[str, float]:
-        """
-        Get the bounding box of a glyph.
-
-        :param glyph_name: The glyph name.
-        :type glyph_name: str
-        :return: The bounding box of the glyph.
-        :rtype: dict[str, float]
-        """
-        glyph_set = self.ttfont.getGlyphSet()
-
-        if glyph_name not in glyph_set:
-            raise ValueError(f"Glyph '{glyph_name}' does not exist in the font.")
-
-        bounds_pen = BoundsPen(glyphSet=glyph_set)
-
-        glyph_set[glyph_name].draw(bounds_pen)
-        bounds = {
-            "xMin": bounds_pen.bounds[0],
-            "yMin": bounds_pen.bounds[1],
-            "xMax": bounds_pen.bounds[2],
-            "yMax": bounds_pen.bounds[3],
-        }
-
-        return bounds
 
     def remove_glyphs(
         self,
@@ -1350,6 +1380,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def desubroutinize(self) -> bool:
         """
         Desubroutinize the CFF table of a font.
+
+        As with the subroutinize method, a context manager is used to allow desubroutinization of
+        WOFF and WOFF2 fonts.
 
         :return: True if the font was desubroutinized successfully.
         :rtype: bool
