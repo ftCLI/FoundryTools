@@ -8,27 +8,34 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "FoundryTools"
+project = "foundrytools"
 copyright = "2024, ftCLI"
 author = "ftCLI"
+
+version = "0.1.0"
 release = "0.1.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.viewcode"]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.todo",
+]
 
 templates_path = ["_templates"]
-exclude_patterns = []  # type: ignore
-# -- Options for HTML output -------------------------------------------------
-autodoc_default_options = {
-    "members": True,
-    "private-members": True,
-    "undoc-members": True,
-    "show-inheritance": True,
-}
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-autodoc_typehints = "description"
-autodoc_class_signature = "separated"
-html_static_path = ["_static"]
+language = "en"
+
+# -- Options for HTML output -------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
 html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]
+
+# -- Options for todo extension ----------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/todo.html#configuration
+
+todo_include_todos = True
