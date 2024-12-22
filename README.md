@@ -14,6 +14,17 @@ different formats. It offers a set of classes and utilities for working with fon
 levels of abstraction, from low-level font table manipulation to high-level font inspection and
 conversion.
 
+FoundryTools is intended for font developers, type designers, font engineers, and anyone working
+with font files who needs a programmatic way to interact with font data. It provides a Pythonic
+API for common font operations and can be used in scripts, tools, and workflows that involve font
+processing.
+
+
+## Table of Contents
+
+- [Installation](#installation)
+  - [pip](#pip)
+  - [Editable mode](#editable-mode)
 - [Font Class: High-Level Wrapper for TTFont](#font-class-high-level-wrapper-for-ttfont)
   - [Overview](#overview)
   - [Features](#features)
@@ -133,8 +144,6 @@ Supported methods for loading fonts:
 - \_init_from_file: Loads from a file.
 - \_init_from_bytesio: Loads from an in-memory BytesIO object.
 - \_init_from_ttfont: Loads from an already initialized TTFont.
-
----
 
 **Table Initialization**
 
