@@ -68,10 +68,10 @@ class FontFinder:
             defaults to a FinderFilter instance.
         :type filter_: Optional[FinderFilter]
         """
-        self.input_path = input_path
+        # self.input_path = input_path
 
         try:
-            self.input_path = Path(self.input_path).resolve(strict=True)
+            self.input_path = Path(input_path).resolve(strict=True)
         except Exception as e:
             raise FinderError(f"Invalid input path: {self.input_path}") from e
 
