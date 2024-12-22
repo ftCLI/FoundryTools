@@ -1,3 +1,5 @@
+from distlib.resources import finder
+
 # FoundryTools
 
 FoundryTools is a Python library for working with font files and their data. It provides a
@@ -237,175 +239,6 @@ The `FontFinder` class can search for fonts in a given path, handling both direc
 
 ---
 
-## Constructor
-
-### `__init__(input_path: Path, options: Optional[FinderOptions] = None, filter_: Optional[FinderFilter] = None)`
-
-Initializes the `FontFinder` instance.
-
-- **Parameters**:
-  - `input_path` (`Path`): The file or directory path to search for fonts.
-  - `options` (`FinderOptions`): Optional class containing customizable search options. If not provided, defaults to sensible defaults.
-  - `filter_` (`FinderFilter`): Optional class used to filter results based on font properties.
-
-- **Key Actions**:
-  - Resolves the `input_path` to an absolute path. If invalid, a `FinderError` is raised.
-  - Generates filter conditions from the provided `filter_`.
-  - Validates that no conflicting filters are in use.
-
----
-
-## Main Methods
-
-### `find_fonts()`
-
-Returns a **list of Fonts** that meet the specified conditions.
-
-- **Description**:
-  This method evaluates font files in the given path and applies the specified filter conditions.
-
-- **Example**:
-    ```python
-    fonts = font_finder.find_fonts()
-    for font in fonts:
-        print(font.name)
-    ```
-
----
-
-### `generate_fonts()`
-
-A **generator function** that yields `Font` objects one by one.
-
-- **Purpose**:
-  Useful when memory efficiency is critical and a large number of files are processed.
-
-- **Yield**:
-  - An object of type `Font` for each font matching the criteria.
-
-- **Exceptions**:
-  - Skips files that raise `TTLibError` or `PermissionError`.
-
----
-
-## Private Methods
-
-### `_generate_files()`
-
-Generates file paths from the given `input_path`.
-
-- **Description**:
-  - If `input_path` is a file, it yields that file.
-  - If `input_path` is a directory:
-    - Searches recursively (`Path.rglob("*")`) if the `recursive` option is `True`.
-    - Searches non-recursively (`Path.glob("*")`) otherwise.
-
-- **Yield**:
-  - Paths to font files.
-
----
-
-### `_validate_filter_conditions()`
-
-Ensures that no conflicting filter conditions are present.
-
-- **Raises**:
-  - `FinderError` if:
-    - Both TrueType (`filter_out_tt`) **and** PostScript (`filter_out_ps`) are excluded.
-    - All web fonts (`woff`, `woff2`) **and** standard fonts (`sfnt`) are excluded.
-    - Both static **and** variable fonts are excluded.
-
----
-
-### `_generate_filter_conditions(filter_: FinderFilter)`
-
-Converts the provided `FinderFilter` into executable filter conditions.
-
-- **Parameters**:
-  - `filter_`: Instance of `FinderFilter`.
-
-- **Returns**:
-  - A list of tuples, where each tuple consists of:
-    1. A boolean indicating whether the filter is enabled.
-    2. A callable function that checks a font property.
-
----
-
-## Usage
-
-### Basic Example:
-
-```python
-from font_finder import FontFinder, FinderOptions, FinderFilter
-
-# Path to process
-path = "path/to/fonts/"
-
-# Initialize FontFinder with default options
-finder = FontFinder(input_path=path)
-
-# Find fonts
-fonts = finder.find_fonts()
-
-# Process fonts
-for font in fonts:
-    print(font)
-```
-
-### Example with Recursion and Filtering:
-
-```python
-options = FinderOptions(recursive=True, lazy=True)
-filter_ = FinderFilter(filter_out_tt=True, filter_out_woff=True)
-
-finder = FontFinder(input_path="path/to/fonts", options=options, filter_=filter_)
-
-for font in finder.generate_fonts():
-    print(font.name)
-```
-
----
-
-## Error Handling
-
-### `FinderError`
-
-Raised for:
-1. Invalid paths (e.g., non-existent files or directories).
-2. Conflicting filter conditions (e.g., excluding both static and variable fonts).
-
-### Other Exceptions:
-- `TTLibError`: Related to font processing, typically skipped during generation.
-
----
-
-## Dependencies
-
-This class depends on the following:
-- **Python `pathlib`**: For handling file paths.
-- **FontTools**: To process font files (e.g., `Font` class).
-- **Optional Libraries**: FontTools `TTLibError` for error handling.
-
-Make sure to install these dependencies before using `FontFinder`.
-
----
-
-## FontFinder Class Documentation
-
-The `FontFinder` class is a robust Python tool designed to search for font files in a directory, with options for filtering, customization, and recursion. It simplifies the process of finding fonts based on specific criteria and supports the handling of single files and directories.
-
-### Overview
-
-The `FontFinder` class can search for fonts in a given path, handling both directories and individual font files. The user can specify filters to exclude certain font types, flavors, or variations.
-
-### Features:
-- **Recursive Search**: Searches directories and subdirectories for font files.
-- **Filtering**: Supports filtering by font type (TrueType/PostScript), web font flavor (`woff`, `woff2`), and font variations (static/variable).
-- **Customizable Options**: Options for lazy processing, recalculation of timestamps, and bounding boxes.
-- **Error Handling**: Handles invalid input paths and conflicting filter conditions.
-
----
-
 ### Constructor
 
 #### `__init__(input_path: Path, options: Optional[FinderOptions] = None, filter_: Optional[FinderFilter] = None)`
@@ -434,11 +267,13 @@ Returns a **list of Fonts** that meet the specified conditions.
   This method evaluates font files in the given path and applies the specified filter conditions.
 
 - **Example**:
-    ```python
-    fonts = font_finder.find_fonts()
-    for font in fonts:
-        print(font.name)
-    ```
+```python
+from foundrytools.lib.font_finder import FontFinder
+finder = FontFinder(input_path="path/to/fonts")
+fonts = finder.find_fonts()
+for font in fonts:
+  print(font.file)
+```
 
 ---
 
@@ -525,7 +360,6 @@ for font in fonts:
 
 ```python
 from foundrytools.lib.font_finder import FontFinder, FinderOptions, FinderFilter
-
 options = FinderOptions(recursive=True, lazy=True)
 filter_ = FinderFilter(filter_out_tt=True, filter_out_woff=True)
 
@@ -547,17 +381,6 @@ Raised for:
 
 #### Other Exceptions:
 - `TTLibError`: Related to font processing, typically skipped during generation.
-
----
-
-### Dependencies
-
-This class depends on the following:
-- **Python `pathlib`**: For handling file paths.
-- **FontTools**: To process font files (e.g., `Font` class).
-- **Optional Libraries**: FontTools `TTLibError` for error handling.
-
-Make sure to install these dependencies before using `FontFinder`.
 
 ---
 
