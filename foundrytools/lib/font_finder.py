@@ -1,7 +1,7 @@
 from collections.abc import Generator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 from fontTools.ttLib.ttFont import TTLibError
 
@@ -51,7 +51,7 @@ class FontFinder:
 
     def __init__(
         self,
-        input_path: Path,
+        input_path: Union[str, Path],
         options: Optional[FinderOptions] = None,
         filter_: Optional[FinderFilter] = None,
     ) -> None:
@@ -60,7 +60,7 @@ class FontFinder:
 
         :param input_path: The file system path to be processed. This path is resolved to an
             absolute path. If the path is invalid, a FinderError is raised.
-        :type input_path: Path
+        :type input_path: Union[str, Path]
         :param options: Options for customizing the behavior of the finder. If not provided,
             defaults to a FinderOptions instance.
         :type options: Optional[FinderOptions]
