@@ -22,14 +22,13 @@ conversion.
   - [Properties](#properties)
   - [Advanced Features](#advanced-features)
   - [Error Handling](#error-handling)
-- [FontFinder Class Documentation](#fontfinder-class-documentation)
+- [FontFinder Class Documentation](#fontfinder-class-font-search-and-filtering)
   - [Overview](#overview-1)
-  - [Constructor](#constructor-1)
-  - [Main Methods](#main-methods-1)
+  - [Constructor](#constructor)
+  - [Main Methods](#main-methods)
   - [Private Methods](#private-methods)
   - [Usage](#usage)
   - [Error Handling](#error-handling-1)
-  - [Dependencies](#dependencies)
 
 
 ## Installation
@@ -105,6 +104,8 @@ Example Usage:
 
 ```python
 from io import BytesIO
+
+from foundrytools import Font
 
 # Loading a font from a file
 font = Font("path/to/font.ttf")
