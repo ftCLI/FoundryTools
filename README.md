@@ -225,26 +225,7 @@ The `FontFinder` class is a robust Python tool designed to search for font files
 with options for filtering, customization, and recursion. It simplifies the process of finding fonts
 based on specific criteria and supports the handling of single files and directories.
 
----
-
-# Table of Contents
-
-1. [Overview](#overview)
-2. [Constructor](#constructor)
-3. [Main Methods](#main-methods)
-    - [find_fonts()](#find_fonts)
-    - [generate_fonts()](#generate_fonts)
-4. [Private Methods](#private-methods)
-    - [_generate_files()](#_generate_files)
-    - [_validate_filter_conditions()](#_validate_filter_conditions)
-    - [_generate_filter_conditions()](#_generate_filter_conditions)
-5. [Usage](#usage)
-6. [Error Handling](#error-handling)
-7. [Dependencies](#dependencies)
-
----
-
-# Overview
+### Overview
 
 The `FontFinder` class can search for fonts in a given path, handling both directories and individual font files. The user can specify filters to exclude certain font types, flavors, or variations.
 
