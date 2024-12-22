@@ -22,7 +22,7 @@ conversion.
   - [Properties](#properties)
   - [Advanced Features](#advanced-features)
   - [Error Handling](#error-handling)
-- [FontFinder Class Documentation](#fontfinder-class-font-search-and-filtering)
+- [FontFinder Class: Search and filter fonts](#fontfinder-class-font-search-and-filtering)
   - [Overview](#overview-1)
   - [Constructor](#constructor)
   - [Main Methods](#main-methods)
@@ -133,6 +133,8 @@ Supported methods for loading fonts:
 - \_init_from_file: Loads from a file.
 - \_init_from_bytesio: Loads from an in-memory BytesIO object.
 - \_init_from_ttfont: Loads from an already initialized TTFont.
+
+---
 
 **Table Initialization**
 
