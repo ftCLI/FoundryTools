@@ -233,15 +233,30 @@ The Font class raises specific exceptions when invalid states or inputs are enco
 > - **\`FontConversionError\`**: Raised when invalid font conversions are attempted (e.g., converting
 >   a variable font into TrueType).
 
-## FontFinder Class: Font Search and Filtering
-
-The `FontFinder` class is a robust Python tool designed to search for font files in a directory,
-with options for filtering, customization, and recursion. It simplifies the process of finding fonts
-based on specific criteria and supports the handling of single files and directories.
+## Table Classes High-Level Wrappers for TTFont tables
 
 ### Overview
 
-The `FontFinder` class can search for fonts in a given path, handling both directories and individual font files. The user can specify filters to exclude certain font types, flavors, or variations.
+The ``foundrytools`` library provides high-level wrappers for various font tables, such as
+``CFFTable``, ``GlyphTable``, ``HeadTable``, ``NameTable``, and ``OS2Table``. These classes
+simplify the process of accessing and modifying specific font table data by providing a
+Pythonic interface for common operations.
+
+### Features
+
+- **Table Initialization**: Automatically loads and initializes font tables from a given TTFont
+  instance.
+
+## FontFinder Class: Font Search and Filtering
+
+### Overview
+
+The `FontFinder` class is a robust Python tool designed to search for font files in a directory,
+with options for filtering, customization, and recursion. It simplifies the process of finding fonts
+based on specific criteria and supports the handling of single files and directories. It is
+particularly useful in scenarios involving large font repositories or automated font processing
+pipelines. With its built-in filtering and customization options, it provides a robust way to manage
+fonts programmatically.
 
 ### Features:
 - **Recursive Search**: Searches directories and subdirectories for font files.
@@ -249,7 +264,6 @@ The `FontFinder` class can search for fonts in a given path, handling both direc
 - **Customizable Options**: Options for lazy processing, recalculation of timestamps, and bounding boxes.
 - **Error Handling**: Handles invalid input paths and conflicting filter conditions.
 
----
 
 ### Constructor
 
@@ -267,7 +281,6 @@ Initializes the `FontFinder` instance.
   - Generates filter conditions from the provided `filter_`.
   - Validates that no conflicting filters are in use.
 
----
 
 ### Main Methods
 
@@ -287,8 +300,6 @@ for font in fonts:
   print(font.file)
 ```
 
----
-
 #### `generate_fonts()`
 
 A **generator function** that yields `Font` objects one by one.
@@ -301,8 +312,6 @@ A **generator function** that yields `Font` objects one by one.
 
 - **Exceptions**:
   - Skips files that raise `TTLibError` or `PermissionError`.
-
----
 
 ### Private Methods
 
@@ -319,7 +328,6 @@ Generates file paths from the given `input_path`.
 - **Yield**:
   - Paths to font files.
 
----
 
 #### `_validate_filter_conditions()`
 
@@ -331,7 +339,6 @@ Ensures that no conflicting filter conditions are present.
     - All web fonts (`woff`, `woff2`) **and** standard fonts (`sfnt`) are excluded.
     - Both static **and** variable fonts are excluded.
 
----
 
 #### `_generate_filter_conditions(filter_: FinderFilter)`
 
@@ -345,7 +352,6 @@ Converts the provided `FinderFilter` into executable filter conditions.
     1. A boolean indicating whether the filter is enabled.
     2. A callable function that checks a font property.
 
----
 
 ### Usage
 
@@ -381,8 +387,6 @@ for font in finder.generate_fonts():
     print(font.file)
 ```
 
----
-
 ### Error Handling
 
 #### `FinderError`
@@ -393,12 +397,3 @@ Raised for:
 
 #### Other Exceptions:
 - `TTLibError`: Related to font processing, typically skipped during generation.
-
----
-
-## Conclusion
-
-The `FontFinder` class is a versatile tool for managing and filtering font files efficiently. It is
-particularly useful in scenarios involving large font repositories or automated font processing
-pipelines. With its built-in filtering and customization options, it provides a robust way to manage
-fonts programmatically.
