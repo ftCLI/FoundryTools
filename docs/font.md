@@ -204,7 +204,7 @@ table object:
 from foundrytools import Font
 
 font = Font("path/to/font.otf")
-font.t_name.table.getBestFamilyName()
+font.t_name.table.getBestFamilyName()  # Access the TTLib.tables._n_a_m_e.NameTable object
 ```
 
 Tables can also be **accessed directly**, without using the `Font` class:
