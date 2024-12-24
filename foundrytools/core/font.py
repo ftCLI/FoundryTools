@@ -260,7 +260,7 @@ class StyleFlags:
     @property
     def is_regular(self) -> bool:
         """
-        A property for getting and setting the regular bit of the font.
+        A property for getting the regular bit of the font.
 
         :return: ``True`` if the font is regular, ``False`` otherwise.
         :rtype: bool
@@ -270,15 +270,10 @@ class StyleFlags:
         except Exception as e:
             raise FontError("An error occurred while checking if the font is regular") from e
 
-    @is_regular.setter
-    def is_regular(self, value: bool) -> None:
+    def set_regular(self) -> None:
         """Set the regular bit in the OS/2 table."""
         with self._update_font_properties():
-            if value:
-                self._set_font_style(regular=True, bold=False, italic=False)
-            else:
-                # Prevent setting the regular bit if the font is bold or italic
-                self.font.t_os_2.fs_selection.regular = not (self.is_bold or self.is_italic)
+            self._set_font_style(regular=True, bold=False, italic=False)
 
 
 class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
