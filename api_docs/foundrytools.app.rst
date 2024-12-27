@@ -1,5 +1,5 @@
-Apps
-====
+foundrytools.app package
+========================
 
 .. automodule:: foundrytools.app
    :members:
@@ -8,8 +8,8 @@ Apps
    :private-members:
 
 
-fix\_empty\_notdef
-------------------
+foundrytools.app.fix\_empty\_notdef module
+------------------------------------------
 
 .. automodule:: foundrytools.app.fix_empty_notdef
    :members:
@@ -17,8 +17,8 @@ fix\_empty\_notdef
    :show-inheritance:
    :private-members:
 
-fix\_italic\_angle
-------------------
+foundrytools.app.fix\_italic\_angle module
+------------------------------------------
 
 .. automodule:: foundrytools.app.fix_italic_angle
    :members:
@@ -26,8 +26,8 @@ fix\_italic\_angle
    :show-inheritance:
    :private-members:
 
-fix\_monospace
---------------
+foundrytools.app.fix\_monospace module
+--------------------------------------
 
 .. automodule:: foundrytools.app.fix_monospace
    :members:
@@ -35,8 +35,8 @@ fix\_monospace
    :show-inheritance:
    :private-members:
 
-otf\_autohint
--------------
+foundrytools.app.otf\_autohint module
+-------------------------------------
 
 .. automodule:: foundrytools.app.otf_autohint
    :members:
@@ -44,8 +44,8 @@ otf\_autohint
    :show-inheritance:
    :private-members:
 
-otf\_check\_outlines
---------------------
+foundrytools.app.otf\_check\_outlines module
+--------------------------------------------
 
 .. automodule:: foundrytools.app.otf_check_outlines
    :members:
@@ -53,8 +53,8 @@ otf\_check\_outlines
    :show-inheritance:
    :private-members:
 
-otf\_dehint
------------
+foundrytools.app.otf\_dehint module
+-----------------------------------
 
 .. automodule:: foundrytools.app.otf_dehint
    :members:
@@ -62,9 +62,8 @@ otf\_dehint
    :show-inheritance:
    :private-members:
 
-
-otf\_recalc\_stems
-------------------
+foundrytools.app.otf\_recalc\_stems module
+------------------------------------------
 
 .. automodule:: foundrytools.app.otf_recalc_stems
    :members:
@@ -72,9 +71,8 @@ otf\_recalc\_stems
    :show-inheritance:
    :private-members:
 
-
-ttf\_autohint
--------------
+foundrytools.app.ttf\_autohint module
+-------------------------------------
 
 .. automodule:: foundrytools.app.ttf_autohint
    :members:
@@ -82,8 +80,8 @@ ttf\_autohint
    :show-inheritance:
    :private-members:
 
-ttf\_dehint
------------
+foundrytools.app.ttf\_dehint module
+-----------------------------------
 
 .. automodule:: foundrytools.app.ttf_dehint
    :members:
@@ -91,8 +89,8 @@ ttf\_dehint
    :show-inheritance:
    :private-members:
 
-var2static
-----------
+foundrytools.app.var2static module
+----------------------------------
 
 .. automodule:: foundrytools.app.var2static
    :members:

@@ -8,7 +8,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "foundrytools"
+project = "FoundryTools"
 copyright = "2024, ftCLI"
 author = "ftCLI"
 

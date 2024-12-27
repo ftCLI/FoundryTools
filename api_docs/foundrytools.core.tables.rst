@@ -1,35 +1,8 @@
-Core package
-============
+.. automodule:: foundrytools.core.tables
 
-.. automodule:: foundrytools.core
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
 
-Font
-----
-
-.. automodule:: foundrytools.core.font
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
-
-Tables
-------
-
-default table
-_____________
-
-.. automodule:: foundrytools.core.tables.default
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :private-members:
-
-cff\_
-_____
+foundrytools.core.tables.cff\_ module
+-------------------------------------
 
 .. automodule:: foundrytools.core.tables.cff_
    :members:
@@ -37,8 +10,8 @@ _____
    :show-inheritance:
    :private-members:
 
-cmap
-____
+foundrytools.core.tables.cmap module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.cmap
    :members:
@@ -46,8 +19,17 @@ ____
    :show-inheritance:
    :private-members:
 
-fvar
-____
+foundrytools.core.tables.default module
+---------------------------------------
+
+.. automodule:: foundrytools.core.tables.default
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :private-members:
+
+foundrytools.core.tables.fvar module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.fvar
    :members:
@@ -55,8 +37,8 @@ ____
    :show-inheritance:
    :private-members:
 
-gdef
-____
+foundrytools.core.tables.gdef module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.gdef
    :members:
@@ -64,8 +46,8 @@ ____
    :show-inheritance:
    :private-members:
 
-glyf
-____
+foundrytools.core.tables.glyf module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.glyf
    :members:
@@ -73,8 +55,8 @@ ____
    :show-inheritance:
    :private-members:
 
-gsub
-____
+foundrytools.core.tables.gsub module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.gsub
    :members:
@@ -82,8 +64,8 @@ ____
    :show-inheritance:
    :private-members:
 
-head
-____
+foundrytools.core.tables.head module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.head
    :members:
@@ -91,8 +73,8 @@ ____
    :show-inheritance:
    :private-members:
 
-hhea
-____
+foundrytools.core.tables.hhea module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.hhea
    :members:
@@ -100,8 +82,8 @@ ____
    :show-inheritance:
    :private-members:
 
-hmtx
-____
+foundrytools.core.tables.hmtx module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.hmtx
    :members:
@@ -109,8 +91,8 @@ ____
    :show-inheritance:
    :private-members:
 
-kern
-____
+foundrytools.core.tables.kern module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.kern
    :members:
@@ -118,8 +100,8 @@ ____
    :show-inheritance:
    :private-members:
 
-name
-____
+foundrytools.core.tables.name module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.name
    :members:
@@ -127,8 +109,8 @@ ____
    :show-inheritance:
    :private-members:
 
-os\_2
-_____
+foundrytools.core.tables.os\_2 module
+-------------------------------------
 
 .. automodule:: foundrytools.core.tables.os_2
    :members:
@@ -136,8 +118,8 @@ _____
    :show-inheritance:
    :private-members:
 
-post
-____
+foundrytools.core.tables.post module
+------------------------------------
 
 .. automodule:: foundrytools.core.tables.post
    :members:
