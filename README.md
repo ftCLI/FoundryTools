@@ -1,20 +1,18 @@
 # FoundryTools
 
 FoundryTools is a Python library for working with font files and their data. It provides a
-high-level interface for inspecting, manipulating, and converting fonts, leveraging the
-capabilities of the **fontTools** library and other font-related tools, such as **AFDKO**,
-**cffsubr**, **defcon**, **dehinter**, **skia-pathops**, **ttfautohint-py**, **ufo2ft**, and
-**ufo-extractor**.
+high-level interface for inspecting, manipulating, and converting fonts, leveraging the capabilities
+of the **fontTools** library and other font-related tools, such as **AFDKO**, **cffsubr**,
+**defcon**, **dehinter**, **skia-pathops**, **ttfautohint-py**, **ufo2ft**, and **ufo-extractor**.
 
-The library is designed to simplify font processing tasks, such as reading and writing font
-files, accessing font tables and metadata, modifying glyph data, and converting fonts between
-different formats. It offers a set of classes and utilities for working with fonts at various
-levels of abstraction, from low-level font table manipulation to high-level font inspection and
-conversion.
+The library is designed to simplify font processing tasks, such as reading and writing font files,
+accessing font tables and metadata, modifying glyph data, and converting fonts between different
+formats. It offers a set of classes and utilities for working with fonts at various levels of
+abstraction, from low-level font table manipulation to high-level font inspection and conversion.
 
 FoundryTools is intended for font developers, type designers, font engineers, and anyone working
-with font files who needs a programmatic way to interact with font data. It provides a Pythonic
-API for common font operations and can be used in scripts, tools, and workflows that involve font
+with font files who needs a programmatic way to interact with font data. It provides a Pythonic API
+for common font operations and can be used in scripts, tools, and workflows that involve font
 processing.
 
 ## Table of Contents
@@ -48,15 +46,14 @@ processing.
     - [FinderError](#findererror)
     - [Other Exceptions](#other-exceptions)
 
-
 ## Installation
 
 FoundryTools requires Python 3.9 or later.
 
 ### pip
 
-FoundryTools releases are available on the Python Package Index (PyPI), so it can be installed
-with [pip](https://pip.pypa.io/):
+FoundryTools releases are available on the Python Package Index (PyPI), so it can be installed with
+[pip](https://pip.pypa.io/):
 
 ```bash
 python -m pip install foundrytools
@@ -65,8 +62,8 @@ python -m pip install foundrytools
 ### Editable mode
 
 If you would like to contribute to the development, you can clone the repository from GitHub,
-install the package in 'editable' mode, and modify the source code in place. We strongly
-recommend using a virtual environment.
+install the package in 'editable' mode, and modify the source code in place. We strongly recommend
+using a virtual environment.
 
 ```bash
 
@@ -86,6 +83,7 @@ ftcli-venv\Scripts\activate.bat
 # install in 'editable' mode
 python -m pip install -e .
 ```
+
 ## Font Class: High-Level Wrapper for TTFont
 
 ### Overview
@@ -424,7 +422,6 @@ The following properties provide accessible abstractions of internal font data:
   - `rename_glyphs`: Renames all glyphs in the font based on a custom mapping.
   - `sort_glyphs`: Sorts glyphs based on Unicode values, alphabetical order, or design order.
 
-
 ## FontFinder Class: Font Search and Filtering
 
 ### Overview
@@ -441,7 +438,8 @@ fonts programmatically.
 - **Recursive Search**: Searches directories and subdirectories for font files.
 - **Filtering**: Supports filtering by font type (TrueType/PostScript), web font flavor (`woff`,
   `woff2`), and font variations (static/variable).
-- **Customizable Options**: Options for lazy processing, recalculation of timestamps, and bounding boxes.
+- **Customizable Options**: Options for lazy processing, recalculation of timestamps, and bounding
+  boxes.
 - **Error Handling**: Handles invalid input paths and conflicting filter conditions.
 
 ### Constructor
@@ -453,7 +451,8 @@ Initializes the `FontFinder` instance.
 - **Parameters**:
 
   - `input_path` (`Path`): The file or directory path to search for fonts.
-  - `options` (`FinderOptions`): Optional class containing customizable search options. If not provided, defaults to sensible defaults.
+  - `options` (`FinderOptions`): Optional class containing customizable search options. If not
+    provided, defaults to sensible defaults.
   - `filter_` (`FinderFilter`): Optional class used to filter results based on font properties.
 
 - **Key Actions**:
@@ -468,8 +467,8 @@ Initializes the `FontFinder` instance.
 
 Returns a **list of Fonts** that meet the specified conditions.
 
-- **Description**:
-  This method evaluates font files in the given path and applies the specified filter conditions.
+- **Description**: This method evaluates font files in the given path and applies the specified
+  filter conditions.
 
 - **Example**:
 
@@ -485,8 +484,7 @@ for font in fonts:
 
 A **generator function** that yields `Font` objects one by one.
 
-- **Purpose**:
-  Useful when memory efficiency is critical and a large number of files are processed.
+- **Purpose**: Useful when memory efficiency is critical and a large number of files are processed.
 
 - **Yield**:
 
@@ -535,7 +533,7 @@ Converts the provided `FinderFilter` into executable filter conditions.
 
   - A list of tuples, where each tuple consists of:
     1. A boolean indicating whether the filter is enabled.
-    2. A callable function that checks a font property.
+    1. A callable function that checks a font property.
 
 ### Usage
 
@@ -578,7 +576,7 @@ for font in finder.generate_fonts():
 Raised for:
 
 1. Invalid paths (e.g., non-existent files or directories).
-2. Conflicting filter conditions (e.g., excluding both static and variable fonts).
+1. Conflicting filter conditions (e.g., excluding both static and variable fonts).
 
 #### Other Exceptions:
 
