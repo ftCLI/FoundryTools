@@ -23,20 +23,14 @@ class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
     @property
     def table(self) -> table__g_l_y_f:
         """
-        Returns the ``glyf`` table object.
-
-        :return: The ``glyf`` table object.
-        :rtype: table__g_l_y_f
+        Thw wrapped ``table__g_l_y_f`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table__g_l_y_f) -> None:
         """
-        Sets the ``glyf`` table object.
-
-        :param value: The ``glyf`` table object.
-        :type value: table__g_l_y_f
+        Wraps a new ``table__g_l_y_f`` object.
         """
         self._table = value
 

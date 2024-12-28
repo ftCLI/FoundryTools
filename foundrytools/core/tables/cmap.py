@@ -28,20 +28,14 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
     @property
     def table(self) -> table__c_m_a_p:
         """
-        Returns the ``cmap`` table object.
-
-        :return: The ``cmap`` table object.
-        :rtype: table__c_m_a_p
+        The wrapped ``table__c_m_a_p`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table__c_m_a_p) -> None:
         """
-        Sets the ``cmap`` table object.
-
-        :param value: The ``cmap`` table object.
-        :type value: table__c_m_a_p
+        Wraps a new ``table__c_m_a_p`` object.
         """
         self._table = value
 

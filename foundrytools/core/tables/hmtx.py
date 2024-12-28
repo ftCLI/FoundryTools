@@ -20,20 +20,14 @@ class HmtxTable(DefaultTbl):  # pylint: disable=too-few-public-methods
     @property
     def table(self) -> table__h_m_t_x:
         """
-        Returns the ``hmtx`` table object.
-
-        :return: The ``hmtx`` table object.
-        :rtype: table__h_m_t_x
+        The wrapped ``table__h_m_t_x`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table__h_m_t_x) -> None:
         """
-        Sets the ``hmtx`` table object.
-
-        :param value: The ``hmtx`` table object.
-        :type value: table__h_m_t_x
+        Wraps a new ``table__h_m_t_x`` object.
         """
         self._table = value
 

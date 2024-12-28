@@ -20,20 +20,14 @@ class KernTable(DefaultTbl):  # pylint: disable=too-few-public-methods
     @property
     def table(self) -> table__k_e_r_n:
         """
-        Returns the ``kern`` table object.
-
-        :return: The ``kern`` table object.
-        :rtype: table__k_e_r_n
+        The wrapped ``table__k_e_r_n`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table__k_e_r_n) -> None:
         """
-        Sets the ``kern`` table object.
-
-        :param value: The ``kern`` table object.
-        :type value: table__k_e_r_n
+        Wraps a new ``table__k_e_r_n`` object.
         """
         self._table = value
 

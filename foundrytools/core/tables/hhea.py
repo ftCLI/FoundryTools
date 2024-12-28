@@ -26,20 +26,14 @@ class HheaTable(DefaultTbl):
     @property
     def table(self) -> table__h_h_e_a:
         """
-        Returns the ``hhea`` table object.
-
-        :return: The ``hhea`` table object.
-        :rtype: table__h_h_e_a
+        The wrapped ``table__h_h_e_a`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table__h_h_e_a) -> None:
         """
-        Sets the ``hhea`` table object.
-
-        :param value: The ``hhea`` table object.
-        :type value: table__h_h_e_a
+        Wraps a new ``table__h_h_e_a`` object.
         """
         self._table = value
 

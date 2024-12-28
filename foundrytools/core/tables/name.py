@@ -33,20 +33,14 @@ class NameTable(DefaultTbl):
     @property
     def table(self) -> table__n_a_m_e:
         """
-        Returns the ``name`` table object.
-
-        :return: The ``name`` table object.
-        :rtype: table__n_a_m_e
+        The wrapped ``table__n_a_m_e`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table__n_a_m_e) -> None:
         """
-        Sets the ``name`` table object.
-
-        :param value: The ``name`` table object.
-        :type value: table__n_a_m_e
+        Wraps a new ``table__n_a_m_e`` object.
         """
         self._table = value
 
