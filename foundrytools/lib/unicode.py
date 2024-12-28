@@ -461,10 +461,10 @@ def _uni_str_from_int(codepoint: int) -> Optional[str]:
     Get a Unicode string from an integer.
 
     :Example:
-    >>> _uni_str_from_int(65)
-    '0x0041'
-    >>> _uni_str_from_int(0x10FFFF)
-    '0x10FFFF'
+        >>> _uni_str_from_int(65)
+        '0x0041'
+        >>> _uni_str_from_int(0x10FFFF)
+        '0x10FFFF'
 
     :param codepoint: The codepoint to convert.
     :type codepoint: int
