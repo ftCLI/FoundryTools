@@ -24,20 +24,14 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
     @property
     def table(self) -> table_G_S_U_B_:
         """
-        Returns the ``GSUB`` table object.
-
-        :return: The ``GSUB`` table object.
-        :rtype: table_G_S_U_B_
+        The wrapped ``table_G_S_U_B_`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table_G_S_U_B_) -> None:
         """
-        Sets the ``GSUB`` table object.
-
-        :param value: The ``GSUB`` table object.
-        :type value: table_G_S_U_B_
+        Wraps a new ``table_G_S_U_B_`` object.
         """
         self._table = value
 

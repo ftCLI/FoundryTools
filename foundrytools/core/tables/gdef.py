@@ -6,7 +6,7 @@ from foundrytools.core.tables.default import DefaultTbl
 
 
 class GdefTable(DefaultTbl):  # pylint: disable=too-few-public-methods
-    """This class extends the fontTools ``GDEF`` table."""
+    """This class is a wrapper for the ``GDEF`` table."""
 
     def __init__(self, ttfont: TTFont) -> None:
         """
@@ -20,19 +20,13 @@ class GdefTable(DefaultTbl):  # pylint: disable=too-few-public-methods
     @property
     def table(self) -> table_G_D_E_F_:
         """
-        Returns the ``GDEF`` table object.
-
-        :return: The ``GDEF`` table object.
-        :rtype: table_G_D_E_F_
+        The wrapped ``table_G_D_E_F_`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table_G_D_E_F_) -> None:
         """
-        Sets the ``GDEF`` table object.
-
-        :param value: The ``GDEF`` table object.
-        :type value: table_G_D_E_F_
+        Wraps a new ``table_G_D_E_F_`` object.
         """
         self._table = value

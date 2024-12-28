@@ -249,20 +249,14 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @property
     def table(self) -> table_O_S_2f_2:
         """
-        Returns the ``OS/2`` table object.
-
-        :return: The ``OS/2`` table object.
-        :rtype: Any
+        The wrapped ``table_O_S_2f_2`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table_O_S_2f_2) -> None:
         """
-        Sets the ``OS/2`` table object.
-
-        :param value: The ``OS/2`` table object.
-        :type value: table_O_S_2f_2
+        Wraps a new ``table_O_S_2f_2`` object.
         """
         self._table = value
 

@@ -20,19 +20,13 @@ class FvarTable(DefaultTbl):  # pylint: disable=too-few-public-methods
     @property
     def table(self) -> table__f_v_a_r:
         """
-        Returns the ``fvar`` table object.
-
-        :return: The ``fvar`` table object.
-        :rtype: table__k_e_r_n
+        Thw wrapped ``table__f_v_a_r`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table__f_v_a_r) -> None:
         """
-        Sets the ``fvar`` table object.
-
-        :param value: The ``fvar`` table object.
-        :type value: table__k_e_r_n
+        Wraps a new ``table__f_v_a_r`` object.
         """
         self._table = value

@@ -23,20 +23,14 @@ class PostTable(DefaultTbl):
     @property
     def table(self) -> table__p_o_s_t:
         """
-        Returns the ``post`` table object.
-
-        :return: The ``post`` table object.
-        :rtype: table__p_o_s_t
+        The wrapped ``table__p_o_s_t`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table__p_o_s_t) -> None:
         """
-        Sets the ``post`` table object.
-
-        :param value: The ``post`` table object.
-        :type value: table__p_o_s_t
+        Wraps a new ``table__p_o_s_t`` object.
         """
         self._table = value
 

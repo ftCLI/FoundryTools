@@ -43,20 +43,14 @@ class DefaultTbl(Generic[T]):
     @property
     def table(self) -> T:
         """
-        Returns the table object.
-
-        :return: The table object.
-        :rtype: Any
+        Thw wrapped table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: T) -> None:
         """
-        Sets the table object.
-
-        :param value: The table object.
-        :type value: Any
+        Wraps a new table object.
         """
         self._table = value
 

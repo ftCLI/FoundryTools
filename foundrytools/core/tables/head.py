@@ -77,20 +77,14 @@ class HeadTable(DefaultTbl):
     @property
     def table(self) -> table__h_e_a_d:
         """
-        Returns the ``head`` table object.
-
-        :return: The ``head`` table object.
-        :rtype: table__h_e_a_d
+        The wrapped ``table__h_e_a_d`` table object.
         """
         return self._table
 
     @table.setter
     def table(self, value: table__h_e_a_d) -> None:
         """
-        Sets the ``head`` table object.
-
-        :param value: The ``head`` table object.
-        :type value: table__h_e_a_d
+        Wraps a new ``table__h_e_a_d`` object.
         """
         self._table = value
 
