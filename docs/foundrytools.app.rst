@@ -71,6 +71,15 @@ foundrytools.app.otf\_recalc\_stems module
    :show-inheritance:
    :private-members:
 
+foundrytools.app.otf\_recalc\_zones module
+------------------------------------------
+
+.. automodule:: foundrytools.app.otf_recalc_zones
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :private-members:
+
 foundrytools.app.ttf\_autohint module
 -------------------------------------
 
