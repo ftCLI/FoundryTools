@@ -121,23 +121,20 @@ def run(
     """
     Recalculates the zones for a given TTFont object.
 
-    Args:
-        font (TTFont): The TTFont object.
-        descender_glyphs (List[str]): A list of glyph names to use for calculating the descender
-            zone.
-        baseline_glyphs (List[str]): A list of glyph names to use for calculating the baseline
-            zone.
-        x_height_glyphs (List[str]): A list of glyph names to use for calculating the x-height
-            zone.
-        uppercase_glyphs (List[str]): A list of glyph names to use for calculating the uppercase
-            zone.
-        ascender_glyphs (List[str]): A list of glyph names to use for calculating the ascender
-            zone.
-
-    Returns:
-        Tuple[List[int], List[int]]: A tuple containing two lists. The first list contains the
-            values for the ``OtherBlues`` zones, and the second list contains the values for the
-            ``BlueValues`` zones.
+    :param font: The Font object.
+    :type font: Font
+    :param descender_glyphs: A list of glyph names to use for calculating the descender zone.
+    :type descender_glyphs: Optional[list[str]]
+    :param baseline_glyphs: A list of glyph names to use for calculating the baseline zone.
+    :type baseline_glyphs: Optional[list[str]]
+    :param x_height_glyphs: A list of glyph names to use for calculating the x-height zone.
+    :type x_height_glyphs: Optional[list[str]]
+    :param uppercase_glyphs: A list of glyph names to use for calculating the uppercase zone.
+    :type uppercase_glyphs: Optional[list[str]]
+    :param ascender_glyphs: A list of glyph names to use for calculating the ascender zone.
+    :type ascender_glyphs: Optional[list[str]]
+    :return: A tuple containing the recalculated OtherBlues and BlueValues values.
+    :rtype: tuple[list[int], list[int]]
     """
 
     if descender_glyphs is None:
