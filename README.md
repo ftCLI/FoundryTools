@@ -15,6 +15,9 @@ with font files who needs a programmatic way to interact with font data. It prov
 for common font operations and can be used in scripts, tools, and workflows that involve font
 processing.
 
+Below is an overview of the key components and features of FoundryTools, while the detailed
+documentation can be found at the following link: https://foundrytools.readthedocs.io/en/latest/
+
 ## Table of Contents
 
 - [Installation](#installation)
