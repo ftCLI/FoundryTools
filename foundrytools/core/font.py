@@ -37,7 +37,7 @@ from foundrytools.core.tables import (
 from foundrytools.lib.otf_builder import build_otf
 from foundrytools.lib.qu2cu import quadratics_to_cubics
 from foundrytools.lib.ttf_builder import build_ttf
-from foundrytools.lib.unicode import production_name_from_unicode, unicode_from_glyph_name
+from foundrytools.lib.unicode import prod_name_from_glyph_name
 from foundrytools.utils.misc import restore_flavor
 from foundrytools.utils.path_tools import get_temp_file_path
 
@@ -1178,21 +1178,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         """
 
         old_glyph_order: list[str] = self.ttfont.getGlyphOrder()
-        reversed_cmap = self.t_cmap.table.buildReversed()
         new_glyph_order: list[str] = []
         renamed_glyphs: list[tuple[str, str]] = []
 
         for glyph_name in old_glyph_order:
-            unicode_string = unicode_from_glyph_name(glyph_name, reversed_cmap)
-            # If still no uni_str, the glyph name is unmodified.
-            if not unicode_string:
-                new_glyph_order.append(glyph_name)
-                continue
-
             # In case the production name could not be found, the glyph is already named with
             # the production name, or the production name is already assigned, we skip the
             # renaming process.
-            production_name = production_name_from_unicode(unicode_string)
+            production_name = prod_name_from_glyph_name(glyph_name)
             if (
                 not production_name
                 or production_name == glyph_name
