@@ -42,9 +42,7 @@ processing.
   - [Usage](#usage)
     - [Basic Example](#basic-example)
     - [Example with Recursion and Filtering](#example-with-recursion-and-filtering)
-  - [Error Handling](#error-handling)
-    - [FinderError](#findererror)
-    - [Other Exceptions](#other-exceptions)
+- [The `apps` package](#the-apps-package)
 
 ## Installation
 
@@ -569,15 +567,25 @@ for font in finder.generate_fonts():
     print(font.file)
 ```
 
-### Error Handling
+## The `apps` package
 
-#### `FinderError`
+The `apps` package contains pre-built applications that leverage the `Font` class and other
+utilities provided by FoundryTools. These applications are designed to perform specific font
+processing tasks, such as fixing errors, autohinting, and more.
 
-Raised for:
+Please refer to the individual modules within the `apps` package for detailed information on each
+application.
 
-1. Invalid paths (e.g., non-existent files or directories).
-1. Conflicting filter conditions (e.g., excluding both static and variable fonts).
+An example of using the `fix_italic_angle` application:
 
-#### Other Exceptions:
+```python
+from foudrytools.lib.font_finder import FontFinder
+from foundrytools.apps.fix_italic_angle import run as fix_italic_angle
 
-- `TTLibError`: Related to font processing, typically skipped during generation.
+finder = FontFinder(input_path="path/to/fonts")
+fonts = finder.find_fonts()
+
+for font in fonts:
+    fix_italic_angle(font)
+    font.save(font.file.with_name(f"{font.file.stem}_fixed.ttf"))
+```
