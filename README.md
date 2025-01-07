@@ -73,13 +73,13 @@ git clone https://github.com/ftCLI/FoundryTools.git
 cd foundrytools
 
 # create new virtual environment named e.g. ftcli-venv, or whatever you prefer:
-python -m venv ftcli-venv
+python -m venv foundrytools-venv
 
 # to activate the virtual environment in macOS and Linux, do:
-. ftcli-venv/bin/activate
+. foundrytools-venv/bin/activate
 
 # to activate the virtual environment in Windows, do:
-ftcli-venv\Scripts\activate.bat
+foundrytools-venv\Scripts\activate.bat
 
 # install in 'editable' mode
 python -m pip install -e .
