@@ -16,7 +16,7 @@ def _get_requirements() -> list[str]:
 
 setuptools.setup(
     name="foundrytools",
-    version="0.1.1",
+    version="0.1.2",
     description="A library for working with fonts in Python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
