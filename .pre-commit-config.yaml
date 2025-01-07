@@ -31,3 +31,9 @@ repos:
         args: [--fix]
     -   id: ruff-format
         args: [--line-length=100]
+
+-   repo: https://github.com/hukkin/mdformat
+    rev: 0.7.21
+    hooks:
+    -   id: mdformat
+        args: [--wrap=100]
