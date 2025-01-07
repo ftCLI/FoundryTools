@@ -73,13 +73,13 @@ git clone https://github.com/ftCLI/FoundryTools.git
 cd foundrytools
 
 # create new virtual environment named e.g. ftcli-venv, or whatever you prefer:
-python -m venv ftcli-venv
+python -m venv foundrytools-venv
 
 # to activate the virtual environment in macOS and Linux, do:
-. ftcli-venv/bin/activate
+. foundrytools-venv/bin/activate
 
 # to activate the virtual environment in Windows, do:
-ftcli-venv\Scripts\activate.bat
+foundrytools-venv\Scripts\activate.bat
 
 # install in 'editable' mode
 python -m pip install -e .
@@ -334,18 +334,18 @@ ttfont.save("path/to/font_2.ttf")
 The following tables are currently supported, other tables will be added as needed:
 
 - **CFF**: `t_cff_` (`CFFTable`)
-- **cmap**: `t_cmap`
-- **fvar**: `t_fvar`
-- **GDEF**: `t_gdef`
-- **GSUB**: `t_gsub`
-- **glyf**: `t_glyf`
-- **head**: `t_head`
-- **hhea**: `t_hhea`
-- **hmtx**: `t_hmtx`
-- **kern**: `t_kern`
-- **name**: `t_name`
-- **OS/2**: `t_os_2`
-- **post**: `t_post`
+- **cmap**: `t_cmap` (`CmapTable`)
+- **fvar**: `t_fvar` (`FvarTable`)
+- **GDEF**: `t_gdef` (`GdefTable`)
+- **GSUB**: `t_gsub` (`GsubTable`)
+- **glyf**: `t_glyf` (`GlyfTable`)
+- **head**: `t_head` (`HeadTable`)
+- **hhea**: `t_hhea` (`HheaTable`)
+- **hmtx**: `t_hmtx` (`HmtxTable`)
+- **kern**: `t_kern` (`KernTable`)
+- **name**: `t_name` (`NameTable`)
+- **OS/2**: `t_os_2` (`OS2Table`)
+- **post**: `t_post` (`PostTable`)
 
 ### Style Flags
 
