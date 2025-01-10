@@ -173,6 +173,3 @@ WINDOWS_ENCODING_IDS = {
     9: "Reserved",
     10: "UCS4",
 }
-
-
-TERMINAL_WIDTH = 120
