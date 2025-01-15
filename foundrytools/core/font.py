@@ -1053,8 +1053,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def remove_glyphs(
         self,
-        glyph_names_to_remove: Optional[set[str]],
-        glyph_ids_to_remove: Optional[set[int]],
+        glyph_names_to_remove: Optional[set[str]] = None,
+        glyph_ids_to_remove: Optional[set[int]] = None,
     ) -> set[str]:
         """
         Removes glyphs from the font using the fontTools subsetter.
