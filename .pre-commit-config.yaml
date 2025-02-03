@@ -25,7 +25,7 @@ repos:
         args: [--py39-plus]
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.3
+    rev: v0.9.4
     hooks:
     -   id: ruff
         args: [--fix]
@@ -33,7 +33,7 @@ repos:
         args: [--line-length=100]
 
 -   repo: https://github.com/hukkin/mdformat
-    rev: 0.7.21
+    rev: 0.7.22
     hooks:
     -   id: mdformat
         args: [--wrap=100]
