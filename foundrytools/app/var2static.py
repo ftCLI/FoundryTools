@@ -141,7 +141,7 @@ def _remove_unused_names(static_font: Font) -> None:
     """
     The method ``removeUnusedNames`` is very slow. This should be enough for most cases.
     """
-    if not T_GSUB in static_font.ttfont:
+    if T_GSUB not in static_font.ttfont:
         return
     ui_name_ids = static_font.t_gsub.get_ui_name_ids()
     name_ids_to_remove = [
