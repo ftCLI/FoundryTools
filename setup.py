@@ -22,7 +22,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     author="ftCLI",
     author_email="ftcli@proton.me",
-    url="https://github.com/ftCLI/FoudryTools",
+    url="https://github.com/ftCLI/FoundryTools",
     packages=setuptools.find_packages(),
     package_data={"foundrytools": ["py.typed", "data/*"]},
     include_package_data=True,
