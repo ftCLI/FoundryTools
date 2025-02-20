@@ -1275,3 +1275,16 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         with restore_flavor(self.ttfont):
             desubroutinize(self.ttfont)
             return True
+
+    def del_table(self, table_tag: str) -> bool:
+        """
+        Delete a table from the font.
+
+        :param table_tag: The table tag.
+        :type table_tag: str
+        """
+        if table_tag not in self.ttfont.reader.tables:
+            return False
+
+        self.ttfont.reader.tables.pop(table_tag, None)
+        return True
