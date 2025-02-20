@@ -12,8 +12,8 @@ project = "FoundryTools"
 copyright = "2024, ftCLI"
 author = "ftCLI"
 
-version = "0.1.2"
-release = "0.1.2"
+version = "0.1.3"
+release = "0.1.3"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
