@@ -1,0 +1,110 @@
+# This workflow will install Python dependencies,
+# run tests with a variety of Python versions,
+# and upload a new build to TestPyPI.
+#
+# For more information see:
+# https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Unit tests
+
+on:
+  push:
+    branches-ignore:
+      - 'dependabot/**'  # Avoid duplicates; only run the PR, not the push
+      - 'gh-pages'  # GitHub Pages do not trigger all tests
+    tags-ignore:
+      - 'v*'  # Avoid re-running existing commit on release
+  pull_request:
+    branches:
+      - 'main'
+
+permissions:
+  contents: read
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        python-version: [
+          '3.9',
+          '3.10',
+          '3.11',
+          '3.12',
+          '3.13',
+        ]
+
+        exclude:
+          - os: windows-latest
+            python-version: pypy-3.10
+          - os: macos-latest
+            python-version: pypy-3.10
+    env:
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: false
+        python-version: ${{ matrix.python-version }}
+        version: "0.5.13"
+
+    - name: Install library and dependencies
+      run: |
+        uv sync
+
+    - name: Run Tox (Pytest + Coverage)
+      run: |
+        uvx --with tox-uv tox
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PLATFORM: ${{ matrix.os }}
+
+    - name: Upload Results to CodeCov
+      if: success()
+      uses: codecov/codecov-action@v5
+      with:
+        env_vars: TOXENV
+        fail_ci_if_error: false
+        files: ./tests/reports/coverage-html/index.html,./tests/reports/coverage.xml
+        flags: unittests
+        name: ${{ matrix.os }} - Python ${{ matrix.python-version }}
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+
+  testpypi-deploy:
+    name: Build and publish Python 🐍 distributions 📦 to TestPyPI
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: "pyproject.toml"
+
+    - name: Build
+      run: uv build
+
+    - name: Publish distribution 📦 to Test PyPI
+      continue-on-error: true
+      run: uv publish --token ${{ secrets.PYPI_PASSWORD }} --index testpypi --publish-url https://test.pypi.org/legacy/
+

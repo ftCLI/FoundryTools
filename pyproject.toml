@@ -1,0 +1,197 @@
+[build-system]
+requires = ["hatchling", "uv-dynamic-versioning"]
+build-backend = "hatchling.build"
+
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: not covered",
+    "@overload",
+    "if TYPE_CHECKING:"
+]
+
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+omit = [
+    ".tox/*",
+    "tests/*",
+    "main.py",
+    "__main__.py",
+]
+
+[project]
+name = "foundrytools"
+version = "0.1.2"
+description = "A library for working with fonts in Python."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "afdko>=4.0.2",
+    "cffsubr>=0.3.0",
+    "defcon>=0.10.3",
+    "dehinter>=4.0.0",
+    "fonttools[pathops,unicode,woff]>=4.56.0",
+    "ttfautohint-py>=0.5.1",
+    "ufo-extractor>=0.8.1",
+    "ufo2ft>=3.4.2",
+]
+authors = [
+    {name = "ftCLI", email = "ftcli@proton.me"},
+]
+maintainers = [
+    {name = "ftCLI", email = "ftcli@proton.me"},
+    {name = "Lari Liuhamo", email = "lari.liuhamo+pypi@gmail.com"},
+]
+license = {file = "LICENSE"}
+keywords = ["python3",]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Text Processing :: Fonts",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://pypi.org/project/foundrytools/"
+Repository = "https://github.com/ftCLI/FoundryTools"
+Documentation = "https://github.com/ftCLI/FoundryTools/tree/main/docs"
+
+[dependency-groups]
+dev = [
+    "hatch>=1.14.0",
+    "mypy>=1.15.0",
+    "pytest>=8.3.4",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.4",
+    "tox>=4.23.2",
+    "tox-gh-actions>=3.2.0",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: not covered",
+    "@overload",
+]
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+omit = [
+    ".tox/*",
+    "tests/*",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/foundrytools"]
+
+
+[tool.mypy]
+disallow_untyped_defs = true
+warn_unused_configs = true
+exclude = ".venv"
+
+[[tool.mypy.overrides]]
+module = [
+    "fontTools.*",
+    "adfko.*",
+    "cffsubr.*",
+    "defcon.*",
+    "dehinter.*",
+    "extractor.*",
+    "pathops.*",
+    "ttfautohint.*",
+    "ufo2ft.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = """
+--doctest-modules \
+--cov=./ \
+--cov-append \
+--cov-report html:tests/reports/coverage-html \
+--cov-report xml:tests/reports/coverage.xml \
+--ignore=docs/
+"""
+testpaths = [
+    "tests",
+]
+
+[tool.ruff]
+lint.select = ["ALL"]
+lint.ignore = [
+    "COM812",  # Missing trailing comma (disabled due to formatter conflict)
+    "D203",    # One blank line before class docstring
+    "D212",    # Multi-line summary first line
+    "ISC001",  # Single-line implicit string concatenation (disabled due to formatter conflict)
+    "PLR0913", # Too many arguments
+    "Q000",    # Single quotes found but double quotes preferred
+]
+line-length = 120
+show-fixes = true
+src = ["src",]
+target-version = "py39"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint.flake8-copyright]
+author = "ftCLI"
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+multiline-quotes = "double"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+# https://beta.ruff.rs/docs/rules/
+"__init__.py" = ["F401", "F403", "F405",]
+"tests/*" = ["ANN", "ARG", "INP001", "S101",]
+"logger.py" = ["N815",]
+
+[tool.ruff.lint.pylint]
+max-args = 15
+max-branches = 20
+max-returns = 10
+max-statements = 80
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+env_list = py3{9, 10, 11, 12, 13}
+skip_missing_interpreters = true
+
+[gh-actions]
+python =
+    3.9: py39
+    3.10: py310
+    3.11: py311
+    3.12: py312
+    3.13: py313
+
+[testenv]
+pass_env =
+    GITHUB_*
+    FORCE_COLOR
+allowlist_externals = uv
+
+commands =
+    uv run --frozen pytest
+    uv run --frozen coverage report
+"""

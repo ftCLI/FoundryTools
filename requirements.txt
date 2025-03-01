@@ -1,9 +1,0 @@
-afdko==4.0.2
-cffsubr==0.3.0
-defcon==0.11.0
-dehinter>=4.0.0
-fonttools[woff,pathops,unicode]==4.56.0
-setuptools==75.8.2
-ttfautohint-py==0.5.1
-ufo-extractor==0.8.1
-ufo2ft==3.4.2
