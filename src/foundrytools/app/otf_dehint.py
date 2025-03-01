@@ -1,11 +1,18 @@
-from foundrytools import Font
+"""OTF dehint."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from foundrytools import Font
 
 
 class OTFDehintError(Exception):
     """Raised when an error occurs while dehinting a font."""
 
 
-def run(font: Font, drop_hinting_data: bool = False) -> bool:
+def run(font: Font, *, drop_hinting_data: bool = False) -> bool:
     """
     Dehint a PostScript font.
 
@@ -18,10 +25,12 @@ def run(font: Font, drop_hinting_data: bool = False) -> bool:
     :rtype: bool
     """
     if not font.is_ps:
-        raise NotImplementedError("Not a PostScript font.")
+        msg = "Not a PostScript font."
+        raise NotImplementedError(msg)
 
     try:
         font.t_cff_.remove_hinting(drop_hinting_data=drop_hinting_data)
-        return True
     except Exception as e:
         raise OTFDehintError(e) from e
+
+    return True

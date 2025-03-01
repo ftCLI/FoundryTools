@@ -1,12 +1,19 @@
+"""Head table."""
+
+from __future__ import annotations
+
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 from fontTools.misc.textTools import num2binary
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._h_e_a_d import table__h_e_a_d
 
 from foundrytools.constants import T_HEAD
 from foundrytools.core.tables.default import DefaultTbl
 from foundrytools.utils.bits_tools import is_nth_bit_set
+
+if TYPE_CHECKING:
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables._h_e_a_d import table__h_e_a_d
 
 BOLD_BIT = 0
 ITALIC_BIT = 1
@@ -15,9 +22,9 @@ ITALIC_BIT = 1
 class MacStyle:
     """A wrapper class for the ``macStyle`` field of the ``head`` table."""
 
-    def __init__(self, head_table: "HeadTable") -> None:
+    def __init__(self, head_table: HeadTable) -> None:
         """
-        Initializes the ``macStyle`` field of the ``head`` table.
+        Initialize the ``macStyle`` field of the ``head`` table.
 
         :param head_table: The ``head`` table.
         :type head_table: HeadTable
@@ -25,13 +32,13 @@ class MacStyle:
         self.head_table = head_table
 
     def __repr__(self) -> str:
+        """Debug info."""
         return f"macStyle({num2binary(self.head_table.table.macStyle)})"
 
     @property
     def bold(self) -> bool:
         """
-        A property with getter and setter for bit 0 (BOLD) in the ``macStyle`` field of the ``head``
-        table.
+        A property with getter and setter for bit 0 (BOLD) in the ``macStyle`` field of the ``head`` table.
 
         :return: True if bit 0 is set, False otherwise.
         :rtype: bool
@@ -40,14 +47,13 @@ class MacStyle:
 
     @bold.setter
     def bold(self, value: bool) -> None:
-        """Sets bit 0 (BOLD_BIT) in the ``head.macStyle`` field."""
+        """Set bit 0 (BOLD_BIT) in the ``head.macStyle`` field."""
         self.head_table.set_bit(field_name="macStyle", pos=BOLD_BIT, value=value)
 
     @property
     def italic(self) -> bool:
         """
-        A property with getter and setter for bit 1 (ITALIC) in the ``macStyle`` field of the
-        ``head`` table.
+        A property with getter and setter for bit 1 (ITALIC) in the ``macStyle`` field of the ``head`` table.
 
         :return: True if bit 1 is set, False otherwise.
         :rtype: bool
@@ -56,16 +62,16 @@ class MacStyle:
 
     @italic.setter
     def italic(self, value: bool) -> None:
-        """Sets the bit 1 (ITALIC_BIT) in the ``head.macStyle`` field."""
+        """Set the bit 1 (ITALIC_BIT) in the ``head.macStyle`` field."""
         self.head_table.set_bit(field_name="macStyle", pos=ITALIC_BIT, value=value)
 
 
 class HeadTable(DefaultTbl):
-    """This class extends the fontTools ``head`` table."""
+    """Extend the fontTools ``head`` table."""
 
     def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``head`` table handler.
+        Initialize the ``head`` table handler.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -76,16 +82,12 @@ class HeadTable(DefaultTbl):
 
     @property
     def table(self) -> table__h_e_a_d:
-        """
-        The wrapped ``table__h_e_a_d`` table object.
-        """
+        """The wrapped ``table__h_e_a_d`` table object."""
         return self._table
 
     @table.setter
     def table(self, value: table__h_e_a_d) -> None:
-        """
-        Wraps a new ``table__h_e_a_d`` object.
-        """
+        """Wrap a new ``table__h_e_a_d`` object."""
         self._table = value
 
     @property
@@ -110,7 +112,7 @@ class HeadTable(DefaultTbl):
 
     @font_revision.setter
     def font_revision(self, value: float) -> None:
-        """Sets the ``fontRevision`` field of the ``head`` table."""
+        """Set the ``fontRevision`` field of the ``head`` table."""
         self.table.fontRevision = value
 
     @property
@@ -135,7 +137,7 @@ class HeadTable(DefaultTbl):
 
     @created_timestamp.setter
     def created_timestamp(self, value: int) -> None:
-        """Sets ``created`` field of the ``head`` table."""
+        """Set ``created`` field of the ``head`` table."""
         self.table.created = value
 
     @property
@@ -150,7 +152,7 @@ class HeadTable(DefaultTbl):
 
     @modified_timestamp.setter
     def modified_timestamp(self, value: int) -> None:
-        """Sets the ``modified`` field of the ``head`` table."""
+        """Set the ``modified`` field of the ``head`` table."""
         self.table.modified = value
 
     @property
@@ -165,7 +167,7 @@ class HeadTable(DefaultTbl):
 
     @x_min.setter
     def x_min(self, value: int) -> None:
-        """Sets the ``xMin`` field of the ``head`` table."""
+        """Set the ``xMin`` field of the ``head`` table."""
         self.table.xMin = value
 
     @property
@@ -180,7 +182,7 @@ class HeadTable(DefaultTbl):
 
     @y_min.setter
     def y_min(self, value: int) -> None:
-        """Sets the ``yMin`` field of the ``head`` table."""
+        """Set the ``yMin`` field of the ``head`` table."""
         self.table.yMin = value
 
     @property
@@ -195,7 +197,7 @@ class HeadTable(DefaultTbl):
 
     @x_max.setter
     def x_max(self, value: int) -> None:
-        """Sets the ``xMax`` field of the ``head`` table."""
+        """Set the ``xMax`` field of the ``head`` table."""
         self.table.xMax = value
 
     @property
@@ -210,5 +212,5 @@ class HeadTable(DefaultTbl):
 
     @y_max.setter
     def y_max(self, value: int) -> None:
-        """Sets the ``yMax`` field of the ``head`` table."""
+        """Set the ``yMax`` field of the ``head`` table."""
         self.table.yMax = value

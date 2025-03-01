@@ -1,16 +1,23 @@
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._k_e_r_n import table__k_e_r_n
+"""Kern table."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from foundrytools.constants import T_CMAP, T_KERN
 from foundrytools.core.tables.default import DefaultTbl
 
+if TYPE_CHECKING:
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables._k_e_r_n import table__k_e_r_n
 
-class KernTable(DefaultTbl):  # pylint: disable=too-few-public-methods
-    """This class extends the fontTools ``kern`` table."""
+
+class KernTable(DefaultTbl):
+    """Extend the fontTools ``kern`` table."""
 
     def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``kern`` table handler.
+        Initialize the ``kern`` table handler.
 
         :param ttfont: The ``TTFont`` object
         :type ttfont: TTFont
@@ -19,20 +26,16 @@ class KernTable(DefaultTbl):  # pylint: disable=too-few-public-methods
 
     @property
     def table(self) -> table__k_e_r_n:
-        """
-        The wrapped ``table__k_e_r_n`` table object.
-        """
+        """The wrapped ``table__k_e_r_n`` table object."""
         return self._table
 
     @table.setter
     def table(self, value: table__k_e_r_n) -> None:
-        """
-        Wraps a new ``table__k_e_r_n`` object.
-        """
+        """Wrap a new ``table__k_e_r_n`` object."""
         self._table = value
 
     def remove_unmapped_glyphs(self) -> bool:
-        """Removes unmapped glyphs from the ``kern`` table."""
+        """Remove unmapped glyphs from the ``kern`` table."""
         if all(kernTable.format != 0 for kernTable in self.table.kernTables):
             return False
 

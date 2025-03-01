@@ -1,3 +1,5 @@
+"""Foundrytools."""
+
 import importlib.metadata
 
 from foundrytools.core import tables
@@ -10,4 +12,4 @@ except importlib.metadata.PackageNotFoundError:
     __version__ = "0.0.0"
 
 VERSION = __version__
-__all__ = ["VERSION", "Font", "tables", "FontFinder"]
+__all__ = ["VERSION", "Font", "FontFinder", "tables"]

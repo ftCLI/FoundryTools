@@ -1,18 +1,24 @@
-from copy import deepcopy
+"""Post table."""
 
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._p_o_s_t import table__p_o_s_t
+from __future__ import annotations
+
+from copy import deepcopy
+from typing import TYPE_CHECKING
 
 from foundrytools.constants import T_POST
 from foundrytools.core.tables.default import DefaultTbl
 
+if TYPE_CHECKING:
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables._p_o_s_t import table__p_o_s_t
+
 
 class PostTable(DefaultTbl):
-    """This class extends the fontTools ``post`` table."""
+    """Extends the fontTools ``post`` table."""
 
     def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``post`` table handler.
+        Initialize the ``post`` table handler.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -22,16 +28,12 @@ class PostTable(DefaultTbl):
 
     @property
     def table(self) -> table__p_o_s_t:
-        """
-        The wrapped ``table__p_o_s_t`` table object.
-        """
+        """The wrapped ``table__p_o_s_t`` table object."""
         return self._table
 
     @table.setter
     def table(self, value: table__p_o_s_t) -> None:
-        """
-        Wraps a new ``table__p_o_s_t`` object.
-        """
+        """Wrap a new ``table__p_o_s_t`` object."""
         self._table = value
 
     @property
@@ -57,7 +59,7 @@ class PostTable(DefaultTbl):
     @italic_angle.setter
     def italic_angle(self, value: float) -> None:
         """
-        Sets the ``post.italicAngle`` value.
+        Set the ``post.italicAngle`` value.
 
         :param value: The new italic angle value.
         :type value: float
@@ -77,7 +79,7 @@ class PostTable(DefaultTbl):
     @underline_position.setter
     def underline_position(self, value: int) -> None:
         """
-        Sets the ``post.underlinePosition`` value.
+        Set the ``post.underlinePosition`` value.
 
         :param value: The new underline position value.
         :type value: int
@@ -97,7 +99,7 @@ class PostTable(DefaultTbl):
     @underline_thickness.setter
     def underline_thickness(self, value: int) -> None:
         """
-        Sets the ``post.underlineThickness`` value.
+        Set the ``post.underlineThickness`` value.
 
         :param value: The new underline thickness value.
         :type value: int
@@ -117,7 +119,7 @@ class PostTable(DefaultTbl):
     @fixed_pitch.setter
     def fixed_pitch(self, value: bool) -> None:
         """
-        Sets the ``post.isFixedPitch`` value.
+        Set the ``post.isFixedPitch`` value.
 
         :param value: The new isFixedPitch value.
         :type value: bool

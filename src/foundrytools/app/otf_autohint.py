@@ -1,10 +1,16 @@
-from typing import Any
+"""OTF autohint."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from afdko.otfautohint.__main__ import _validate_path
 from afdko.otfautohint.autohint import ACOptions, FontInstance, fontWrapper, openFont
 
-from foundrytools import Font
 from foundrytools.utils.misc import restore_flavor
+
+if TYPE_CHECKING:
+    from foundrytools import Font
 
 
 class OTFAutohintError(Exception):
@@ -21,7 +27,8 @@ def run(font: Font, **kwargs: dict[str, Any]) -> bool:
     :type kwargs: dict[str, Any]
     """
     if not font.is_ps:
-        raise NotImplementedError("Not a PostScript font.")
+        msg = "Not a PostScript font."
+        raise NotImplementedError(msg)
 
     try:
         options = ACOptions()

@@ -1,19 +1,27 @@
+"""GLYF table."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from fontTools.pens.recordingPen import DecomposingRecordingPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._g_l_y_f import table__g_l_y_f
 
 from foundrytools.constants import T_FPGM, T_GLYF
 from foundrytools.core.tables.default import DefaultTbl
 from foundrytools.lib.pathops import correct_glyf_contours
 
+if TYPE_CHECKING:
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables._g_l_y_f import table__g_l_y_f
 
-class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
-    """This class extends the fontTools ``glyf`` table."""
+
+class GlyfTable(DefaultTbl):
+    """Extend the fontTools ``glyf`` table."""
 
     def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``glyf`` table handler.
+        Initialize the ``glyf`` table handler.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -22,24 +30,19 @@ class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
 
     @property
     def table(self) -> table__g_l_y_f:
-        """
-        Thw wrapped ``table__g_l_y_f`` table object.
-        """
+        """The wrapped ``table__g_l_y_f`` table object."""
         return self._table
 
     @table.setter
     def table(self, value: table__g_l_y_f) -> None:
-        """
-        Wraps a new ``table__g_l_y_f`` object.
-        """
+        """Wrap a new ``table__g_l_y_f`` object."""
         self._table = value
 
     def correct_contours(
-        self, remove_hinting: bool = True, ignore_errors: bool = True, min_area: int = 25
+        self, *, remove_hinting: bool = True, ignore_errors: bool = True, min_area: int = 25
     ) -> set[str]:
         """
-        Corrects contours of the glyf table by removing overlaps, correcting the direction of the
-        contours, and removing tiny paths.
+        Correct contours of the glyf table by removing overlaps, correcting contour directions, and removing tiny paths.
 
         :param remove_hinting: Whether to remove hinting from the font if one or more glyphs are
             modified.
@@ -109,9 +112,8 @@ class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
                 # dimension is flipped while the other isn't. Otherwise, the outline direction
                 # is intact and since the font is unhinted, no rendering problems are to be
                 # expected
-                else:
-                    if transform[0] * transform[3] < 0:
-                        decompose = True
+                elif transform[0] * transform[3] < 0:
+                    decompose = True
 
             if decompose:
                 self.decompose_glyph(glyph_name)

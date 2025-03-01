@@ -25,7 +25,7 @@ results and that is easier if someone involved in that script is around.
 
 ## Notices
 
-### Contains Information for the `Adobe AGL`:
+### Contains Information for the `Adobe AGL`
 
 Copyright 2002, 2010, 2015 Adobe Systems Incorporated. All rights reserved.
 

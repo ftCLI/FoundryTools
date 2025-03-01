@@ -1,3 +1,6 @@
+"""Bit manipulation functions."""
+
+
 def is_nth_bit_set(x: int, n: int) -> bool:
     """
     Check if the nth bit of an integer x is set.
@@ -39,7 +42,7 @@ def unset_nth_bit(x: int, n: int) -> int:
     return x & ~(1 << n)
 
 
-def update_bit(num: int, pos: int, value: bool) -> int:
+def update_bit(num: int, pos: int, *, value: bool) -> int:
     """
     Handle a bitwise operation on an integer to set or unset a bit.
 

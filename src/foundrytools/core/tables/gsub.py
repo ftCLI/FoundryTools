@@ -1,20 +1,26 @@
-import logging
+"""GSUB table."""
 
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables.G_S_U_B_ import table_G_S_U_B_
+from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING
 
 from foundrytools.constants import T_GSUB
 from foundrytools.core.tables.default import DefaultTbl
 
+if TYPE_CHECKING:
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables.G_S_U_B_ import table_G_S_U_B_
+
 logger = logging.getLogger(__name__)
 
 
-class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
-    """This class extends the fontTools ``GSUB`` table."""
+class GsubTable(DefaultTbl):
+    """Extend the fontTools ``GSUB`` table."""
 
     def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``GSUB`` table handler.
+        Initialize the ``GSUB`` table handler.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -23,21 +29,17 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
 
     @property
     def table(self) -> table_G_S_U_B_:
-        """
-        The wrapped ``table_G_S_U_B_`` table object.
-        """
+        """The wrapped ``table_G_S_U_B_`` table object."""
         return self._table
 
     @table.setter
     def table(self, value: table_G_S_U_B_) -> None:
-        """
-        Wraps a new ``table_G_S_U_B_`` object.
-        """
+        """Wrap a new ``table_G_S_U_B_`` object."""
         self._table = value
 
     def get_feature_tags(self) -> set[str]:
         """
-        Returns a list of all the feature tags in the font's GSUB table.
+        Return a list of all the feature tags in the font's GSUB table.
 
         :return: The feature tags.
         :rtype: list[str]
@@ -46,7 +48,7 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
 
     def get_ui_name_ids(self) -> set[int]:
         """
-        Returns a set of all the UI name IDs in the font's GSUB table.
+        Return a set of all the UI name IDs in the font's GSUB table.
 
         :return: The UI name IDs.
         :rtype: set[int]
@@ -93,7 +95,8 @@ class GsubTable(DefaultTbl):  # pylint: disable=too-few-public-methods
             return False
 
         if new_feature_tag in self.get_feature_tags():
-            logger.warning(f"Feature tag '{new_feature_tag}' already exists. No changes made.")
+            msg = f"Feature tag '{new_feature_tag}' already exists. No changes made."
+            logger.warning(msg)
             return False
 
         modified = False

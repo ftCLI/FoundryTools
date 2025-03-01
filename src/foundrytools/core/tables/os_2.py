@@ -1,12 +1,14 @@
+"""OS2."""
+
+from __future__ import annotations
+
 from copy import deepcopy
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.textTools import num2binary
 from fontTools.otlLib.maxContextCalc import maxCtxFont
 from fontTools.pens.boundsPen import BoundsPen
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables.O_S_2f_2 import table_O_S_2f_2
 
 from foundrytools.constants import (
     MAX_US_WEIGHT_CLASS,
@@ -23,6 +25,10 @@ from foundrytools.lib.unicode import (
     count_block_codepoints,
 )
 from foundrytools.utils.bits_tools import is_nth_bit_set
+
+if TYPE_CHECKING:
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables.O_S_2f_2 import table_O_S_2f_2
 
 ITALIC_BIT = 0
 UNDERSCORE_BIT = 1
@@ -42,18 +48,15 @@ MAX_OS2_VERSION = 5
 
 
 class InvalidOS2VersionError(Exception):
-    """
-    Exception raised when trying to access a field that is not defined in the current OS/2 table
-    version.
-    """
+    """Exception raised when trying to access a field that is not defined in the current OS/2 table version."""
 
 
 class FsSelection:
     """A wrapper class for the ``fsSelection`` field of the ``OS/2`` table."""
 
-    def __init__(self, os_2_table: "OS2Table"):
+    def __init__(self, os_2_table: OS2Table) -> None:
         """
-        Initializes the ``fsSelection`` field of the ``OS/2`` table.
+        Initialize the ``fsSelection`` field of the ``OS/2`` table.
 
         :param os_2_table: The ``OS/2`` table.
         :type os_2_table: OS2Table
@@ -61,6 +64,7 @@ class FsSelection:
         self.os_2_table = os_2_table
 
     def __repr__(self) -> str:
+        """Debug info."""
         return f"fsSelection({num2binary(self.os_2_table.table.fsSelection)})"
 
     @property
@@ -75,7 +79,7 @@ class FsSelection:
 
     @italic.setter
     def italic(self, value: bool) -> None:
-        """Sets bit 0 (ITALIC) of the ``OS/2.fsSelection`` field."""
+        """Set bit 0 (ITALIC) of the ``OS/2.fsSelection`` field."""
         self.os_2_table.set_bit(field_name="fsSelection", pos=ITALIC_BIT, value=value)
 
     @property
@@ -91,7 +95,7 @@ class FsSelection:
     @underscore.setter
     def underscore(self, value: bool) -> None:
         """
-        Sets bit 1 (UNDERSCORE) of the ``OS/2.fsSelection`` field.
+        Set bit 1 (UNDERSCORE) of the ``OS/2.fsSelection`` field.
 
         :param value: The value to set.
         :type value: bool
@@ -110,7 +114,7 @@ class FsSelection:
 
     @negative.setter
     def negative(self, value: bool) -> None:
-        """Sets bit 2 (NEGATIVE) of the ``OS/2.fsSelection`` field."""
+        """Set bit 2 (NEGATIVE) of the ``OS/2.fsSelection`` field."""
         self.os_2_table.set_bit(field_name="fsSelection", pos=NEGATIVE_BIT, value=value)
 
     @property
@@ -125,7 +129,7 @@ class FsSelection:
 
     @outlined.setter
     def outlined(self, value: bool) -> None:
-        """Sets bit 3 (OUTLINED) of the ``OS/2.fsSelection`` field."""
+        """Set bit 3 (OUTLINED) of the ``OS/2.fsSelection`` field."""
         self.os_2_table.set_bit(field_name="fsSelection", pos=OUTLINED_BIT, value=value)
 
     @property
@@ -140,7 +144,7 @@ class FsSelection:
 
     @strikeout.setter
     def strikeout(self, value: bool) -> None:
-        """Sets bit 4 (STRIKEOUT) of the ``OS/2.fsSelection`` field."""
+        """Set bit 4 (STRIKEOUT) of the ``OS/2.fsSelection`` field."""
         self.os_2_table.set_bit(field_name="fsSelection", pos=STRIKEOUT_BIT, value=value)
 
     @property
@@ -155,7 +159,7 @@ class FsSelection:
 
     @bold.setter
     def bold(self, value: bool) -> None:
-        """Sets the bit 5 (BOLD) of the ``OS/2.fsSelection`` field."""
+        """Set the bit 5 (BOLD) of the ``OS/2.fsSelection`` field."""
         self.os_2_table.set_bit(field_name="fsSelection", pos=BOLD_BIT, value=value)
 
     @property
@@ -170,13 +174,13 @@ class FsSelection:
 
     @regular.setter
     def regular(self, value: bool) -> None:
-        """Sets bit 6 (REGULAR) of the ``OS/2.fsSelection`` field."""
+        """Set bit 6 (REGULAR) of the ``OS/2.fsSelection`` field."""
         self.os_2_table.set_bit(field_name="fsSelection", pos=REGULAR_BIT, value=value)
 
     @property
     def use_typo_metrics(self) -> bool:
         """
-        A property with getter and setter for bit 7 (USE_TYPO_METRICS) in the ``OS/2.fsSelection``
+        A property with getter and setter for bit 7 (USE_TYPO_METRICS) in the ``OS/2.fsSelection``.
 
         :return: True if bit 7 is set, False otherwise.
         :rtype: bool
@@ -185,12 +189,10 @@ class FsSelection:
 
     @use_typo_metrics.setter
     def use_typo_metrics(self, value: bool) -> None:
-        """Sets bit 7 (USE_TYPO_METRICS) of the ``OS/2.fsSelection`` field."""
-        if self.os_2_table.version < 4 and value is True:
-            raise InvalidOS2VersionError(
-                "fsSelection bit 7 (USE_TYPO_METRICS) is only defined in OS/2 table versions 4 and "
-                "up."
-            )
+        """Set bit 7 (USE_TYPO_METRICS) of the ``OS/2.fsSelection`` field."""
+        if self.os_2_table.version < 4 and value is True:  # noqa: PLR2004
+            msg = "fsSelection bit 7 (USE_TYPO_METRICS) is only defined in OS/2 table versions 4 and up."
+            raise InvalidOS2VersionError(msg)
         self.os_2_table.set_bit(field_name="fsSelection", pos=USE_TYPO_METRICS_BIT, value=value)
 
     @property
@@ -205,11 +207,10 @@ class FsSelection:
 
     @wws_consistent.setter
     def wws_consistent(self, value: bool) -> None:
-        """Sets bit 8 (WWS) of the ``OS/2.fsSelection`` field."""
-        if self.os_2_table.version < 4 and value is True:
-            raise InvalidOS2VersionError(
-                "fsSelection bit 8 (WWS) is only defined in OS/2 table versions 4 and up."
-            )
+        """Set bit 8 (WWS) of the ``OS/2.fsSelection`` field."""
+        if self.os_2_table.version < 4 and value is True:  # noqa: PLR2004
+            msg = "fsSelection bit 8 (WWS) is only defined in OS/2 table versions 4 and up."
+            raise InvalidOS2VersionError(msg)
         self.os_2_table.set_bit(field_name="fsSelection", pos=WWS_BIT, value=value)
 
     @property
@@ -224,20 +225,19 @@ class FsSelection:
 
     @oblique.setter
     def oblique(self, value: bool) -> None:
-        """Sets the bit 9 (OBLIQUE) of the ``OS/2.fsSelection`` field."""
-        if self.os_2_table.version < 4:
-            raise InvalidOS2VersionError(
-                "fsSelection bit 9 (OBLIQUE) is only defined in OS/2 table versions 4 and up."
-            )
+        """Set the bit 9 (OBLIQUE) of the ``OS/2.fsSelection`` field."""
+        if self.os_2_table.version < 4:  # noqa: PLR2004
+            msg = "fsSelection bit 9 (OBLIQUE) is only defined in OS/2 table versions 4 and up."
+            raise InvalidOS2VersionError(msg)
         self.os_2_table.set_bit(field_name="fsSelection", pos=OBLIQUE_BIT, value=value)
 
 
-class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many-instance-attributes
-    """This class extends the fontTools ``OS/2`` table."""
+class OS2Table(DefaultTbl):
+    """Extend the fontTools ``OS/2`` table."""
 
-    def __init__(self, ttfont: TTFont):
+    def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``OS/2`` table handler.
+        Initialize the ``OS/2`` table handler.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -248,16 +248,12 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
 
     @property
     def table(self) -> table_O_S_2f_2:
-        """
-        The wrapped ``table_O_S_2f_2`` table object.
-        """
+        """The wrapped ``table_O_S_2f_2`` table object."""
         return self._table
 
     @table.setter
     def table(self, value: table_O_S_2f_2) -> None:
-        """
-        Wraps a new ``table_O_S_2f_2`` object.
-        """
+        """Wrap a new ``table_O_S_2f_2`` object."""
         self._table = value
 
     @property
@@ -285,17 +281,17 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @version.setter
     def version(self, value: int) -> None:
         """
-        Sets the ``OS/2.version`` value.
+        Set the ``OS/2.version`` value.
 
         :param value: The value to set.
         :type value: int
         :raises: ValueError: If the value is not between 0 and 5.
         """
         if value < MIN_OS2_VERSION or value > MAX_OS2_VERSION:
-            raise ValueError(
-                f"Invalid value for version: {value}. "
-                f"Expected a value between {MIN_OS2_VERSION} and {MAX_OS2_VERSION}."
+            msg = (
+                f"Invalid value for version: {value}. Expected a value between {MIN_OS2_VERSION} and {MAX_OS2_VERSION}."
             )
+            raise ValueError(msg)
         self.table.version = value
 
     @property
@@ -313,16 +309,17 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @weight_class.setter
     def weight_class(self, value: int) -> None:
         """
-        Sets the ``OS/2.usWeightClass`` value.
+        Set the ``OS/2.usWeightClass`` value.
 
         :param value: The value to set.
         :type value: int
         """
         if value < MIN_US_WEIGHT_CLASS or value > MAX_US_WEIGHT_CLASS:
-            raise ValueError(
+            msg = (
                 f"Invalid value for usWeightClass: {value}. "
                 f"Expected a value between {MIN_US_WEIGHT_CLASS} and {MAX_US_WEIGHT_CLASS}."
             )
+            raise ValueError(msg)
         self.table.usWeightClass = value
 
     @property
@@ -340,16 +337,17 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @width_class.setter
     def width_class(self, value: int) -> None:
         """
-        Sets the ``OS/2.usWidthClass`` value.
+        Set the ``OS/2.usWidthClass`` value.
 
         :param value: The value to set.
         :type value: int
         """
         if value < MIN_US_WIDTH_CLASS or value > MAX_US_WIDTH_CLASS:
-            raise ValueError(
+            msg = (
                 f"Invalid value for usWidthClass: {value}. "
                 f"Expected a value between {MIN_US_WIDTH_CLASS} and {MAX_US_WIDTH_CLASS}."
             )
+            raise ValueError(msg)
         self.table.usWidthClass = value
 
     @property
@@ -369,7 +367,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @embed_level.setter
     def embed_level(self, value: int) -> None:
         """
-        Sets the embedding level of the ``OS/2.fsType`` field.
+        Set the embedding level of the ``OS/2.fsType`` field.
 
         :param value: The value to set.
         :type value: int
@@ -382,7 +380,8 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         }
 
         if value not in bit_operands:
-            raise ValueError("Invalid value: embed_level must be 0, 2, 4 or 8.")
+            msg = "Invalid value: embed_level must be 0, 2, 4 or 8."
+            raise ValueError(msg)
 
         bits_to_unset, bit_to_set = bit_operands[value]
 
@@ -405,7 +404,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @no_subsetting.setter
     def no_subsetting(self, value: bool) -> None:
         """
-        Sets bit 8 (NO_SUBSETTING) of the ``OS/2.fsType`` field.
+        Set bit 8 (NO_SUBSETTING) of the ``OS/2.fsType`` field.
 
         :param value: The value to set.
         :type value: bool
@@ -415,8 +414,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @property
     def bitmap_embed_only(self) -> bool:
         """
-        A property with getter and setter for bit 9 (BITMAP_EMBED_ONLY) in the ``OS/2.fsType``
-        field.
+        A property with getter and setter for bit 9 (BITMAP_EMBED_ONLY) in the ``OS/2.fsType`` field.
 
         :return: True if bit 9 is set, False otherwise.
         :rtype: bool
@@ -426,7 +424,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @bitmap_embed_only.setter
     def bitmap_embed_only(self, value: bool) -> None:
         """
-        Sets bit 9 (BITMAP_EMBED_ONLY) of the ``OS/2.fsType`` field.
+        Set bit 9 (BITMAP_EMBED_ONLY) of the ``OS/2.fsType`` field.
 
         :param value: The value to set.
         :type value: bool
@@ -448,12 +446,12 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @vendor_id.setter
     def vendor_id(self, value: str) -> None:
         """
-        Sets the ``OS/2.achVendID`` value.
+        Set the ``OS/2.achVendID`` value.
 
         :param value: The value to set.
         :type value: str
         """
-        value = value.ljust(4, " ") if len(value) < 4 else value[:4]
+        value = value.ljust(4, " ") if len(value) < 4 else value[:4]  # noqa: PLR2004
         self.table.achVendID = value
 
     @property
@@ -469,7 +467,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @typo_ascender.setter
     def typo_ascender(self, value: int) -> None:
         """
-        Sets the ``OS/2.sTypoAscender`` value.
+        Set the ``OS/2.sTypoAscender`` value.
 
         :param value: The value to set.
         :type value: int
@@ -489,7 +487,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @typo_descender.setter
     def typo_descender(self, value: int) -> None:
         """
-        Sets the ``OS/2.sTypoDescender`` value.
+        Set the ``OS/2.sTypoDescender`` value.
 
         :param value: The value to set.
         :type value: int
@@ -509,7 +507,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @typo_line_gap.setter
     def typo_line_gap(self, value: int) -> None:
         """
-        Sets the ``OS/2.sTypoLineGap`` value.
+        Set the ``OS/2.sTypoLineGap`` value.
 
         :param value: The value to set.
         :type value: int
@@ -529,7 +527,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @win_ascent.setter
     def win_ascent(self, value: int) -> None:
         """
-        Sets the ``OS/2.usWinAscent`` value.
+        Set the ``OS/2.usWinAscent`` value.
 
         :param value: The value to set.
         :type value: int
@@ -549,7 +547,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @win_descent.setter
     def win_descent(self, value: int) -> None:
         """
-        Sets the ``OS/2.usWinDescent`` value.
+        Set the ``OS/2.usWinDescent`` value.
 
         :param value: The value to set.
         :type value: int
@@ -557,7 +555,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         self.table.usWinDescent = value
 
     @property
-    def x_height(self) -> Optional[int]:
+    def x_height(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.sxHeight`` field.
 
@@ -566,27 +564,26 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :return: The ``OS/2.sxHeight`` value.
         :rtype: int
         """
-        if self.version < 2:
+        if self.version < 2:  # noqa: PLR2004
             return None
         return self.table.sxHeight
 
     @x_height.setter
     def x_height(self, value: int) -> None:
         """
-        Sets the ``OS/2.sxHeight`` value.
+        Set the ``OS/2.sxHeight`` value.
 
         :param value: The value to set.
         :type value: int
         :raises: InvalidOS2VersionError: If the ``OS/2`` table version is less than 2.
         """
-        if self.version < 2:
-            raise InvalidOS2VersionError(
-                "sxHeight is only defined in OS/2 table versions 2 and up."
-            )
+        if self.version < 2:  # noqa: PLR2004
+            msg = "sxHeight is only defined in OS/2 table versions 2 and up."
+            raise InvalidOS2VersionError(msg)
         self.table.sxHeight = value
 
     @property
-    def cap_height(self) -> Optional[int]:
+    def cap_height(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.sCapHeight`` field.
 
@@ -595,27 +592,26 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :return: The ``OS/2.sCapHeight`` value.
         :rtype: int
         """
-        if self.version < 2:
+        if self.version < 2:  # noqa: PLR2004
             return None
         return self.table.sCapHeight
 
     @cap_height.setter
     def cap_height(self, value: int) -> None:
         """
-        Sets the ``OS/2.sCapHeight`` value.
+        Set the ``OS/2.sCapHeight`` value.
 
         :param value: The value to set.
         :type value: int
         :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
         """
-        if self.version < 2:
-            raise InvalidOS2VersionError(
-                "sCapHeight is only defined in OS/2 table versions 2 and up."
-            )
+        if self.version < 2:  # noqa: PLR2004
+            msg = "sCapHeight is only defined in OS/2 table versions 2 and up."
+            raise InvalidOS2VersionError(msg)
         self.table.sCapHeight = value
 
     @property
-    def max_context(self) -> Optional[int]:
+    def max_context(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.usMaxContext`` field.
 
@@ -624,23 +620,22 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :return: The ``OS/2.usMaxContext`` value.
         :rtype: int
         """
-        if self.version < 2:
+        if self.version < 2:  # noqa: PLR2004
             return None
         return self.table.usMaxContext
 
     @max_context.setter
     def max_context(self, value: int) -> None:
         """
-        Sets the ``OS/2.usMaxContext`` value.
+        Set the ``OS/2.usMaxContext`` value.
 
         :param value: The value to set.
         :type value: int
         :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
         """
-        if self.version < 2:
-            raise InvalidOS2VersionError(
-                "usMaxContext is only defined in OS/2 table versions 2 and up."
-            )
+        if self.version < 2:  # noqa: PLR2004
+            msg = "usMaxContext is only defined in OS/2 table versions 2 and up."
+            raise InvalidOS2VersionError(msg)
         self.table.usMaxContext = value
 
     @property
@@ -656,7 +651,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @unicode_ranges.setter
     def unicode_ranges(self, bits: set[int]) -> None:
         """
-        Sets the ``OS/2.ulUnicodeRange(1-4)`` fields.
+        Set the ``OS/2.ulUnicodeRange(1-4)`` fields.
 
         :param bits: The Unicode ranges to set.
         :type bits: set[int]
@@ -676,7 +671,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
     @codepage_ranges.setter
     def codepage_ranges(self, bits: set[int]) -> None:
         """
-        Sets the ``OS/2.ulCodePageRange(1-2)`` fields.
+        Set the ``OS/2.ulCodePageRange(1-2)`` fields.
 
         :param bits: The code page ranges to set.
         :type bits: set[int]
@@ -708,7 +703,8 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         :raises: KeyError: If the font does not have a cmap table.
         """
         if T_CMAP not in self.ttfont:
-            raise KeyError("Font does not have a cmap table")
+            msg = "Font does not have a cmap table"
+            raise KeyError(msg)
 
         cmap_table = self.ttfont[T_CMAP]
         unicodes = set()
@@ -717,27 +713,30 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         for table in cmap_table.tables:
             if table.isUnicode():
                 unicodes.update(table.cmap.keys())
-            if table.platformID == 3 and table.platEncID == 10:
+            if table.platformID == 3 and table.platEncID == 10:  # noqa: PLR2004
                 has_cmap_32 = True
 
         new_unicode_ranges = set()
         modified_unicode_ranges = set()
 
         for block in OS_2_UNICODE_RANGES:
-            min_codepoints = otRound(block.size / 100 * percentage) if block.bit_number != 57 else 1
+            min_codepoints = otRound(block.size / 100 * percentage) if block.bit_number != 57 else 1  # noqa: PLR2004
             found_codepoints = count_block_codepoints(block, unicodes)
             is_enabled = block.bit_number in self.unicode_ranges
             is_supported = check_block_support(
-                block, found_codepoints, min_codepoints, self.version, has_cmap_32
+                block,
+                found_codepoints,
+                min_codepoints,
+                self.version,
+                has_cmap_32=has_cmap_32,
             )
 
             if is_supported:
                 new_unicode_ranges.add(block.bit_number)
                 if not is_enabled:
                     modified_unicode_ranges.add((block.bit_number, block.block_name, "enabled"))
-            else:
-                if is_enabled:
-                    modified_unicode_ranges.add((block.bit_number, block.block_name, "disabled"))
+            elif is_enabled:
+                modified_unicode_ranges.add((block.bit_number, block.block_name, "disabled"))
 
         self.unicode_ranges = new_unicode_ranges
         return modified_unicode_ranges
@@ -756,9 +755,8 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         """
         current_version = self.version
         if target_version <= current_version:
-            raise InvalidOS2VersionError(
-                f"The target version must be greater than the current version ({current_version})."
-            )
+            msg = f"The target version must be greater than the current version ({current_version})."
+            raise InvalidOS2VersionError(msg)
 
         # Used to recalc xHeight and capHeight
         def _get_glyph_height(glyph_name: str) -> int:
@@ -777,18 +775,18 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         if target_version == 1:
             return
 
-        if current_version < 2:
+        if current_version < 2:  # noqa: PLR2004
             self.x_height = _get_glyph_height("x")
             self.cap_height = _get_glyph_height("H")
             self.table.usDefaultChar = 0
             self.table.usBreakChar = 32
             self.recalc_max_context()
 
-        if target_version == 5:
+        if target_version == 5:  # noqa: PLR2004
             self.table.usLowerOpticalPointSize = 0
             self.table.usUpperOpticalPointSize = 65535 / 20
 
-        if target_version < 4:
+        if target_version < 4:  # noqa: PLR2004
             self.fs_selection.use_typo_metrics = False
             self.fs_selection.wws_consistent = False
             self.fs_selection.oblique = False

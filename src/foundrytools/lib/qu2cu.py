@@ -1,16 +1,23 @@
+"""Quadratics to cubics."""
+
+from __future__ import annotations
+
 from collections.abc import Mapping
+from typing import TYPE_CHECKING
 
 import pathops
 from fontTools.cffLib import PrivateDict
-from fontTools.misc.psCharStrings import T2CharString
 from fontTools.pens.cu2quPen import Cu2QuPen
 from fontTools.pens.qu2cuPen import Qu2CuPen
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
-from fontTools.ttLib import TTFont
 from fontTools.ttLib.ttGlyphSet import _TTGlyph
 
 from foundrytools.lib.pathops import simplify_path
+
+if TYPE_CHECKING:
+    from fontTools.misc.psCharStrings import T2CharString
+    from fontTools.ttLib import TTFont
 
 __all__ = ["quadratics_to_cubics", "quadratics_to_cubics_2"]
 
@@ -32,11 +39,10 @@ def _charstring_from_skia_path(path: pathops.Path, width: int) -> T2CharString:
 
 
 def quadratics_to_cubics(
-    font: TTFont, tolerance: float = 1.0, correct_contours: bool = True
+    font: TTFont, *, tolerance: float = 1.0, correct_contours: bool = True
 ) -> dict[str, T2CharString]:
     """
-    Converts quadratic Bézier splines to cubic curves with a specified tolerance using the
-    ``Qu2CuPen``.
+    Convert quadratic Bézier splines to cubic curves with a specified tolerance using the ``Qu2CuPen``.
 
     Optionally corrects the winding direction of the contours.
 
@@ -51,7 +57,6 @@ def quadratics_to_cubics(
         conversion.
     :rtype: dict[str, T2CharString]
     """
-
     qu2cu_charstrings = {}
     glyph_set = font.getGlyphSet()
 
@@ -94,7 +99,7 @@ def quadratics_to_cubics(
 
 def quadratics_to_cubics_2(font: TTFont) -> dict[str, T2CharString]:
     """
-    Converts quadratic Bézier splines to cubic curves using the ``T2CharStringPen``.
+    Convert quadratic Bézier splines to cubic curves using the ``T2CharStringPen``.
 
     :param font: The ``TTFont`` object representing the font to process.
     :type font: TTFont

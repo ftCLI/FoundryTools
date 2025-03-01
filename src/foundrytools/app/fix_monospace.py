@@ -1,8 +1,12 @@
-# pylint: disable=import-outside-toplevel
-from collections import Counter
-from typing import Union
+"""Fix monospace."""
 
-from foundrytools import Font
+from __future__ import annotations
+
+from collections import Counter
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from foundrytools import Font
 
 
 class FixMonospaceError(Exception):
@@ -10,10 +14,15 @@ class FixMonospaceError(Exception):
 
 
 # Copied from fontbakery/profiles/shared_conditions.py
-def _get_glyph_metrics_stats(font: Font) -> dict[str, Union[bool, int]]:
+def _get_glyph_metrics_stats(font: Font) -> dict[str, bool | int]:
     """
-    Returns a dict containing whether the font seems_monospaced, what's the maximum glyph width and
-    what's the most common width.
+    Return the glyph metric stats.
+
+    The stats are a dict containing:
+
+    * whether the font seems_monospaced,
+    * what the maximum glyph width is, and
+    * what the most common width is.
 
     For a font to be considered monospaced, if at least 80% of ASCII characters have glyphs, then at
     least 80% of those must have the same width, otherwise all glyphs of printable characters must
@@ -28,16 +37,10 @@ def _get_glyph_metrics_stats(font: Font) -> dict[str, Union[bool, int]]:
     # NOTE: `range(a, b)` includes `a` and does not include `b`.
     #       Here we don't include 0-31 as well as 127
     #       because these are control characters.
-    ascii_glyph_names = [
-        font.ttfont.getBestCmap()[c] for c in range(32, 127) if c in font.ttfont.getBestCmap()
-    ]
+    ascii_glyph_names = [font.ttfont.getBestCmap()[c] for c in range(32, 127) if c in font.ttfont.getBestCmap()]
 
     if len(ascii_glyph_names) > 0.8 * (127 - 32):
-        ascii_widths = [
-            adv
-            for name, (adv, lsb) in glyph_metrics.items()
-            if name in ascii_glyph_names and adv != 0
-        ]
+        ascii_widths = [adv for name, (adv, lsb) in glyph_metrics.items() if name in ascii_glyph_names and adv != 0]
         ascii_width_count = Counter(ascii_widths)
         ascii_most_common_width = ascii_width_count.most_common(1)[0][1]
         seems_monospaced = ascii_most_common_width >= len(ascii_widths) * 0.8
@@ -55,22 +58,14 @@ def _get_glyph_metrics_stats(font: Font) -> dict[str, Union[bool, int]]:
         # Remove character glyphs that are mark glyphs.
         gdef = font.t_gdef.table
         if gdef and gdef.table.GlyphClassDef:
-            marks = {name for name, c in gdef.table.GlyphClassDef.classDefs.items() if c == 3}
+            marks = {name for name, c in gdef.table.GlyphClassDef.classDefs.items() if c == 3}  # noqa: PLR2004
             relevant_glyph_names.difference_update(marks)
 
-        widths = sorted(
-            {
-                adv
-                for name, (adv, lsb) in glyph_metrics.items()
-                if name in relevant_glyph_names and adv != 0
-            }
-        )
-        seems_monospaced = len(widths) <= 2
+        widths = sorted({adv for name, (adv, _) in glyph_metrics.items() if name in relevant_glyph_names and adv != 0})
+        seems_monospaced = len(widths) <= 2  # noqa: PLR2004
 
-    width_max = max(adv for k, (adv, lsb) in glyph_metrics.items())
-    most_common_width = Counter([g for g in glyph_metrics.values() if g[0] != 0]).most_common(1)[0][
-        0
-    ][0]
+    width_max = max(adv for k, (adv, _) in glyph_metrics.items())
+    most_common_width = Counter([g for g in glyph_metrics.values() if g[0] != 0]).most_common(1)[0][0][0]
 
     return {
         "seems_monospaced": seems_monospaced,
@@ -106,7 +101,7 @@ def run(font: Font) -> bool:
 
             return modified
 
-        return False
-
     except Exception as e:
-        raise FixMonospaceError(f"{e}") from e
+        raise FixMonospaceError(str(e)) from e
+
+    return False

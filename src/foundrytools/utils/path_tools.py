@@ -1,12 +1,15 @@
+"""Miscellaneous path tools."""
+
+from __future__ import annotations
+
 import os
 import tempfile
 from pathlib import Path
-from typing import Optional, Union
 
 
-def get_temp_file_path(directory: Optional[Union[str, Path]] = None) -> Path:
+def get_temp_file_path(directory: str | Path | None = None) -> Path:
     """
-    Returns a temporary file path.
+    Return a temporary file path.
 
     :param directory: The directory to create the temporary file in.
     :type directory: Optional[Union[str, Path]]
@@ -14,7 +17,8 @@ def get_temp_file_path(directory: Optional[Union[str, Path]] = None) -> Path:
     :rtype: Path
     """
     if directory and not Path(directory).is_dir():
-        raise NotADirectoryError(f"{directory} is not a directory.")
+        msg = f"{directory} is not a directory."
+        raise NotADirectoryError(msg)
     file_descriptor, path = tempfile.mkstemp(dir=directory)
     os.close(file_descriptor)
     return Path(path)

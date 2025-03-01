@@ -1,9 +1,15 @@
-from enum import IntEnum
-from pathlib import Path
+"""Global constants."""
 
-DATA_DIR = Path(__file__).parent / "data"
-NAMES_TO_UNICODES_FILE = Path.joinpath(DATA_DIR, "names_to_unicodes.json")
-UNICODES_TO_NAMES_FILE = Path.joinpath(DATA_DIR, "unicodes_to_names.json")
+from enum import IntEnum
+from importlib import resources as pkg_resources
+
+import foundrytools
+
+with pkg_resources.as_file(pkg_resources.files(foundrytools)) as package_dir:
+    DATA_DIR = package_dir / "data"
+
+NAMES_TO_UNICODES_FILE = DATA_DIR / "names_to_unicodes.json"
+UNICODES_TO_NAMES_FILE = DATA_DIR / "unicodes_to_names.json"
 
 PS_SFNT_VERSION = "OTTO"
 TT_SFNT_VERSION = "\0\1\0\0"

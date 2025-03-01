@@ -105,16 +105,16 @@ For 0x250C-0x256A, it does not use the `SF` names as production names.
 
 ## Changes
 
-#### 4.4.2 / 2020-09-28
+### 4.4.2 / 2020-09-28
 
 - Bugfix
 
-#### 4.4.0 / 2020-09-25
+### 4.4.0 / 2020-09-25
 
 - Updated Friendly and Alternate names
 - Added synonyms
 
-#### 4.3.1 / 2020-07-26
+### 4.3.1 / 2020-07-26
 
 - Resolved some contradictions between Friendly and Alternate names
 - 13 names which previously were Alternative names are now also Friendly names: `Ismall` U+026A,
@@ -132,7 +132,7 @@ For 0x250C-0x256A, it does not use the `SF` names as production names.
   - Marchen names with `-marc` suffix
 - 53,102 entries
 
-#### 4.2.0 / 2020-02-23
+### 4.2.0 / 2020-02-23
 
 - unified inconsistent Arabic naming to prefer Alternative-style names
 - added Friendly names for Unicode 12.1.0
@@ -140,12 +140,12 @@ For 0x250C-0x256A, it does not use the `SF` names as production names.
 - added 'uniXXXX.suf'-style synonyms for Arabic presentational forms
 - 52,326 entries
 
-#### 4.1.0 / 2019-12-12
+### 4.1.0 / 2019-12-12
 
 - updated names from https://github.com/LettError/glyphNameFormatter primarily for math
 - 47,119 entries
 
-#### 4.0.0 / 2019-10-14
+### 4.0.0 / 2019-10-14
 
 - new syntax
 - hand-editing
@@ -154,37 +154,37 @@ For 0x250C-0x256A, it does not use the `SF` names as production names.
 - includes names from https://github.com/schriftgestalt/GlyphsInfo
 - 46,127 entries
 
-#### 3.3.2
+### 3.3.2
 
 - Removed 0x04A8 !Ohook (was duplicate with 0x1ECE !Ohook)
 - Removed 0x04A9 !ohook (was duplicate with 0x1ECF !ohook)
 
-#### 3.3.1
+### 3.3.1
 
 - Added 0x213B !facsimile
 
-#### 3.3.0
+### 3.3.0
 
 - Removed \*small glyphs
 
-#### 3.2.0
+### 3.2.0
 
 - Fixes in Katakana phonetic extensions, enclosed CJK letters and months
 
-#### 3.1.0
+### 3.1.0
 
 - new synonyms
 
-#### 3.0.0
+### 3.0.0
 
 - documentation updates
 
-#### 2.8.0
+### 2.8.0
 
 - in-sync with AGLFN 1.7
 - for improved Mac OS X 10.4 compatibility:
 
-```
+```txt
 0x0122 !Gcommaaccent
 0x0123 !gcommaaccent
 0x0136 !Kcommaaccent
@@ -201,11 +201,11 @@ For 0x250C-0x256A, it does not use the `SF` names as production names.
 0x0219 !scommaaccent
 ```
 
-#### 2.7.7
+### 2.7.7
 
 - 0x05D5 !vav (added in all files)
 
-#### 2.7.5
+### 2.7.5
 
 - 0x012A Imacron (added in all files)
 - 0x012D ibreve (added in all files)

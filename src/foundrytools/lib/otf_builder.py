@@ -1,21 +1,27 @@
-from typing import Any, Optional
+"""OpenType fonts."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from fontTools.fontBuilder import FontBuilder
-from fontTools.misc.psCharStrings import T2CharString
-from fontTools.ttLib import TTFont
 
 from foundrytools.constants import T_CFF, T_HEAD, T_NAME, T_POST
+
+if TYPE_CHECKING:
+    from fontTools.misc.psCharStrings import T2CharString
+    from fontTools.ttLib import TTFont
 
 
 def build_otf(
     font: TTFont,
     charstrings_dict: dict[str, T2CharString],
-    ps_name: Optional[str] = None,
-    font_info: Optional[dict[str, Any]] = None,
-    private_dict: Optional[dict[str, Any]] = None,
+    ps_name: str | None = None,
+    font_info: dict[str, Any] | None = None,
+    private_dict: dict[str, Any] | None = None,
 ) -> None:
     """
-    Builds an OpenType-PS font with ``fontTools.fontBuilder.FontBuilder``.
+    Build an OpenType-PS font with ``fontTools.fontBuilder.FontBuilder``.
 
     :param font: The ``TTFont`` object.
     :type font: TTFont
@@ -30,7 +36,6 @@ def build_otf(
         metadata.
     :type private_dict: dict, optional
     """
-
     if not ps_name:
         ps_name = _get_ps_name(font=font)
     if not font_info:
@@ -90,7 +95,7 @@ def _build_font_info_dict(font: TTFont) -> dict[str, Any]:
 
     name_table = font[T_NAME]
     post_table = font[T_POST]
-    cff_font_info = {
+    return {
         "version": ".".join([major_version, str(int(minor_version))]),
         "FullName": name_table.getBestFullName(),
         "FamilyName": name_table.getBestFamilyName(),
@@ -99,8 +104,6 @@ def _build_font_info_dict(font: TTFont) -> dict[str, Any]:
         "UnderlineThickness": post_table.underlineThickness,
         "isFixedPitch": bool(post_table.isFixedPitch),
     }
-
-    return cff_font_info
 
 
 def _get_private_dict(font: TTFont) -> dict[str, Any]:
@@ -115,9 +118,7 @@ def _get_private_dict(font: TTFont) -> dict[str, Any]:
     }
 
 
-def _get_hmtx_values(
-    font: TTFont, charstrings: dict[str, T2CharString]
-) -> dict[str, tuple[int, int]]:
+def _get_hmtx_values(font: TTFont, charstrings: dict[str, T2CharString]) -> dict[str, tuple[int, int]]:
     glyph_set = font.getGlyphSet()
     advance_widths = {k: v.width for k, v in glyph_set.items()}
     lsb = {}
@@ -131,7 +132,7 @@ def _get_hmtx_values(
 
 def _get_post_values(font: TTFont) -> dict[str, Any]:
     post_table = font[T_POST]
-    post_info = {
+    return {
         "italicAngle": round(post_table.italicAngle),
         "underlinePosition": post_table.underlinePosition,
         "underlineThickness": post_table.underlineThickness,
@@ -141,4 +142,3 @@ def _get_post_values(font: TTFont) -> dict[str, Any]:
         "minMemType1": post_table.minMemType1,
         "maxMemType1": post_table.maxMemType1,
     }
-    return post_info

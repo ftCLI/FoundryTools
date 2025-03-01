@@ -1,21 +1,27 @@
+"""HHEA table."""
+
+from __future__ import annotations
+
 import math
 from copy import deepcopy
-from typing import Optional, Union
+from typing import TYPE_CHECKING
 
 from fontTools.misc.roundTools import otRound
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._h_h_e_a import table__h_h_e_a
 
 from foundrytools.constants import T_HEAD, T_HHEA, T_POST
 from foundrytools.core.tables.default import DefaultTbl
 
+if TYPE_CHECKING:
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables._h_h_e_a import table__h_h_e_a
+
 
 class HheaTable(DefaultTbl):
-    """This class extends the fontTools ``hhea`` tables."""
+    """Extend the fontTools ``hhea`` tables."""
 
     def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``hhea`` table handler.
+        Initialize the ``hhea`` table handler.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -25,16 +31,12 @@ class HheaTable(DefaultTbl):
 
     @property
     def table(self) -> table__h_h_e_a:
-        """
-        The wrapped ``table__h_h_e_a`` table object.
-        """
+        """The wrapped ``table__h_h_e_a`` table object."""
         return self._table
 
     @table.setter
     def table(self, value: table__h_h_e_a) -> None:
-        """
-        Wraps a new ``table__h_h_e_a`` object.
-        """
+        """Wrap a new ``table__h_h_e_a`` object."""
         self._table = value
 
     @property
@@ -59,7 +61,7 @@ class HheaTable(DefaultTbl):
 
     @ascent.setter
     def ascent(self, value: int) -> None:
-        """Sets the ``ascent`` field of the ``hhea`` table."""
+        """Set the ``ascent`` field of the ``hhea`` table."""
         self.table.ascent = value
 
     @property
@@ -74,7 +76,7 @@ class HheaTable(DefaultTbl):
 
     @descent.setter
     def descent(self, value: int) -> None:
-        """Sets the ``descent`` field of the ``hhea`` table."""
+        """Set the ``descent`` field of the ``hhea`` table."""
         self.table.descent = value
 
     @property
@@ -89,7 +91,7 @@ class HheaTable(DefaultTbl):
 
     @line_gap.setter
     def line_gap(self, value: int) -> None:
-        """Sets the ``lineGap`` field of the ``hhea`` table."""
+        """Set the ``lineGap`` field of the ``hhea`` table."""
         self.table.lineGap = value
 
     @property
@@ -104,7 +106,7 @@ class HheaTable(DefaultTbl):
 
     @advance_width_max.setter
     def advance_width_max(self, value: int) -> None:
-        """Sets the ``advanceWidthMax`` field of the ``hhea`` table."""
+        """Set the ``advanceWidthMax`` field of the ``hhea`` table."""
         self.table.advanceWidthMax = value
 
     @property
@@ -149,7 +151,7 @@ class HheaTable(DefaultTbl):
 
     @caret_slope_rise.setter
     def caret_slope_rise(self, value: int) -> None:
-        """Sets the ``caretSlopeRise`` field of the ``hhea`` table."""
+        """Set the ``caretSlopeRise`` field of the ``hhea`` table."""
         self.table.caretSlopeRise = value
 
     @property
@@ -164,7 +166,7 @@ class HheaTable(DefaultTbl):
 
     @caret_slope_run.setter
     def caret_slope_run(self, value: int) -> None:
-        """Sets the ``caretSlopeRun`` field of the ``hhea`` table."""
+        """Set the ``caretSlopeRun`` field of the ``hhea`` table."""
         self.table.caretSlopeRun = value
 
     @property
@@ -179,7 +181,7 @@ class HheaTable(DefaultTbl):
 
     @caret_offset.setter
     def caret_offset(self, value: int) -> None:
-        """Sets the ``caretOffset`` field of the ``hhea`` table."""
+        """Set the ``caretOffset`` field of the ``hhea`` table."""
         self.table.caretOffset = value
 
     @property
@@ -212,10 +214,9 @@ class HheaTable(DefaultTbl):
         """
         rise = self.table.caretSlopeRise
         run = self.table.caretSlopeRun
-        run_rise_angle = math.degrees(math.atan(-run / rise))
-        return run_rise_angle
+        return math.degrees(math.atan(-run / rise))
 
-    def calc_caret_slope_rise(self, italic_angle: Optional[Union[int, float]] = None) -> int:
+    def calc_caret_slope_rise(self, italic_angle: float | None = None) -> int:
         """
         Calculate the ``caretSlopeRise`` field of the ``hhea`` table.
 
@@ -225,7 +226,6 @@ class HheaTable(DefaultTbl):
         :return: The caret slope rise value.
         :rtype: int
         """
-
         if italic_angle is None:
             italic_angle = self.ttfont[T_POST].italicAngle
 
@@ -233,7 +233,7 @@ class HheaTable(DefaultTbl):
             return 1
         return self.ttfont[T_HEAD].unitsPerEm
 
-    def calc_caret_slope_run(self, italic_angle: Optional[Union[int, float]] = None) -> int:
+    def calc_caret_slope_run(self, italic_angle: float | None = None) -> int:
         """
         Calculate the ``caretSlopeRun`` field of the ``hhea`` table.
 
@@ -243,13 +243,9 @@ class HheaTable(DefaultTbl):
         :return: The caret slope run value.
         :rtype: int
         """
-
         if italic_angle is None:
             italic_angle = self.ttfont[T_POST].italicAngle
 
         if italic_angle == 0:
             return 0
-        return otRound(
-            math.tan(math.radians(-self.ttfont[T_POST].italicAngle))
-            * self.ttfont[T_HEAD].unitsPerEm
-        )
+        return otRound(math.tan(math.radians(-self.ttfont[T_POST].italicAngle)) * self.ttfont[T_HEAD].unitsPerEm)

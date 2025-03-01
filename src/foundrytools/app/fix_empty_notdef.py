@@ -1,14 +1,20 @@
-import logging
-from typing import Optional
+"""Fix empty notdef."""
 
-from fontTools.misc.psCharStrings import T2CharString
+from __future__ import annotations
+
+import logging
+from typing import TYPE_CHECKING
+
 from fontTools.misc.roundTools import otRound
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.t2CharStringPen import T2CharStringPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
-from fontTools.ttLib.tables._g_l_y_f import Glyph
 
-from foundrytools import Font
+if TYPE_CHECKING:
+    from fontTools.misc.psCharStrings import T2CharString
+    from fontTools.ttLib.tables._g_l_y_f import Glyph
+
+    from foundrytools import Font
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +36,7 @@ class DrawNotdefTTError(DrawNotdefError):
     """Raised when there is an error drawing the '.notdef' glyph in a TTF font."""
 
 
-def draw_notdef_cff(
-    font: Font, width: int, height: int, thickness: int, cs_width: Optional[int] = None
-) -> T2CharString:
+def draw_notdef_cff(font: Font, width: int, height: int, thickness: int, cs_width: int | None = None) -> T2CharString:
     """
     Draws a '.notdef' glyph in a CFF font.
 
@@ -69,9 +73,12 @@ def draw_notdef_cff(
 
         glyph_set[NOTDEF].draw(pen)
         charstring = pen.getCharString()
-        return charstring
+
     except Exception as e:
-        raise DrawNotdefCFFError(f"Error drawing '.notdef' glyph in CFF font: {e}") from e
+        msg = f"Error drawing '.notdef' glyph in CFF font: {e}"
+        raise DrawNotdefCFFError(msg) from e
+
+    return charstring
 
 
 def draw_notdef_glyf(font: Font, width: int, height: int, thickness: int) -> Glyph:
@@ -89,7 +96,6 @@ def draw_notdef_glyf(font: Font, width: int, height: int, thickness: int) -> Gly
     :return: The '.notdef' glyph.
     :rtype: Glyph
     """
-
     try:
         # Be aware: TTGlyphPen expects a dict[str, Any] object, not a _TTGlyphSet object
         pen = TTGlyphPen(glyphSet=font.ttfont.getGlyphSet())
@@ -112,7 +118,8 @@ def draw_notdef_glyf(font: Font, width: int, height: int, thickness: int) -> Gly
         glyph_set[NOTDEF].draw(pen)
         return pen.glyph()
     except Exception as e:
-        raise DrawNotdefTTError(f"Error drawing '.notdef' glyph in TTF font: {e}") from e
+        msg = f"Error drawing '.notdef' glyph in TTF font: {e}"
+        raise DrawNotdefTTError(msg) from e
 
 
 def run(font: Font) -> bool:
@@ -147,9 +154,7 @@ def run(font: Font) -> bool:
                 if width == font.t_cff_.private_dict.defaultWidthX
                 else width - font.t_cff_.private_dict.nominalWidthX
             )
-            charstring = draw_notdef_cff(
-                font=font, width=width, height=height, thickness=thickness, cs_width=cs_width
-            )
+            charstring = draw_notdef_cff(font=font, width=width, height=height, thickness=thickness, cs_width=cs_width)
             charstring.compile()
             font.t_cff_.top_dict.CharStrings[NOTDEF].setBytecode(charstring.bytecode)
 
@@ -159,7 +164,7 @@ def run(font: Font) -> bool:
 
         font.t_hmtx.table[NOTDEF] = (width, 0)
 
-        return True
-
     except (DrawNotdefCFFError, DrawNotdefTTError) as e:
         raise DrawNotdefError from e
+
+    return True

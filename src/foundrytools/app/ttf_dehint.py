@@ -1,6 +1,13 @@
+"""TTF dehint."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from dehinter.font import dehint
 
-from foundrytools import Font
+if TYPE_CHECKING:
+    from foundrytools import Font
 
 
 class TTFDehintError(Exception):
@@ -17,10 +24,12 @@ def run(font: Font) -> bool:
     :raises TTFDehintError: If an error occurs while dehinting the font.
     """
     if not font.is_tt:
-        raise NotImplementedError("Not a TrueType font.")
+        msg = "Not a TrueType font."
+        raise NotImplementedError(msg)
 
     try:
         dehint(font.ttfont, verbose=False)
-        return True
     except Exception as e:
         raise TTFDehintError(e) from e
+
+    return True

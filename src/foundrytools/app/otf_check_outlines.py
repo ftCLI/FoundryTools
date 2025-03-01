@@ -1,3 +1,7 @@
+"""OTF check outlines."""
+
+from __future__ import annotations
+
 from afdko import checkoutlinesufo
 
 from foundrytools import Font
@@ -8,9 +12,9 @@ class CheckOutlinesError(Exception):
     """Raised when an error occurs while checking the CFF table."""
 
 
-def run(font: Font, drop_hinting_data: bool = False) -> bool:
+def run(font: Font, *, drop_hinting_data: bool = False) -> bool:
     """
-    Runs the checkoutlinesufo tool on the font.
+    Run the checkoutlinesufo tool on the font.
 
     :param font: The font to check the outlines of.
     :type font: Font
@@ -20,9 +24,9 @@ def run(font: Font, drop_hinting_data: bool = False) -> bool:
     :rtype: bool
     :raises CheckOutlinesError: If an error occurred while checking the outlines.
     """
-
     if not font.is_ps:
-        raise CheckOutlinesError("Not a PostScript font.")
+        msg = "Not a PostScript font."
+        raise CheckOutlinesError(msg)
 
     try:
         with restore_flavor(font.ttfont):

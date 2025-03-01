@@ -1,10 +1,12 @@
+"""Fonts."""
+
+from __future__ import annotations
+
 import contextlib
 import math
-from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
-from types import TracebackType
-from typing import Any, Literal, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 import defcon
 from cffsubr import desubroutinize, subroutinize
@@ -40,6 +42,16 @@ from foundrytools.lib.ttf_builder import build_ttf
 from foundrytools.lib.unicode import prod_name_from_glyph_name
 from foundrytools.utils.misc import restore_flavor
 from foundrytools.utils.path_tools import get_temp_file_path
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
+    from types import TracebackType
+    from typing import Any
+
+    try:
+        from typing import Self
+    except ImportError:
+        from typing_extensions import Self
 
 __all__ = ["Font", "FontConversionError", "FontError"]
 
@@ -82,9 +94,7 @@ class FontConversionError(Exception):
 
 
 class GlyphBounds(TypedDict):
-    """
-    A type representing the bounds of a glyph.
-    """
+    """A type representing the bounds of a glyph."""
 
     x_min: float
     y_min: float
@@ -113,7 +123,7 @@ class StyleFlags:
         flags.is_italic = True
     """
 
-    def __init__(self, font: "Font"):
+    def __init__(self, font: Font) -> None:
         """
         Initialize the ``Flags`` class.
 
@@ -134,19 +144,18 @@ class StyleFlags:
             f"is_oblique={self.is_oblique}, is_regular={self.is_regular})"
         )
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, StyleFlags):
             return False
         return all(
-            getattr(self, attr) == getattr(other, attr)
-            for attr in ("is_bold", "is_italic", "is_oblique", "is_regular")
+            getattr(self, attr) == getattr(other, attr) for attr in ("is_bold", "is_italic", "is_oblique", "is_regular")
         )
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     @property
-    def font(self) -> "Font":
+    def font(self) -> Font:
         """
         Gets the font used in the instance.
 
@@ -159,9 +168,9 @@ class StyleFlags:
         return self._font
 
     @font.setter
-    def font(self, value: "Font") -> None:
+    def font(self, value: Font) -> None:
         """
-        Sets the font property with a Font object.
+        Set the font property with a Font object.
 
         :param value: Font object to set the font property
         :type value: Font
@@ -173,13 +182,14 @@ class StyleFlags:
         try:
             yield
         except Exception as e:
-            raise FontError("An error occurred while updating font properties") from e
+            msg = "An error occurred while updating font properties"
+            raise FontError(msg) from e
 
     def _set_font_style(
         self,
-        bold: Optional[bool] = None,
-        italic: Optional[bool] = None,
-        regular: Optional[bool] = None,
+        bold: bool | None = None,
+        italic: bool | None = None,
+        regular: bool | None = None,
     ) -> None:
         if bold is not None:
             self.font.t_os_2.fs_selection.bold = bold
@@ -206,7 +216,8 @@ class StyleFlags:
         try:
             return self.font.t_os_2.fs_selection.bold and self.font.t_head.mac_style.bold
         except Exception as e:
-            raise FontError("An error occurred while checking if the font is bold") from e
+            msg = "An error occurred while checking if the font is bold"
+            raise FontError(msg) from e
 
     @is_bold.setter
     def is_bold(self, value: bool) -> None:
@@ -229,7 +240,8 @@ class StyleFlags:
         try:
             return self.font.t_os_2.fs_selection.italic and self.font.t_head.mac_style.italic
         except Exception as e:
-            raise FontError("An error occurred while checking if the font is italic") from e
+            msg = "An error occurred while checking if the font is italic"
+            raise FontError(msg) from e
 
     @is_italic.setter
     def is_italic(self, value: bool) -> None:
@@ -247,7 +259,8 @@ class StyleFlags:
         try:
             return self.font.t_os_2.fs_selection.oblique
         except Exception as e:
-            raise FontError("An error occurred while checking if the font is oblique") from e
+            msg = "An error occurred while checking if the font is oblique"
+            raise FontError(msg) from e
 
     @is_oblique.setter
     def is_oblique(self, value: bool) -> None:
@@ -255,7 +268,8 @@ class StyleFlags:
         try:
             self.font.t_os_2.fs_selection.oblique = value
         except Exception as e:
-            raise FontError("An error occurred while setting the oblique bit") from e
+            msg = "An error occurred while setting the oblique bit"
+            raise FontError(msg) from e
 
     @property
     def is_regular(self) -> bool:
@@ -268,7 +282,8 @@ class StyleFlags:
         try:
             return self.font.t_os_2.fs_selection.regular
         except Exception as e:
-            raise FontError("An error occurred while checking if the font is regular") from e
+            msg = "An error occurred while checking if the font is regular"
+            raise FontError(msg) from e
 
     def set_regular(self) -> None:
         """Set the regular bit in the OS/2 table."""
@@ -276,16 +291,18 @@ class StyleFlags:
             self._set_font_style(regular=True, bold=False, italic=False)
 
 
-class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attributes
+class Font:
     """
-    The ``Font`` class is a high-level wrapper around the ``TTFont`` class from the fontTools
-    library, providing a user-friendly interface for working with font files and their data.
+    High-level wrapper around the ``TTFont`` class from the fontTools library.
+
+    Provides a user-friendly interface for working with font files and their data.
     """
 
     def __init__(
         self,
-        font_source: Union[str, Path, BytesIO, TTFont],
-        lazy: Optional[bool] = None,
+        font_source: str | Path | BytesIO | TTFont,
+        *,
+        lazy: bool | None = None,
         recalc_bboxes: bool = True,
         recalc_timestamp: bool = False,
     ) -> None:
@@ -307,10 +324,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             on save. Defaults to ``False``.
         :type recalc_timestamp: bool
         """
-
-        self._file: Optional[Path] = None
-        self._bytesio: Optional[BytesIO] = None
-        self._ttfont: Optional[TTFont] = None
+        self._file: Path | None = None
+        self._bytesio: BytesIO | None = None
+        self._ttfont: TTFont | None = None
         self._temp_file: Path = get_temp_file_path()
         self._init_font(font_source, lazy, recalc_bboxes, recalc_timestamp)
         self._init_tables()  # Ensure tables are initialized before flags
@@ -318,10 +334,10 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def _init_font(
         self,
-        font_source: Union[str, Path, BytesIO, TTFont],
-        lazy: Optional[bool],
-        recalc_bboxes: bool,
-        recalc_timestamp: bool,
+        font_source: str | Path | BytesIO | TTFont,
+        lazy: bool | None,
+        recalc_bboxes: bool,  # noqa: FBT001
+        recalc_timestamp: bool,  # noqa: FBT001
     ) -> None:
         if isinstance(font_source, (str, Path)):
             self._init_from_file(font_source, lazy, recalc_bboxes, recalc_timestamp)
@@ -330,91 +346,101 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         elif isinstance(font_source, TTFont):
             self._init_from_ttfont(font_source, lazy, recalc_bboxes, recalc_timestamp)
         else:
-            raise FontError(
-                f"Invalid source type {type(font_source)}. Expected str, Path, BytesIO, or TTFont."
-            )
+            msg = f"Invalid source type {type(font_source)}. Expected str, Path, BytesIO, or TTFont."
+            raise FontError(msg)
 
     def _init_from_file(
         self,
-        path: Union[str, Path],
-        lazy: Optional[bool],
-        recalc_bboxes: bool,
-        recalc_timestamp: bool,
+        path: str | Path,
+        lazy: bool | None,
+        recalc_bboxes: bool,  # noqa: FBT001
+        recalc_timestamp: bool,  # noqa: FBT001
     ) -> None:
         self._file = Path(path).resolve()
-        self._ttfont = TTFont(
-            path, lazy=lazy, recalcBBoxes=recalc_bboxes, recalcTimestamp=recalc_timestamp
-        )
+        self._ttfont = TTFont(path, lazy=lazy, recalcBBoxes=recalc_bboxes, recalcTimestamp=recalc_timestamp)
 
     def _init_from_bytesio(
-        self, bytesio: BytesIO, lazy: Optional[bool], recalc_bboxes: bool, recalc_timestamp: bool
+        self,
+        bytesio: BytesIO,
+        lazy: bool | None,
+        recalc_bboxes: bool,  # noqa: FBT001
+        recalc_timestamp: bool,  # noqa: FBT001
     ) -> None:
         self._bytesio = bytesio
-        self._ttfont = TTFont(
-            bytesio, lazy=lazy, recalcBBoxes=recalc_bboxes, recalcTimestamp=recalc_timestamp
-        )
+        self._ttfont = TTFont(bytesio, lazy=lazy, recalcBBoxes=recalc_bboxes, recalcTimestamp=recalc_timestamp)
         bytesio.close()
 
     def _init_from_ttfont(
-        self, ttfont: TTFont, lazy: Optional[bool], recalc_bboxes: bool, recalc_timestamp: bool
+        self,
+        ttfont: TTFont,
+        lazy: bool | None,
+        recalc_bboxes: bool,  # noqa: FBT001
+        recalc_timestamp: bool,  # noqa: FBT001
     ) -> None:
         self._bytesio = BytesIO()
         ttfont.save(self._bytesio, reorderTables=False)
         self._bytesio.seek(0)
-        self._ttfont = TTFont(
-            self._bytesio, lazy=lazy, recalcBBoxes=recalc_bboxes, recalcTimestamp=recalc_timestamp
-        )
+        self._ttfont = TTFont(self._bytesio, lazy=lazy, recalcBBoxes=recalc_bboxes, recalcTimestamp=recalc_timestamp)
 
     def _init_tables(self) -> None:
         """
-        Initialize all font table attributes to None. This method sets up the initial state
-        for each table in the font, ensuring that they are ready to be loaded when accessed.
-        """
-        self._cff: Optional[CFFTable] = None
-        self._cmap: Optional[CmapTable] = None
-        self._fvar: Optional[FvarTable] = None
-        self._gdef: Optional[GdefTable] = None
-        self._glyf: Optional[GlyfTable] = None
-        self._gsub: Optional[GsubTable] = None
-        self._head: Optional[HeadTable] = None
-        self._hhea: Optional[HheaTable] = None
-        self._hmtx: Optional[HmtxTable] = None
-        self._kern: Optional[KernTable] = None
-        self._name: Optional[NameTable] = None
-        self._os_2: Optional[OS2Table] = None
-        self._post: Optional[PostTable] = None
+        Initialize all font table attributes to None.
 
-    def _get_table(self, table_tag: str):  # type: ignore
+        This method sets up the initial state for each table in the font,
+        ensuring that they are ready to be loaded when accessed.
+        """
+        self._cff: CFFTable | None = None
+        self._cmap: CmapTable | None = None
+        self._fvar: FvarTable | None = None
+        self._gdef: GdefTable | None = None
+        self._glyf: GlyfTable | None = None
+        self._gsub: GsubTable | None = None
+        self._head: HeadTable | None = None
+        self._hhea: HheaTable | None = None
+        self._hmtx: HmtxTable | None = None
+        self._kern: KernTable | None = None
+        self._name: NameTable | None = None
+        self._os_2: OS2Table | None = None
+        self._post: PostTable | None = None
+
+    def _get_table(self, table_tag: str) -> Any:  # noqa: ANN401
         table_attr, table_cls = TABLES_LOOKUP[table_tag]
         if getattr(self, table_attr) is None:
             if self.ttfont.get(table_tag) is None:
-                raise KeyError(f"The '{table_tag}' table is not present in the font")
+                msg = f"The '{table_tag}' table is not present in the font"
+                raise KeyError(msg)
             setattr(self, table_attr, table_cls(self.ttfont))
         table = getattr(self, table_attr)
         if table is None:
-            raise KeyError(f"An error occurred while loading the '{table_tag}' table")
+            msg = f"An error occurred while loading the '{table_tag}' table"
+            raise KeyError(msg)
         return table
 
-    def __enter__(self) -> "Font":
+    def __enter__(self) -> Self:
+        """Enter context manager."""
         return self
 
     def __exit__(
         self,
-        exc_type: Optional[type],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
+        """Exit context manager."""
         self.close()
 
     def __repr__(self) -> str:
+        """Debug information."""
         return f"<Font: ttfont={self.ttfont}, file={self.file}, bytesio={self.bytesio}>"
 
     @property
-    def file(self) -> Optional[Path]:
+    def file(self) -> Path | None:
         """
-        A property with both getter and setter methods for the file path of the font. If the font
-        was loaded from a file, this property will return the file path. If the font was loaded from
-        a ``BytesIO`` object or a ``TTFont`` object, this property will return ``None``.
+        A property with both getter and setter methods for the file path of the font.
+
+        If the font was loaded from a file, this property will return the file path.
+        If the font was loaded from a ``BytesIO`` object or a ``TTFont`` object,
+        this property will return ``None``.
 
         :return: The file path of the font, if any.
         :rtype: Optional[Path]
@@ -422,7 +448,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._file
 
     @file.setter
-    def file(self, value: Union[str, Path]) -> None:
+    def file(self, value: str | Path) -> None:
         """
         Set the file path of the font.
 
@@ -434,12 +460,12 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self._file = value
 
     @property
-    def bytesio(self) -> Optional[BytesIO]:
+    def bytesio(self) -> BytesIO | None:
         """
-        A property with both getter and setter methods for the ``BytesIO`` object of the font. If
-        the font was loaded from a ``BytesIO`` object, this property will return the ``BytesIO``
-        object. If the font was loaded from a file or a ``TTFont`` object, this property will return
-        ``None``.
+        A property with both getter and setter methods for the ``BytesIO`` object of the font.
+
+        If the font was loaded from a ``BytesIO`` object, this property will return the ``BytesIO`` object.
+        If the font was loaded from a file or a ``TTFont`` object, this property will return ``None``.
 
         :return: The ``BytesIO`` object of the font, if any.
         :rtype: Optional[BytesIO]
@@ -459,8 +485,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def ttfont(self) -> TTFont:
         """
-        A property with both getter and setter methods for the underlying ``TTFont`` object of the
-        font.
+        A property with both getter and setter methods for the underlying ``TTFont`` object of the font.
 
         :return: The ``TTFont`` object of the font.
         :rtype: TTFont
@@ -474,14 +499,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
         Args:
             value: The ``TTFont`` object of the font.
+
         """
         self._ttfont = value
 
     @property
     def temp_file(self) -> Path:
         """
-        A placeholder for the temporary file path of the font, in case is needed for some
-        operations.
+        A placeholder for the temporary file path of the font, in case is needed for some operations.
 
         :return: The temporary file path of the font.
         :rtype: Path
@@ -621,8 +646,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def is_ps(self) -> bool:
         """
-        A read-only property for checking if the font has PostScript outlines. The font has
-        PostScript outlines if the ``sfntVersion`` attribute of the ``TTFont`` object is ``OTTO``.
+        A read-only property for checking if the font has PostScript outlines.
+
+        The font has PostScript outlines if the ``sfntVersion`` attribute of the ``TTFont`` object is ``OTTO``.
 
         :return: ``True`` if the font sfntVersion is ``OTTO``, ``False`` otherwise.
         :rtype: bool
@@ -631,9 +657,10 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     @property
     def is_tt(self) -> bool:
-        """
-        A read-only property for checking if the font has TrueType outlines. The font has TrueType
-        outlines if the ``sfntVersion`` attribute of the ``TTFont`` object is ``\0\1\0\0``.
+        r"""
+        A read-only property for checking if the font has TrueType outlines.
+
+        The font has TrueType outlines if the ``sfntVersion`` attribute of the ``TTFont`` object is ``\0\1\0\0``.
 
         :return: ``True`` if the font sfntVersion is ``\0\1\0\0``, ``False`` otherwise.
         :rtype: bool
@@ -643,8 +670,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def is_woff(self) -> bool:
         """
-        A read-only property for checking if the font is a WOFF font. The font is a WOFF font if the
-        ``flavor`` attribute of the ``TTFont`` object is ``woff``.
+        A read-only property for checking if the font is a WOFF font.
+
+        The font is a WOFF font if the ``flavor`` attribute of the ``TTFont`` object is ``woff``.
 
         :return: ``True`` if the font flavor is ``woff``, ``False`` otherwise.
         :rtype: bool
@@ -654,8 +682,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def is_woff2(self) -> bool:
         """
-        A read-only property for checking if the font is a WOFF2 font. The font is a WOFF2 font if
-        the ``flavor`` attribute of the ``TTFont`` object is ``woff2``.
+        A read-only property for checking if the font is a WOFF2 font.
+
+        The font is a WOFF2 font if the ``flavor`` attribute of the ``TTFont`` object is ``woff2``.
 
         :return: ``True`` if the font flavor is ``woff2``, ``False`` otherwise.
         :rtype: bool
@@ -665,8 +694,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def is_sfnt(self) -> bool:
         """
-        A read-only property for checking if the font is an SFNT font. The font is an SFNT font if
-        the ``flavor`` attribute of the ``TTFont`` object is ``None``.
+        A read-only property for checking if the font is an SFNT font.
+
+        The font is an SFNT font if the ``flavor`` attribute of the ``TTFont`` object is ``None``.
 
         :return: ``True`` if the font flavor is ``None``, ``False`` otherwise.
         :rtype: bool
@@ -676,8 +706,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def is_static(self) -> bool:
         """
-        A read-only property for checking if the font is a static font. The font is a static font if
-        the ``TTFont`` object does not have a ``fvar`` table.
+        A read-only property for checking if the font is a static font.
+
+        The font is a static font if the ``TTFont`` object does not have a ``fvar`` table.
 
         :return: ``True`` if the font does not have a ``fvar`` table, ``False`` otherwise.
         :rtype: bool
@@ -687,8 +718,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     @property
     def is_variable(self) -> bool:
         """
-        A read-only property for checking if the font is a variable font. The font is a variable
-        font if the ``TTFont`` object has a ``fvar`` table.
+        A read-only property for checking if the font is a variable font.
+
+        The font is a variable font if the ``TTFont`` object has a ``fvar`` table.
 
         :return: ``True`` if the font has a ``fvar`` table, ``False`` otherwise.
         :rtype: bool
@@ -697,8 +729,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def save(
         self,
-        file: Union[str, Path, BytesIO],
-        reorder_tables: Optional[bool] = True,
+        file: str | Path | BytesIO,
+        *,
+        reorder_tables: bool | None = True,
     ) -> None:
         """
         Save the font to a file.
@@ -751,7 +784,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :return: The real extension of the font.
         :rtype: str
         """
-
         # Order of if statements is important.
         # WOFF and WOFF2 must be checked before OTF and TTF.
         if self.is_woff:
@@ -762,23 +794,28 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             return const.OTF_EXTENSION
         if self.is_tt:
             return const.TTF_EXTENSION
-        raise ValueError("Unknown font type.")
+        msg = "Unknown font type."
+        raise ValueError(msg)
 
     def get_file_path(
         self,
-        file: Optional[Path] = None,
-        output_dir: Optional[Path] = None,
+        *,
+        file: Path | None = None,
+        output_dir: Path | None = None,
         overwrite: bool = True,
-        extension: Optional[str] = None,
+        extension: str | None = None,
         suffix: str = "",
     ) -> Path:
         """
-        Get the output file for a ``Font`` object. If ``output_dir`` is not specified, the output
-        file will be saved in the same directory as the input file. It the output file exists and
-        ``overwrite`` is ``False``, file name will be incremented by adding a number preceded by '#'
-        before the extension until a non-existing file name is found. If ``suffix`` is specified, it
-        will be appended to the file name. If the suffix is already present, it will be removed
-        before adding it again.
+        Get the output file for a ``Font`` object.
+
+        If ``output_dir`` is not specified, the output file will be saved
+        in the same directory as the input file.
+        It the output file exists and ``overwrite`` is ``False``,
+        file name will be incremented by adding a number preceded by '#'
+        before the extension until a non-existing file name is found.
+        If ``suffix`` is specified, it will be appended to the file name.
+        If the suffix is already present, it will be removed before adding it again.
 
         :param file: The file name to use for the output file.
         :type file: Optional[Path]
@@ -795,15 +832,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :return: The output file.
         :rtype: Path
         """
-
         if file is None and self.file is None:
-            raise ValueError(
-                "Cannot get output file for a BytesIO object without providing a file name."
-            )
+            msg = "Cannot get output file for a BytesIO object without providing a file name."
+            raise ValueError(msg)
 
         file = file or self.file
         if not isinstance(file, Path):
-            raise ValueError("File must be a Path object.")
+            msg = "File must be a Path object."
+            raise TypeError(msg)
 
         out_dir = output_dir or file.parent
         extension = extension or self.get_file_ext()
@@ -822,7 +858,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             ]:
                 file_name = file_name.replace(ext, "")
 
-        out_file = Path(
+        return Path(
             makeOutputFileName(
                 input=file_name,
                 outputDir=out_dir,
@@ -831,7 +867,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
                 suffix=suffix,
             )
         )
-        return out_file
 
     def to_woff(self) -> None:
         """
@@ -840,7 +875,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :raises FontConversionError: If the font is already a WOFF font.
         """
         if self.is_woff:
-            raise FontConversionError("Font is already a WOFF font.")
+            msg = "Font is already a WOFF font."
+            raise FontConversionError(msg)
 
         self.ttfont.flavor = const.WOFF_FLAVOR
 
@@ -851,13 +887,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :raises FontConversionError: If the font is already a WOFF2 font.
         """
         if self.is_woff2:
-            raise FontConversionError("Font is already a WOFF2 font.")
+            msg = "Font is already a WOFF2 font."
+            raise FontConversionError(msg)
 
         self.ttfont.flavor = const.WOFF2_FLAVOR
 
-    def to_ttf(self, max_err: float = 1.0, reverse_direction: bool = True) -> None:
+    def to_ttf(self, *, max_err: float = 1.0, reverse_direction: bool = True) -> None:
         """
-        Converts a PostScript font to TrueType.
+        Convert a PostScript font to TrueType.
 
         :param max_err: The maximum error allowed when converting the font to TrueType. Defaults to
             1.0.
@@ -869,15 +906,17 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             variable font.
         """
         if self.is_tt:
-            raise FontConversionError("Font is already a TrueType font.")
+            msg = "Font is already a TrueType font."
+            raise FontConversionError(msg)
         if self.is_variable:
-            raise FontConversionError("Conversion to TrueType is not supported for variable fonts.")
+            msg = "Conversion to TrueType is not supported for variable fonts."
+            raise FontConversionError(msg)
 
         build_ttf(font=self.ttfont, max_err=max_err, reverse_direction=reverse_direction)
 
-    def to_otf(self, tolerance: float = 1.0, correct_contours: bool = True) -> None:
+    def to_otf(self, *, tolerance: float = 1.0, correct_contours: bool = True) -> None:
         """
-        Converts a TrueType font to PostScript.
+        Convert a TrueType font to PostScript.
 
         :param tolerance: The tolerance value used to convert quadratic curves to cubic curves.
             Defaults to 1.0.
@@ -889,16 +928,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             variable font.
         """
         if self.is_ps:
-            raise FontConversionError("Font is already a PostScript font.")
+            msg = "Font is already a PostScript font."
+            raise FontConversionError(msg)
         if self.is_variable:
-            raise FontConversionError(
-                "Conversion to PostScript is not supported for variable fonts."
-            )
+            msg = "Conversion to PostScript is not supported for variable fonts."
+            raise FontConversionError(msg)
         self.t_glyf.decompose_all()
 
-        charstrings = quadratics_to_cubics(
-            font=self.ttfont, tolerance=tolerance, correct_contours=correct_contours
-        )
+        charstrings = quadratics_to_cubics(font=self.ttfont, tolerance=tolerance, correct_contours=correct_contours)
         build_otf(font=self.ttfont, charstrings_dict=charstrings)
 
         self.t_os_2.recalc_avg_char_width()
@@ -910,12 +947,13 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :raises FontConversionError: If the font is already a SFNT font.
         """
         if self.is_sfnt:
-            raise FontConversionError("Font is already a SFNT font.")
+            msg = "Font is already a SFNT font."
+            raise FontConversionError(msg)
         self.ttfont.flavor = None
 
     def calc_italic_angle(self, min_slant: float = 2.0) -> float:
         """
-        Calculates the italic angle of a font by measuring the slant of the glyph 'H' or 'uni0048'.
+        Calculate the italic angle of a font by measuring the slant of the glyph 'H' or 'uni0048'.
 
         :param min_slant: The minimum slant value to consider the font italic. Defaults to 2.0.
         :type min_slant: float
@@ -924,7 +962,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :raises FontError: If the font does not contain the glyph 'H' or 'uni0048' or if an error
             occurs while calculating the italic angle.
         """
-
         glyph_set = self.ttfont.getGlyphSet()
         pen = StatisticsPen(glyphset=glyph_set)
         for g in ("H", "uni0048"):
@@ -934,7 +971,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
                 if abs(italic_angle) >= abs(min_slant):
                     return italic_angle
                 return 0.0
-        raise FontError("The font does not contain the glyph 'H' or 'uni0048'.")
+        msg = "The font does not contain the glyph 'H' or 'uni0048'."
+        raise FontError(msg)
 
     def get_glyph_bounds(self, glyph_name: str) -> GlyphBounds:
         """
@@ -948,19 +986,18 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         glyph_set = self.ttfont.getGlyphSet()
 
         if glyph_name not in glyph_set:
-            raise ValueError(f"Glyph '{glyph_name}' does not exist in the font.")
+            msg = f"Glyph '{glyph_name}' does not exist in the font."
+            raise ValueError(msg)
 
         bounds_pen = BoundsPen(glyphSet=glyph_set)
 
         glyph_set[glyph_name].draw(bounds_pen)
-        bounds = GlyphBounds(
+        return GlyphBounds(
             x_min=bounds_pen.bounds[0],
             y_min=bounds_pen.bounds[1],
             x_max=bounds_pen.bounds[2],
             y_max=bounds_pen.bounds[3],
         )
-
-        return bounds
 
     def get_glyph_bounds_many(self, glyph_names: set[str]) -> dict[str, GlyphBounds]:
         """
@@ -984,11 +1021,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :param target_upm: The target UPM value. Must be in the range 16 to 16384.
         :type target_upm: int
         """
-
         if target_upm < const.MIN_UPM or target_upm > const.MAX_UPM:
-            raise ValueError(
-                f"units_per_em must be in the range {const.MAX_UPM} to {const.MAX_UPM}."
-            )
+            msg = f"units_per_em must be in the range {const.MAX_UPM} to {const.MAX_UPM}."
+            raise ValueError(msg)
 
         if self.t_head.units_per_em == target_upm:
             return
@@ -997,14 +1032,14 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def correct_contours(
         self,
+        *,
         remove_hinting: bool = True,
         ignore_errors: bool = True,
         remove_unused_subroutines: bool = True,
         min_area: int = 25,
     ) -> set[str]:
         """
-        Correct the contours of a font by removing overlaps and tiny paths and correcting the
-        direction of contours.
+        Correct the contours of a font by removing overlaps and tiny paths and correcting the direction of contours.
 
         This tool is an implementation of the ``removeOverlaps`` function in the ``fontTools``
         library to add support for correcting contours winding and removing tiny paths.
@@ -1033,7 +1068,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :rtype: set[str]
         """
         if self.is_variable:
-            raise NotImplementedError("Contour correction is not supported for variable fonts.")
+            msg = "Contour correction is not supported for variable fonts."
+            raise NotImplementedError(msg)
 
         if self.is_ps:
             return self.t_cff_.correct_contours(
@@ -1049,15 +1085,16 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
                 min_area=min_area,
             )
 
-        raise FontError("Unknown font type.")
+        msg = "Unknown font type."
+        raise FontError(msg)
 
     def remove_glyphs(
         self,
-        glyph_names_to_remove: Optional[set[str]] = None,
-        glyph_ids_to_remove: Optional[set[int]] = None,
+        glyph_names_to_remove: set[str] | None = None,
+        glyph_ids_to_remove: set[int] | None = None,
     ) -> set[str]:
         """
-        Removes glyphs from the font using the fontTools subsetter.
+        Remove glyphs from the font using the fontTools subsetter.
 
         :param glyph_names_to_remove: A set of glyph names to remove.
         :type glyph_names_to_remove: Optional[set[str]]
@@ -1068,7 +1105,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         """
         old_glyph_order = self.ttfont.getGlyphOrder()
         if not glyph_names_to_remove and not glyph_ids_to_remove:
-            raise ValueError("No glyph names or glyph IDs provided to remove.")
+            msg = "No glyph names or glyph IDs provided to remove."
+            raise ValueError(msg)
 
         glyph_names_to_remove = glyph_names_to_remove or set()
 
@@ -1126,10 +1164,12 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         new_glyph_order = []
 
         if old_name not in old_glyph_order:
-            raise ValueError(f"Glyph '{old_name}' not found in the font.")
+            msg = f"Glyph '{old_name}' not found in the font."
+            raise ValueError(msg)
 
         if new_name in old_glyph_order:
-            raise ValueError(f"Glyph '{new_name}' already exists in the font.")
+            msg = f"Glyph '{new_name}' already exists in the font."
+            raise ValueError(msg)
 
         for glyph_name in old_glyph_order:
             if glyph_name == old_name:
@@ -1176,7 +1216,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :rtype: List[Tuple[str, str]]
         :raises SetProdNamesError: If an error occurs during the process.
         """
-
         old_glyph_order: list[str] = self.ttfont.getGlyphOrder()
         new_glyph_order: list[str] = []
         renamed_glyphs: list[tuple[str, str]] = []
@@ -1186,11 +1225,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             # the production name, or the production name is already assigned, we skip the
             # renaming process.
             production_name = prod_name_from_glyph_name(glyph_name)
-            if (
-                not production_name
-                or production_name == glyph_name
-                or production_name in old_glyph_order
-            ):
+            if not production_name or production_name == glyph_name or production_name in old_glyph_order:
                 new_glyph_order.append(glyph_name)
                 continue
 
@@ -1206,9 +1241,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
         return renamed_glyphs
 
-    def sort_glyphs(
-        self, sort_by: Literal["unicode", "alphabetical", "cannedDesign"] = "unicode"
-    ) -> bool:
+    def sort_glyphs(self, sort_by: Literal["unicode", "alphabetical", "cannedDesign"] = "unicode") -> bool:
         """
         Reorder the glyphs based on the Unicode values, alphabetical order, or canned design order.
 
@@ -1253,7 +1286,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :rtype: bool
         """
         if not self.is_ps:
-            raise NotImplementedError("Not a PostScript font.")
+            msg = "Not a PostScript font."
+            raise NotImplementedError(msg)
 
         with restore_flavor(self.ttfont):
             subroutinize(self.ttfont)
@@ -1270,7 +1304,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :rtype: bool
         """
         if not self.is_ps:
-            raise NotImplementedError("Not a PostScript font.")
+            msg = "Not a PostScript font."
+            raise NotImplementedError(msg)
 
         with restore_flavor(self.ttfont):
             desubroutinize(self.ttfont)

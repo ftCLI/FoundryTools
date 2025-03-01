@@ -1,16 +1,22 @@
-import contextlib
-from typing import Any
+"""CFF table."""
 
-from fontTools.cffLib import PrivateDict, TopDict
+from __future__ import annotations
+
+import contextlib
+from typing import TYPE_CHECKING, Any
+
 from fontTools.pens.recordingPen import RecordingPen
 from fontTools.pens.roundingPen import RoundingPen
 from fontTools.pens.t2CharStringPen import T2CharStringPen
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables.C_F_F_ import table_C_F_F_
 
 from foundrytools.constants import T_CFF
 from foundrytools.core.tables.default import DefaultTbl
 from foundrytools.lib.pathops import correct_cff_contours
+
+if TYPE_CHECKING:
+    from fontTools.cffLib import PrivateDict, TopDict
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables.C_F_F_ import table_C_F_F_
 
 HINTING_ATTRS = (
     "BlueValues",
@@ -32,13 +38,14 @@ HINTING_ATTRS = (
 
 class CFFTable(DefaultTbl):
     """
-    A class that wraps and manages the CFF table of a font, providing methods to manipulate
-    hinting data, font names, and glyph contours.
+    Wraps and manages the CFF table of a font.
+
+    Provides methods to manipulate hinting data, font names, and glyph contours.
     """
 
     def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``CFF`` table wrapper.
+        Initialize the ``CFF`` table wrapper.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -48,16 +55,12 @@ class CFFTable(DefaultTbl):
 
     @property
     def table(self) -> table_C_F_F_:
-        """
-        The wrapped ``table_C_F_F_`` object.
-        """
+        """The wrapped ``table_C_F_F_`` object."""
         return self._table
 
     @table.setter
     def table(self, value: table_C_F_F_) -> None:
-        """
-        Wraps a new ``table_C_F_F_`` object.
-        """
+        """Wrap a new ``table_C_F_F_`` object."""
         self._table = value
 
     @property
@@ -82,7 +85,7 @@ class CFFTable(DefaultTbl):
 
     def get_hinting_data(self) -> dict[str, Any]:
         """
-        Returns the hinting data from the ``CFF`` table.
+        Return the hinting data from the ``CFF`` table.
 
         :return: The hinting data.
         :rtype: dict[str, Any]
@@ -95,7 +98,7 @@ class CFFTable(DefaultTbl):
 
     def set_hinting_data(self, **kwargs: dict[str, Any]) -> None:
         """
-        Sets the hinting data in the ``CFF`` table.
+        Set the hinting data in the ``CFF`` table.
 
         :param kwargs: The hinting data to set.
         :type kwargs: dict[str, Any]
@@ -110,7 +113,7 @@ class CFFTable(DefaultTbl):
 
     def set_names(self, **kwargs: dict[str, str]) -> None:
         """
-        Sets the ``cff.fontNames[0]`` and ``topDictIndex[0]`` values.
+        Set the ``cff.fontNames[0]`` and ``topDictIndex[0]`` values.
 
         :param kwargs: The values to set in the CFF table.
         :type kwargs: dict[str, str]
@@ -126,7 +129,7 @@ class CFFTable(DefaultTbl):
 
     def _set_cff_font_names(self, font_name: str) -> None:
         """
-        Sets the ``cff.fontNames`` value.
+        Set the ``cff.fontNames`` value.
 
         :param font_name: The font name to set.
         :type font_name: str
@@ -135,7 +138,7 @@ class CFFTable(DefaultTbl):
 
     def _set_top_dict_names(self, names: dict[str, str]) -> None:
         """
-        Sets the names of the ``CFF`` table.
+        Set the names of the ``CFF`` table.
 
         :param names: The names to set.
         :type names: dict[str, str]
@@ -145,7 +148,7 @@ class CFFTable(DefaultTbl):
 
     def del_names(self, **kwargs: dict[str, str]) -> None:
         """
-        Deletes names from ``topDictIndex[0]`` using the provided keyword arguments.
+        Delete names from ``topDictIndex[0]`` using the provided keyword arguments.
 
         :param kwargs: The names to delete from the ``CFF`` table ``TopDict``.
         :type kwargs: dict[str, str]
@@ -169,9 +172,7 @@ class CFFTable(DefaultTbl):
 
     def _find_replace_in_font_names(self, old_string: str, new_string: str) -> None:
         cff_font_names = self.table.cff.fontNames[0]
-        self.table.cff.fontNames = [
-            cff_font_names.replace(old_string, new_string).replace("  ", " ").strip()
-        ]
+        self.table.cff.fontNames = [cff_font_names.replace(old_string, new_string).replace("  ", " ").strip()]
 
     def _find_replace_in_top_dict(self, old_string: str, new_string: str) -> None:
         top_dict = self.top_dict
@@ -190,9 +191,9 @@ class CFFTable(DefaultTbl):
                 new_value = old_value.replace(old_string, new_string).replace("  ", " ").strip()
                 setattr(top_dict, attr_name, new_value)
 
-    def remove_hinting(self, drop_hinting_data: bool = False) -> None:
+    def remove_hinting(self, *, drop_hinting_data: bool = False) -> None:
         """
-        Removes hinting data from a PostScript font.
+        Remove hinting data from a PostScript font.
 
         :param drop_hinting_data: If True, the hinting data will be removed from the font.
         :type drop_hinting_data: bool
@@ -201,7 +202,7 @@ class CFFTable(DefaultTbl):
         if not drop_hinting_data:
             self._restore_hinting_data()
 
-    def round_coordinates(self, drop_hinting_data: bool = False) -> set[str]:
+    def round_coordinates(self, *, drop_hinting_data: bool = False) -> set[str]:
         """
         Round the coordinates of the font's glyphs using the ``RoundingPen``.
 
@@ -253,6 +254,7 @@ class CFFTable(DefaultTbl):
 
     def correct_contours(
         self,
+        *,
         remove_hinting: bool = True,
         ignore_errors: bool = True,
         remove_unused_subroutines: bool = True,
@@ -260,8 +262,9 @@ class CFFTable(DefaultTbl):
         drop_hinting_data: bool = False,
     ) -> set[str]:
         """
-        Corrects contours of the CFF table by removing overlaps, correcting the direction of the
-        contours, and removing tiny paths.
+        Correct contours of the CFF table.
+
+        Removes overlaps, corrects the direction of the contours, and removes tiny paths.
 
         :param remove_hinting: Whether to remove hinting from the font if one or more glyphs are
             modified.

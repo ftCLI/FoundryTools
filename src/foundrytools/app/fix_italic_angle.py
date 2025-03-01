@@ -1,17 +1,20 @@
-from typing import Any
+"""Fix italic angle."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 from fontTools.misc.roundTools import otRound
 
-from foundrytools import Font
+if TYPE_CHECKING:
+    from foundrytools import Font
 
 
 class FixItalicAngleError(Exception):
     """Raised when an error occurs while fixing the italic angle of a font."""
 
 
-def run(
-    font: Font, min_slant: float = 2.0, italic: bool = True, oblique: bool = False
-) -> dict[str, dict[str, Any]]:
+def run(font: Font, *, min_slant: float = 2.0, italic: bool = True, oblique: bool = False) -> dict[str, dict[str, Any]]:
     """
     Fix the italic angle of the font.
 
@@ -33,7 +36,6 @@ def run(
              values, along with a check result indicating whether the values were updated.
     :rtype: dict[str, dict[str, Any]]
     """
-
     result: dict[str, dict[str, Any]] = {}
     try:
         is_italic = font.flags.is_italic
@@ -60,7 +62,7 @@ def run(
 
         # Check if the ``is_oblique`` attribute is correctly set. The oblique bit is only
         # defined in ``OS/2`` table version 4 and later.
-        should_be_oblique = oblique and calculated_slant != 0.0 and font.t_os_2.version >= 4
+        should_be_oblique = oblique and calculated_slant != 0.0 and font.t_os_2.version >= 4  # noqa: PLR2004
         oblique_bit_check = is_oblique == should_be_oblique
         if not oblique_bit_check:
             font.flags.is_oblique = should_be_oblique
@@ -102,7 +104,7 @@ def run(
                 "pass": cff_italic_angle_check,
             }
 
-        return result
-
     except Exception as e:
         raise FixItalicAngleError(e) from e
+
+    return result

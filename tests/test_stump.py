@@ -4,4 +4,5 @@ import foundrytools
 
 
 def test_dummy() -> None:
+    """Lorem Ipsum."""
     assert foundrytools

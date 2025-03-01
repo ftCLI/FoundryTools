@@ -1,11 +1,12 @@
+"""TrueType Font code."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from fontTools.pens.cu2quPen import Cu2QuPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import TTFont, newTable
-from fontTools.ttLib.tables._g_l_y_f import (
-    Glyph,
-    table__g_l_y_f,
-)
-from fontTools.ttLib.ttGlyphSet import _TTGlyphCFF
 
 from foundrytools.constants import (
     T_CFF,
@@ -17,14 +18,17 @@ from foundrytools.constants import (
     T_VORG,
 )
 
+if TYPE_CHECKING:
+    from fontTools.ttLib.tables._g_l_y_f import Glyph, table__g_l_y_f
+    from fontTools.ttLib.ttGlyphSet import _TTGlyphCFF
+
+
 MAXP_TABLE_VERSION = 0x00010000
 
 
-def build_ttf(
-    font: TTFont, max_err: float = 1.0, reverse_direction: bool = True, post_format: float = 2.0
-) -> None:
+def build_ttf(font: TTFont, *, max_err: float = 1.0, reverse_direction: bool = True, post_format: float = 2.0) -> None:
     """
-    Builds an OpenType-TT font with quadratic outlines.
+    Build an OpenType-TT font with quadratic outlines.
 
     :param font: The input ``TTFont`` object.
     :type font: TTFont
@@ -58,9 +62,7 @@ def build_ttf(
     maxp.maxInstructionDefs = 0
     maxp.maxStackElements = 0
     maxp.maxSizeOfInstructions = 0
-    maxp.maxComponentElements = max(
-        len(g.components if hasattr(g, "components") else []) for g in glyf.glyphs.values()
-    )
+    maxp.maxComponentElements = max(len(g.components if hasattr(g, "components") else []) for g in glyf.glyphs.values())
     maxp.compile(font)
 
     post = font[T_POST]
@@ -78,14 +80,13 @@ def build_ttf(
 
 def update_hmtx(font: TTFont, glyf: table__g_l_y_f) -> None:
     """
-    Updates the ``xMin`` values in the ``hmtx`` table of a font.
+    Update the ``xMin`` values in the ``hmtx`` table of a font.
 
     :param font: The font to update the ``hmtx`` table of.
     :type font: TTFont
     :param glyf: The ``glyf`` table of the font.
     :type glyf: table__g_l_y_f
     """
-
     hmtx = font[T_HMTX]
     for glyph_name, glyph in glyf.glyphs.items():
         if hasattr(glyph, "xMin"):
@@ -93,15 +94,13 @@ def update_hmtx(font: TTFont, glyf: table__g_l_y_f) -> None:
 
 
 def glyphs_to_quadratic(
-    glyph_set: dict[str, _TTGlyphCFF], max_err: float = 1.0, reverse_direction: bool = False
+    glyph_set: dict[str, _TTGlyphCFF], *, max_err: float = 1.0, reverse_direction: bool = False
 ) -> dict[str, Glyph]:
-    """Converts a dictionary of glyphs to quadratic outlines."""
-
+    """Convert a dictionary of glyphs to quadratic outlines."""
     quad_glyphs = {}
-    for gname in glyph_set:
-        glyph = glyph_set[gname]
+    for name, glyph in glyph_set.items():
         tt_pen = TTGlyphPen(glyph_set)
         cu2qu_pen = Cu2QuPen(tt_pen, max_err=max_err, reverse_direction=reverse_direction)
         glyph.draw(cu2qu_pen)
-        quad_glyphs[gname] = tt_pen.glyph()
+        quad_glyphs[name] = tt_pen.glyph()
     return quad_glyphs

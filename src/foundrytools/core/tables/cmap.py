@@ -1,7 +1,9 @@
-from copy import deepcopy
+"""CMAP table."""
 
-from fontTools.ttLib import TTFont
-from fontTools.ttLib.tables._c_m_a_p import table__c_m_a_p
+from __future__ import annotations
+
+from copy import deepcopy
+from typing import TYPE_CHECKING
 
 from foundrytools.constants import T_CMAP
 from foundrytools.core.tables.default import DefaultTbl
@@ -11,13 +13,17 @@ from foundrytools.lib.unicode import (
     update_character_map,
 )
 
+if TYPE_CHECKING:
+    from fontTools.ttLib import TTFont
+    from fontTools.ttLib.tables._c_m_a_p import table__c_m_a_p
+
 
 class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
-    """This class extends the fontTools ``cmap`` table."""
+    """Extend the fontTools ``cmap`` table."""
 
     def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``cmap`` table handler.
+        Initialize the ``cmap`` table handler.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -27,16 +33,12 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
 
     @property
     def table(self) -> table__c_m_a_p:
-        """
-        The wrapped ``table__c_m_a_p`` table object.
-        """
+        """The wrapped ``table__c_m_a_p`` table object."""
         return self._table
 
     @table.setter
     def table(self, value: table__c_m_a_p) -> None:
-        """
-        Wraps a new ``table__c_m_a_p`` object.
-        """
+        """Wrap a new ``table__c_m_a_p`` object."""
         self._table = value
 
     @property
@@ -51,7 +53,7 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
 
     def get_all_codepoints(self) -> set[int]:
         """
-        Returns all the codepoints in the ``cmap`` table.
+        Return all the codepoints in the ``cmap`` table.
 
         :return: A set of codepoints
         :rtype: set[int]
@@ -64,23 +66,17 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
 
     def get_unmapped_glyphs(self) -> list[str]:
         """
-        Returns all the unmapped glyphs in the ``cmap`` table.
+        Return all the unmapped glyphs in the ``cmap`` table.
 
         :return: A set of glyph names
         :rtype: set[str]
         """
         glyph_order = self.ttfont.getGlyphOrder()
         reversed_cmap = self.table.buildReversed()
-        unmapped_glyphs = []
-
-        for glyf_name in glyph_order:
-            if reversed_cmap.get(glyf_name) is None:
-                unmapped_glyphs.append(glyf_name)
-
-        return unmapped_glyphs
+        return [name for name in glyph_order if reversed_cmap.get(name) is None]
 
     def rebuild_character_map(
-        self, remap_all: bool = False
+        self, *, remap_all: bool = False
     ) -> tuple[list[tuple[int, str]], list[tuple[int, str, str]]]:
         """
         Rebuild the character map of the font.
@@ -91,7 +87,6 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
         :return: A tuple containing the remapped and duplicate glyphs.
         :rtype: tuple[list[tuple[int, str]], list[tuple[int, str, str]]]
         """
-
         glyph_order = self.ttfont.getGlyphOrder()
         unmapped = self.get_unmapped_glyphs()
 
@@ -102,15 +97,13 @@ class CmapTable(DefaultTbl):  # pylint: disable=too-few-public-methods
             target_cmap = {}
             source_cmap = cmap_from_glyph_names(glyphs_list=glyph_order)
 
-        updated_cmap, remapped, duplicates = update_character_map(
-            source_cmap=source_cmap, target_cmap=target_cmap
-        )
+        updated_cmap, remapped, duplicates = update_character_map(source_cmap=source_cmap, target_cmap=target_cmap)
         setup_character_map(ttfont=self.ttfont, mapping=updated_cmap)
 
         return remapped, duplicates
 
     def add_missing_nbsp(self) -> None:
-        """Fixes the missing non-breaking space glyph by double mapping the space glyph."""
+        """Fix the missing non-breaking space glyph by double mapping the space glyph."""
         # Get the space glyph
         best_cmap = self.table.getBestCmap()
         space_glyph = best_cmap.get(0x0020)

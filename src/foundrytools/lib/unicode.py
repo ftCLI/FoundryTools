@@ -1,5 +1,8 @@
+"""Unicode functionality."""
+
+from __future__ import annotations
+
 import json
-from typing import Optional
 
 from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
@@ -9,11 +12,8 @@ from foundrytools.constants import NAMES_TO_UNICODES_FILE, T_CMAP, UNICODES_TO_N
 _CharacterMap = dict[int, str]
 _ReversedCmap = dict[str, set[int]]
 
-with open(NAMES_TO_UNICODES_FILE, encoding="utf-8") as f:
-    NAMES_TO_UNICODES = json.load(f)
-
-with open(UNICODES_TO_NAMES_FILE, encoding="utf-8") as f:
-    UNICODES_TO_NAMES = json.load(f)
+NAMES_TO_UNICODES = json.loads(NAMES_TO_UNICODES_FILE.read_text(encoding="utf-8"))
+UNICODES_TO_NAMES = json.loads(UNICODES_TO_NAMES_FILE.read_text(encoding="utf-8"))
 
 
 class UnicodeBlock:  # pylint: disable=too-many-instance-attributes, too-few-public-methods
@@ -41,9 +41,9 @@ class UnicodeBlock:  # pylint: disable=too-many-instance-attributes, too-few-pub
         last_codepoint: int,
         name: str,
         min_os2_version: int,
-        sub_blocks: Optional[list["UnicodeBlock"]] = None,
-    ):
-        """Initializes the Unicode block."""
+        sub_blocks: list[UnicodeBlock] | None = None,
+    ) -> None:
+        """Initialize the Unicode block."""
         self.bit_number = bit_number
         self.first_codepoint = first_codepoint
         self.last_codepoint = last_codepoint
@@ -63,8 +63,7 @@ class UnicodeBlock:  # pylint: disable=too-many-instance-attributes, too-few-pub
 
 def count_block_codepoints(block: UnicodeBlock, unicodes: set[int]) -> int:
     """
-    Count the number of codepoints in a given UnicodeBlock that are present in the provided set of
-    unicodes.
+    Count the number of codepoints in a given UnicodeBlock present in the provided set of unicode.
 
     This function iterates over the range of codepoints defined by the input UnicodeBlock and counts
     how many of them are included in the provided set of unicodes.
@@ -88,9 +87,12 @@ def check_block_support(
     found_codepoints: int,
     min_codepoints: int,
     os2_version: int,
+    *,
     has_cmap_32: bool,
 ) -> bool:
     """
+    Validate unicode block.
+
     Check if a Unicode block is supported based on the following criteria:
 
     * The number of codepoints found in the block is greater than or equal to the minimum required.
@@ -113,7 +115,7 @@ def check_block_support(
     is_supported = found_codepoints >= min_codepoints
     if block.min_os2_version > os2_version:
         is_supported = False
-    if not has_cmap_32 and block.bit_number == 57:
+    if not has_cmap_32 and block.bit_number == 57:  # noqa: PLR2004
         is_supported = False
     return is_supported
 
@@ -167,9 +169,7 @@ OS_2_UNICODE_RANGES = [
     UnicodeBlock(10, 0x0530, 0x058F, "Armenian", 0),
     UnicodeBlock(11, 0x0590, 0x05FF, "Hebrew", 0),
     UnicodeBlock(12, 0xA500, 0xA63F, "Vai", 4),
-    UnicodeBlock(
-        13, 0x0600, 0x06FF, "Arabic", 0, [UnicodeBlock(13, 0x0750, 0x077F, "Arabic Supplement", 4)]
-    ),
+    UnicodeBlock(13, 0x0600, 0x06FF, "Arabic", 0, [UnicodeBlock(13, 0x0750, 0x077F, "Arabic Supplement", 4)]),
     UnicodeBlock(14, 0x07C0, 0x07FF, "NKo", 4),
     UnicodeBlock(15, 0x0900, 0x097F, "Devanagari", 0),
     UnicodeBlock(16, 0x0980, 0x09FF, "Bangla", 0),
@@ -337,14 +337,10 @@ OS_2_UNICODE_RANGES = [
     UnicodeBlock(77, 0x1400, 0x167F, "Unified Canadian Aboriginal Syllabics", 2),
     UnicodeBlock(78, 0x1680, 0x169F, "Ogham", 2),
     UnicodeBlock(79, 0x16A0, 0x16FF, "Runic", 2),
-    UnicodeBlock(
-        80, 0x1780, 0x17FF, "Khmer", 2, [UnicodeBlock(80, 0x19E0, 0x19FF, "Khmer Symbols", 4)]
-    ),
+    UnicodeBlock(80, 0x1780, 0x17FF, "Khmer", 2, [UnicodeBlock(80, 0x19E0, 0x19FF, "Khmer Symbols", 4)]),
     UnicodeBlock(81, 0x1800, 0x18AF, "Mongolian", 2),
     UnicodeBlock(82, 0x2800, 0x28FF, "Braille Patterns", 2),
-    UnicodeBlock(
-        83, 0xA000, 0xA48F, "Yi Syllables", 2, [UnicodeBlock(83, 0xA490, 0xA4CF, "Yi Radicals", 2)]
-    ),
+    UnicodeBlock(83, 0xA000, 0xA48F, "Yi Syllables", 2, [UnicodeBlock(83, 0xA490, 0xA4CF, "Yi Radicals", 2)]),
     UnicodeBlock(
         84,
         0x1700,
@@ -456,7 +452,7 @@ OS_2_UNICODE_RANGES = [
 ]
 
 
-def _uni_str_from_int(codepoint: int) -> Optional[str]:
+def _uni_str_from_int(codepoint: int) -> str | None:
     """
     Get a Unicode string from an integer.
 
@@ -471,19 +467,20 @@ def _uni_str_from_int(codepoint: int) -> Optional[str]:
     :return: The Unicode string of the codepoint.
     :rtype: Optional[str]
     """
-    if codepoint < 0 or codepoint > 0x10FFFF:
+    if codepoint < 0 or codepoint > 0x10FFFF:  # noqa: PLR2004
         return None
 
-    if codepoint > 0xFFFF:
+    if codepoint > 0xFFFF:  # noqa: PLR2004
         return f"0x{codepoint:06x}"
 
     return f"0x{codepoint:04x}"
 
 
-def _uni_str_from_glyph_name(glyph_name: str) -> Optional[str]:
+def _uni_str_from_glyph_name(glyph_name: str) -> str | None:
     """
-    Guess the Unicode value of a glyph from its name. If the glyph name is not in the expected
-    format (e.g. "uniXXXX" or "uXXXXXX"), it will return None.
+    Guess the Unicode value of a glyph from its name.
+
+    If the glyph name is not in the expected format (e.g. "uniXXXX" or "uXXXXXX"), it will return None.
 
     :Example:
         >>> _uni_str_from_glyph_name("uni0041")
@@ -498,9 +495,8 @@ def _uni_str_from_glyph_name(glyph_name: str) -> Optional[str]:
     :return: The Unicode string of the glyph.
     :rtype: Optional[str]
     """
-
     for prefix in ("uni", "u"):
-        if glyph_name.startswith(prefix) and len(glyph_name) == 7:
+        if glyph_name.startswith(prefix) and len(glyph_name) == 7:  # noqa: PLR2004
             try:
                 _ = int(glyph_name.replace(prefix, ""), 16)
                 return glyph_name.replace(prefix, "0x")
@@ -509,7 +505,7 @@ def _uni_str_from_glyph_name(glyph_name: str) -> Optional[str]:
     return None
 
 
-def _uni_str_from_reversed_cmap(glyph_name: str, reversed_cmap: _ReversedCmap) -> Optional[str]:
+def _uni_str_from_reversed_cmap(glyph_name: str, reversed_cmap: _ReversedCmap) -> str | None:
     """
     Get the Unicode value of a glyph from the reversed cmap.
 
@@ -527,10 +523,10 @@ def _uni_str_from_reversed_cmap(glyph_name: str, reversed_cmap: _ReversedCmap) -
     codepoints = reversed_cmap.get(glyph_name)
     if not codepoints:
         return None
-    return _uni_str_from_int(list(codepoints)[0])
+    return _uni_str_from_int(next(iter(codepoints)))
 
 
-def _glyph_name_from_uni_str(uni_str: str) -> Optional[str]:
+def _glyph_name_from_uni_str(uni_str: str) -> str | None:
     """
     Guess the name of a glyph from its Unicode value.
 
@@ -547,20 +543,19 @@ def _glyph_name_from_uni_str(uni_str: str) -> Optional[str]:
     :return: The name of the glyph.
     :rtype: Optional[str]
     """
-
     try:
         codepoint = int(uni_str, 16)
     except ValueError:
         return None
 
-    if 0 <= codepoint <= 0xFFFF:
+    if 0 <= codepoint <= 0xFFFF:  # noqa: PLR2004
         return f"uni{uni_str.replace('0x', '').upper()}"
-    if 0x10000 <= codepoint <= 0x10FFFF:
+    if 0x10000 <= codepoint <= 0x10FFFF:  # noqa: PLR2004
         return f"u{uni_str.replace('0x', '').upper()}"
     return None
 
 
-def production_name_from_unicode(uni_str: str) -> Optional[str]:
+def production_name_from_unicode(uni_str: str) -> str | None:
     """
     Get the production name of a glyph from its Unicode value.
 
@@ -580,7 +575,7 @@ def production_name_from_unicode(uni_str: str) -> Optional[str]:
     return UNICODES_TO_NAMES.get(uni_str, {}).get("production", None)
 
 
-def prod_name_from_glyph_name(glyph_name: str) -> Optional[str]:
+def prod_name_from_glyph_name(glyph_name: str) -> str | None:
     """
     Get the production name of a glyph from its name.
 
@@ -603,7 +598,7 @@ def prod_name_from_glyph_name(glyph_name: str) -> Optional[str]:
     return production_name_from_unicode(uni_str)
 
 
-def friendly_name_from_uni_str(uni_str: str) -> Optional[str]:
+def friendly_name_from_uni_str(uni_str: str) -> str | None:
     """
     Get the friendly name of a glyph from its Unicode value.
 
@@ -652,9 +647,7 @@ def _cmap_from_reversed_cmap(reversed_cmap: dict[str, set[int]]) -> _CharacterMa
             cmap_dict[codepoint] = glyph_name
 
     # Sort the dictionary by codepoint
-    cmap_dict = dict(sorted(cmap_dict.items(), key=lambda item: item[0]))
-
-    return cmap_dict
+    return dict(sorted(cmap_dict.items(), key=lambda item: item[0]))
 
 
 def update_character_map(
@@ -684,9 +677,7 @@ def update_character_map(
     return updated_cmap, remapped, duplicates
 
 
-def create_cmap_tables(
-    subtable_format: int, platform_id: int, plat_enc_id: int, cmap: _CharacterMap
-) -> CmapSubtable:
+def create_cmap_tables(subtable_format: int, platform_id: int, plat_enc_id: int, cmap: _CharacterMap) -> CmapSubtable:
     """
     Create a cmap subtable with the given parameters.
 
@@ -721,8 +712,8 @@ def setup_character_map(ttfont: TTFont, mapping: _CharacterMap) -> None:
     out_tables: list[CmapSubtable] = []
 
     max_unicode = max(mapping, default=0)  # Avoid max() error on empty dict
-    if max_unicode > 0xFFFF:
-        cmap_3_1 = {k: v for k, v in mapping.items() if k <= 0xFFFF}
+    if max_unicode > 0xFFFF:  # noqa: PLR2004
+        cmap_3_1 = {k: v for k, v in mapping.items() if k <= 0xFFFF}  # noqa: PLR2004
         cmap_3_10 = mapping
     else:
         cmap_3_1 = mapping
@@ -761,7 +752,7 @@ def _get_multi_mapped_glyphs(
     return multi_mapped
 
 
-def unicode_from_glyph_name(glyph_name: str, reversed_cmap: _ReversedCmap) -> Optional[str]:
+def unicode_from_glyph_name(glyph_name: str, reversed_cmap: _ReversedCmap) -> str | None:
     """
     Attempt to retrieve a Unicode string, using various fallback mechanisms.
 

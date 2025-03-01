@@ -1,6 +1,5 @@
 """
-The ``foundrytools.core.tables`` module contains classes for handling ``fontTools.ttLib.tables``
-objects.
+The ``foundrytools.core.tables`` module contains classes for handling ``fontTools.ttLib.tables`` objects.
 
 Each table wrapper provides a set of methods for accessing and modifying the table data.
 
@@ -56,6 +55,7 @@ TABLES_LOOKUP = {
 }
 
 __all__ = [
+    "TABLES_LOOKUP",
     "CFFTable",
     "CmapTable",
     "FvarTable",
@@ -69,5 +69,4 @@ __all__ = [
     "NameTable",
     "OS2Table",
     "PostTable",
-    "TABLES_LOOKUP",
 ]

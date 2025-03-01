@@ -1,10 +1,16 @@
-from typing import cast
+"""VAR to static."""
 
-from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, cast
+
 from fontTools.varLib.instancer import OverlapMode, instantiateVariableFont
 
 from foundrytools import Font
 from foundrytools.constants import T_GSUB, NameIds
+
+if TYPE_CHECKING:
+    from fontTools.ttLib.tables._f_v_a_r import Axis, NamedInstance
 
 
 class Var2StaticError(Exception):
@@ -32,7 +38,7 @@ def check_update_name_table(var_font: Font) -> None:
         or if an error occurs during the creation of the static instance.
     """
     try:
-        create_static_instance(var_font, var_font.t_fvar.table.instances[0], True)
+        create_static_instance(var_font, var_font.t_fvar.table.instances[0], update_font_names=True)
     except Exception as e:
         raise UpdateNameTableError(str(e)) from e
 
@@ -52,18 +58,19 @@ def check_instance(var_font: Font, instance: NamedInstance) -> None:
     for axis_tag, value in instance.coordinates.items():
         axis_obj = next((a for a in axes if a.axisTag == axis_tag), None)
         if axis_obj is None:
-            raise BadInstanceError(f"Cannot create static font: '{axis_tag}' not present in fvar")
+            msg = f"Cannot create static font: '{axis_tag}' not present in fvar"
+            raise BadInstanceError(msg)
         if not axis_obj.minValue <= value <= axis_obj.maxValue:
-            raise BadInstanceError(
+            msg = (
                 f"Cannot create static font: '{axis_tag}' out of bounds "
                 f"(value: {value} min: {axis_obj.minValue} max: {axis_obj.maxValue})"
             )
+            raise BadInstanceError(msg)
 
 
 def get_existing_instance(var_font: Font, instance: NamedInstance) -> tuple[bool, NamedInstance]:
     """
-    Returns a named instance if the instance coordinates are the same, otherwise the custom
-    instance.
+    Return a named instance if the instance coordinates are the same, otherwise the custom instance.
 
     :param var_font: The variable font.
     :type var_font: Font
@@ -79,9 +86,7 @@ def get_existing_instance(var_font: Font, instance: NamedInstance) -> tuple[bool
     return False, instance
 
 
-def create_static_instance(
-    var_font: Font, instance: NamedInstance, update_font_names: bool, overlap: int = 1
-) -> Font:
+def create_static_instance(var_font: Font, instance: NamedInstance, update_font_names: bool, overlap: int = 1) -> Font:  # noqa: FBT001
     """
     Create a static instance from a variable font.
 
@@ -96,7 +101,6 @@ def create_static_instance(
     :return: A static instance of the font.
     :rtype: Font
     """
-
     # We need to cast the overlap mode to the correct type.
     overlap = cast(OverlapMode, overlap)
 
@@ -114,8 +118,7 @@ def create_static_instance(
 
 def cleanup_static_font(static_font: Font) -> None:
     """
-    Clean up the static font by removing tables left by ``InstantiateVariableFont`` and remapping
-    the name IDs.
+    Clean up the static font by removing tables left by ``InstantiateVariableFont`` and remapping the name IDs.
 
     :param static_font: The static font to clean up.
     :type static_font: Font
@@ -138,24 +141,23 @@ def cleanup_static_font(static_font: Font) -> None:
 
 
 def _remove_unused_names(static_font: Font) -> None:
-    """
-    The method ``removeUnusedNames`` is very slow. This should be enough for most cases.
-    """
+    """``removeUnusedNames`` is very slow. This should be enough for most cases."""
     if T_GSUB not in static_font.ttfont:
         return
     ui_name_ids = static_font.t_gsub.get_ui_name_ids()
     name_ids_to_remove = [
         name.nameID
         for name in static_font.t_name.table.names
-        if name.nameID >= 256 and name.nameID not in ui_name_ids
+        if name.nameID >= 256 and name.nameID not in ui_name_ids  # noqa: PLR2004
     ]
     static_font.t_name.remove_names(name_ids=name_ids_to_remove)
 
 
 def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance) -> None:
     """
-    Update the name table of the static font in case ``InstantiateVariableFont`` could not update
-    it, or if the instance is non-existing.
+    Update the name table of the static font.
+
+    In case ``InstantiateVariableFont`` could not update it, or if the instance is non-existing.
 
     :param var_font: The variable font.
     :type var_font: Font
@@ -179,6 +181,7 @@ def update_name_table(var_font: Font, static_font: Font, instance: NamedInstance
 def run(
     var_font: Font,
     instance: NamedInstance,
+    *,
     update_font_names: bool = True,
     overlap: int = 1,
 ) -> tuple[Font, str]:
@@ -196,9 +199,9 @@ def run(
     :return: The static font and the file stem.
     :rtype: Optional[tuple[Font, str]]
     """
-
     if not var_font.is_variable:
-        raise Var2StaticError("The font is not a variable font.")
+        msg = "The font is not a variable font."
+        raise Var2StaticError(msg)
 
     try:
         # Checks if the instance has valid axes and coordinates are within the axis limits. If not,
@@ -213,7 +216,7 @@ def run(
         if is_existing_instance:
             static_font = create_static_instance(var_font, instance, update_font_names, overlap)
         else:
-            static_font = create_static_instance(var_font, instance, False, overlap)
+            static_font = create_static_instance(var_font, instance, update_font_names=False, overlap=overlap)
 
         # We update the name table with the instance coordinates if the instance is non-existing or
         # if the name table cannot be updated.
@@ -224,7 +227,8 @@ def run(
 
         file_name = static_font.t_name.get_debug_name(NameIds.POSTSCRIPT_NAME)
         file_name += static_font.get_file_ext()
-        return static_font, file_name
 
     except Exception as e:
         raise Var2StaticError(str(e)) from e
+
+    return static_font, file_name

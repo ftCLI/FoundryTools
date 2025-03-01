@@ -1,21 +1,25 @@
+"""OTF recalculate zones."""
+
+from __future__ import annotations
+
+import string
 from collections import Counter
-from typing import Literal, Optional
+from typing import TYPE_CHECKING, Literal
 
-from foundrytools import Font
+if TYPE_CHECKING:
+    from foundrytools import Font
 
-UPPERCASE_LETTERS = [chr(i) for i in range(65, 91)]  # A-Z
+UPPERCASE_LETTERS = list(string.ascii_uppercase)
 UPPERCASE_DESCENDERS = ["J", "Q"]
-LOWERCASE_LETTERS = [chr(i) for i in range(97, 123)]  # a-z
+LOWERCASE_LETTERS = list(string.ascii_lowercase)
 LOWERCASE_DESCENDERS = ["f", "g", "j", "p", "q", "y"]
 LOWERCASE_ASCENDERS = ["b", "d", "f", "h", "k", "l", "t"]
 
 DESCENDER_GLYPHS = list(set(LOWERCASE_DESCENDERS) - {"f", "j"})
 BASELINE_GLYPHS = list(
-    set(UPPERCASE_LETTERS + LOWERCASE_LETTERS)
-    - set(LOWERCASE_DESCENDERS)
-    - set(UPPERCASE_DESCENDERS)
+    set(UPPERCASE_LETTERS + LOWERCASE_LETTERS) - set(LOWERCASE_DESCENDERS) - set(UPPERCASE_DESCENDERS)
 )
-X_HEIGHT_GLYPHS = list(set(LOWERCASE_LETTERS) - set(LOWERCASE_ASCENDERS + ["i", "j"]))
+X_HEIGHT_GLYPHS = list(set(LOWERCASE_LETTERS) - {*LOWERCASE_ASCENDERS, "i", "j"})
 UPPERCASE_GLYPHS = UPPERCASE_LETTERS
 ASCENDER_GLYPHS = list(set(LOWERCASE_ASCENDERS) - {"t"})
 
@@ -29,7 +33,6 @@ def _get_pair(counter: Counter) -> list[float]:
     :return: List containing the pair of most common elements.
     :rtype: list[float]
     """
-
     most_common = counter.most_common(2)
     if len(counter) == 1:
         return [most_common[0][0], most_common[0][0]]
@@ -45,13 +48,12 @@ def _lists_overlaps(lists: list[list[float]]) -> bool:
     :return: True if there are overlapping intervals, False otherwise.
     :rtype: bool
     """
-
     return any(lists[i][1] > lists[i + 1][0] for i in range(len(lists) - 1))
 
 
 def _fix_lists_overlaps(lists: list[list[float]]) -> list[list[float]]:
     """
-    Fixes overlaps in a list of lists of floats.
+    Fix overlaps in a list of lists of floats.
 
     :param lists: A list of lists of floats.
     :type lists: list[list[float]]
@@ -67,7 +69,7 @@ def _fix_lists_overlaps(lists: list[list[float]]) -> list[list[float]]:
 
 def _fix_min_separation_limits(lists: list[list[float]], limit: int) -> list[list[float]]:
     """
-    Fixes the minimum separation between zones.
+    Fix the minimum separation between zones.
 
     :param lists: A list of lists of floats.
     :type lists: list[list[float]]
@@ -76,7 +78,6 @@ def _fix_min_separation_limits(lists: list[list[float]], limit: int) -> list[lis
     :return: The input list with the minimum separation fixed.
     :rtype: list[list[float]]
     """
-
     for i in range(len(lists) - 1):
         if lists[i + 1][0] - lists[i][1] < limit:
             # If the difference between the two values is less than 3, then
@@ -89,11 +90,9 @@ def _fix_min_separation_limits(lists: list[list[float]], limit: int) -> list[lis
     return lists
 
 
-def _calculate_zone(
-    font: Font, glyph_names: list[str], min_or_max: Literal["y_min", "y_max"]
-) -> list[float]:
+def _calculate_zone(font: Font, glyph_names: list[str], min_or_max: Literal["y_min", "y_max"]) -> list[float]:
     """
-    Calculates the minimum and maximum vertical values for a given zone.
+    Calculate the minimum and maximum vertical values for a given zone.
 
     :param font: The Font object.
     :type font: Font
@@ -104,7 +103,6 @@ def _calculate_zone(
     :return: A list containing the minimum and maximum values for the zone.
     :rtype: list[float]
     """
-
     data = font.get_glyph_bounds_many(glyph_names=set(glyph_names))
     counter = Counter([v[min_or_max] for v in data.values()])
     return _get_pair(counter)
@@ -112,14 +110,14 @@ def _calculate_zone(
 
 def run(
     font: Font,
-    descender_glyphs: Optional[list[str]] = None,
-    baseline_glyphs: Optional[list[str]] = None,
-    x_height_glyphs: Optional[list[str]] = None,
-    uppercase_glyphs: Optional[list[str]] = None,
-    ascender_glyphs: Optional[list[str]] = None,
+    descender_glyphs: list[str] | None = None,
+    baseline_glyphs: list[str] | None = None,
+    x_height_glyphs: list[str] | None = None,
+    uppercase_glyphs: list[str] | None = None,
+    ascender_glyphs: list[str] | None = None,
 ) -> tuple[list[int], list[int]]:
     """
-    Recalculates the zones for a given TTFont object.
+    Recalculate the zones for a given TTFont object.
 
     :param font: The Font object.
     :type font: Font
@@ -136,7 +134,6 @@ def run(
     :return: A tuple containing the recalculated OtherBlues and BlueValues values.
     :rtype: tuple[list[int], list[int]]
     """
-
     if descender_glyphs is None:
         descender_glyphs = DESCENDER_GLYPHS
     if baseline_glyphs is None:

@@ -32,6 +32,7 @@ dependencies = [
     "dehinter>=4.0.0",
     "fonttools[pathops,unicode,woff]>=4.56.0",
     "ttfautohint-py>=0.5.1",
+    "typing-extensions>=4.12.2; python_version < '3.11'",
     "ufo-extractor>=0.8.1",
     "ufo2ft>=3.4.2",
 ]
@@ -142,6 +143,7 @@ max-complexity = 10
 [tool.ruff.lint.per-file-ignores]
 # https://beta.ruff.rs/docs/rules/
 "__init__.py" = ["F401", "F403", "F405",]
+"docs/*" = ["ALL",]
 "tests/*" = ["ANN", "ARG", "INP001", "S101",]
 "logger.py" = ["N815",]
 

@@ -1,5 +1,7 @@
 """
-This module provides functionality to recalculate the standard horizontal and vertical stem widths
+TTF dehint.
+
+Provides functionality to recalculate the standard horizontal and vertical stem widths
 (**StdHW** and **StdVW**) and the horizontal and vertical stem snap arrays (**StemSnapH** and
 **StemSnapV**) for OpenType font files.
 
@@ -32,19 +34,23 @@ The module includes the following key functions:
 The module relies on the `afdko.otfautohint` library for font parsing and stem extraction.
 """
 
-from pathlib import Path
-from typing import Optional
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from afdko.otfautohint.__main__ import ReportOptions, _validate_path, get_stemhist_options
 from afdko.otfautohint.autohint import FontInstance, fontWrapper, openFont
 from afdko.otfautohint.hinter import glyphHinter
 from afdko.otfautohint.report import Report
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 __all__ = ["run"]
 
 
 def _get_report(
-    file_path: Path, glyph_list: Optional[list[str]], report_all_stems: bool = False
+    file_path: Path, glyph_list: list[str] | None, *, report_all_stems: bool = False
 ) -> tuple[list[tuple[int, int, list[str]]], list[tuple[int, int, list[str]]]]:
     file_path = _validate_path(file_path)
     _, parsed_args = get_stemhist_options(args=[file_path])
@@ -67,18 +73,18 @@ def _get_report(
     for name, r in gmap:
         report.glyphs[name] = r
 
-    h_stems, v_stems, _, _ = report._get_lists(options)
-    h_stems.sort(key=report._sort_count)
-    v_stems.sort(key=report._sort_count)
+    h_stems, v_stems, _, _ = report._get_lists(options)  # noqa: SLF001
+    h_stems.sort(key=report._sort_count)  # noqa: SLF001
+    v_stems.sort(key=report._sort_count)  # noqa: SLF001
 
     return h_stems, v_stems
 
 
-def _group_widths_with_neighbors(
+def _group_widths_with_neighbors(  # noqa: D417
     report: list[tuple[int, int, list[str]]], max_distance: int = 2
 ) -> list[list[tuple[int, int]]]:
     """
-    Groups report entries based on their width and proximity to neighboring widths.
+    Group report entries based on their width and proximity to neighboring widths.
 
     This function takes a report containing tuples of a unique identifier, a width,
     and a list of associated strings. It groups entries together based on their widths
@@ -86,7 +92,8 @@ def _group_widths_with_neighbors(
     Neighboring widths in the range `[width - max_distance, width + max_distance]`
     are identified, and groups are sorted by an identifier in descending order.
 
-    Parameters:
+    Parameters
+    ----------
         report: list of tuples, where each tuple contains:
             - A unique identifier (int)
             - A width value (int)
@@ -94,11 +101,13 @@ def _group_widths_with_neighbors(
         max_distance: (int, optional) Maximum proximity range to consider neighbors.
             Defaults to 2.
 
-    Returns:
+    Returns
+    -------
         list of lists: Nested list where each sub-list contains tuples representing
         grouped width-proximity neighbors. Each tuple contains:
             - A unique identifier (int)
             - A width value (int)
+
     """
     groups = []  # This will store the resulting groups
 
@@ -107,11 +116,12 @@ def _group_widths_with_neighbors(
 
     # Iterate over each entry in the report
     for _, width, _ in report:
-        group = []
         # Find all widths within the range [width - max_distance, width + max_distance]
-        for neighbor_width in range(width - max_distance, width + max_distance + 1):
-            if neighbor_width in width_map:
-                group.append(width_map[neighbor_width])
+        group = [
+            width_map[neighbor_width]
+            for neighbor_width in range(width - max_distance, width + max_distance + 1)
+            if neighbor_width in width_map
+        ]
         # Sort the group by width
         group.sort(key=lambda x: x[0], reverse=True)
         groups.append(group)  # Append the built group to the result
@@ -132,9 +142,10 @@ def _get_first_n_stems(
     number_of_stems: int,
 ) -> list[int]:
     """
-    Extracts a specified number of representative stem values from groups of stems, ensuring that
-    selected values maintain a minimum difference of five units to provide optimal results as per
-    technical recommendations.
+    Extract a specified number of representative stem values from groups of stems.
+
+    Ensures that selected values maintain a minimum difference of five units
+    to provide optimal results as per technical recommendations.
 
     From: https://adobe-type-tools.github.io/font-tech-notes/pdfs/5049.StemSnap.pdf
 
@@ -150,11 +161,10 @@ def _get_first_n_stems(
     :return: A list of representative stem values.
     :rtype: list[int]
     """
-
     stem_snap: list[int] = []
     for group in _sort_groups_by_count_sum(groups):
         max_value = max(group, key=lambda x: x[0])[1]
-        if any(abs(max_value - used) < 5 for used in stem_snap):
+        if any(abs(max_value - used) < 5 for used in stem_snap):  # noqa: PLR2004
             continue
         stem_snap.append(max_value)
     return sorted(stem_snap[:number_of_stems])
@@ -162,11 +172,12 @@ def _get_first_n_stems(
 
 def run(
     file_path: Path,
+    *,
     report_all_stems: bool = False,
     max_distance: int = 1,
     max_h_stems: int = 2,
     max_v_stems: int = 2,
-) -> tuple[int, int, Optional[list[int]], Optional[list[int]]]:
+) -> tuple[int, int, list[int] | None, list[int] | None]:
     """
     Recalculates the StdHW, StdVW, StemSnapH, and StemSnapV values for a font file.
 
@@ -184,7 +195,7 @@ def run(
     :return: A tuple containing the new StdHW, StdVW, StemSnapH, and StemSnapV values.
     :rtype: tuple[int, int, list[int], list[int]]
     """
-    horizontal_report, vertical_report = _get_report(file_path, None, report_all_stems)
+    horizontal_report, vertical_report = _get_report(file_path, None, report_all_stems=report_all_stems)
 
     h_groups = _group_widths_with_neighbors(horizontal_report, max_distance=max_distance)
     v_groups = _group_widths_with_neighbors(vertical_report, max_distance=max_distance)

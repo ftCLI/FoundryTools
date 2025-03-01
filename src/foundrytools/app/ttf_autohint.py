@@ -1,10 +1,17 @@
+"""TTF autohint."""
+
+from __future__ import annotations
+
 from io import BytesIO
+from typing import TYPE_CHECKING
 
 from fontTools.ttLib import TTFont
 from ttfautohint import ttfautohint
 
-from foundrytools import Font
 from foundrytools.constants import T_HEAD
+
+if TYPE_CHECKING:
+    from foundrytools import Font
 
 
 class TTFAutohintError(Exception):
@@ -21,7 +28,8 @@ def run(font: Font) -> bool:
     :raises TTFAutohintError: If an error occurred during autohinting.
     """
     if not font.is_tt:
-        raise NotImplementedError("Not a TrueType font.")
+        msg = "Not a TrueType font."
+        raise NotImplementedError(msg)
 
     try:
         with BytesIO() as buffer:

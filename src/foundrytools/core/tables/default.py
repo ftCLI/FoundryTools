@@ -1,24 +1,30 @@
-from typing import Generic, TypeVar
+"""Default table."""
 
-from fontTools.ttLib import TTFont
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Generic, TypeVar
+
 from fontTools.ttLib.tables.DefaultTable import DefaultTable
 
 from foundrytools.utils.bits_tools import update_bit
 
 T = TypeVar("T", bound=DefaultTable)
 
+if TYPE_CHECKING:
+    from fontTools.ttLib import TTFont
+
 
 class DefaultTbl(Generic[T]):
     """
-    Manages font table data with functionality for detecting modifications and setting bits.
+    Manage font table data with functionality for detecting modifications and setting bits.
 
     This class allows you to interact with a specific table in a font's data to determine if the
     table has been modified and to set specific bits within the table's fields.
     """
 
-    def __init__(self, ttfont: TTFont, table_tag: str):
+    def __init__(self, ttfont: TTFont, table_tag: str) -> None:
         """
-        Initializes the table.
+        Initialize the table.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -26,14 +32,15 @@ class DefaultTbl(Generic[T]):
         :type table_tag: str
         """
         if table_tag not in ttfont:
-            raise KeyError(f"Table {table_tag} not found in font")
+            msg = f"Table {table_tag} not found in font"
+            raise KeyError(msg)
         self._ttfont: TTFont = ttfont
         self._table: T = ttfont.get(table_tag)
 
     @property
     def ttfont(self) -> TTFont:
         """
-        Returns the ``TTFont`` object to which the table belongs.
+        Return the ``TTFont`` object to which the table belongs.
 
         :return: The TTFont object.
         :rtype: TTFont
@@ -42,16 +49,12 @@ class DefaultTbl(Generic[T]):
 
     @property
     def table(self) -> T:
-        """
-        Thw wrapped table object.
-        """
+        """The wrapped table object."""
         return self._table
 
     @table.setter
     def table(self, value: T) -> None:
-        """
-        Wraps a new table object.
-        """
+        """Wrap a new table object."""
         self._table = value
 
     @property
@@ -67,9 +70,9 @@ class DefaultTbl(Generic[T]):
         """
         return True
 
-    def set_bit(self, field_name: str, pos: int, value: bool) -> None:
+    def set_bit(self, field_name: str, pos: int, value: bool) -> None:  # noqa: FBT001
         """
-        Sets a specific bit in a field of the table.
+        Set a specific bit in a field of the table.
 
         :param field_name: The field name.
         :type field_name: str
@@ -79,5 +82,5 @@ class DefaultTbl(Generic[T]):
         :type value: bool
         """
         field_value = getattr(self._table, field_name)
-        new_field_value = update_bit(field_value, pos, value)
+        new_field_value = update_bit(field_value, pos, value=value)
         setattr(self._table, field_name, new_field_value)

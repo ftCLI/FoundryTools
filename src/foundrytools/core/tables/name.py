@@ -1,10 +1,11 @@
-# pylint: disable=too-many-public-methods
-from collections.abc import Iterable
+"""Name table."""
+
+from __future__ import annotations
+
 from copy import deepcopy
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from fontTools.misc.timeTools import timestampToString
-from fontTools.ttLib import TTFont
 from fontTools.ttLib.tables._n_a_m_e import (
     _MAC_LANGUAGE_CODES,
     _WINDOWS_LANGUAGE_CODES,
@@ -15,13 +16,18 @@ from fontTools.ttLib.tables._n_a_m_e import (
 from foundrytools.constants import T_HEAD, T_NAME, T_OS_2, NameIds
 from foundrytools.core.tables.default import DefaultTbl
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from fontTools.ttLib import TTFont
+
 
 class NameTable(DefaultTbl):
-    """This class extends the fontTools ``name`` table."""
+    """Extend the fontTools ``name`` table."""
 
-    def __init__(self, ttfont: TTFont):
+    def __init__(self, ttfont: TTFont) -> None:
         """
-        Initializes the ``name`` table handler.
+        Initialize the ``name`` table handler.
 
         :param ttfont: The ``TTFont`` object.
         :type ttfont: TTFont
@@ -32,23 +38,20 @@ class NameTable(DefaultTbl):
 
     @property
     def table(self) -> table__n_a_m_e:
-        """
-        The wrapped ``table__n_a_m_e`` table object.
-        """
+        """The wrapped ``table__n_a_m_e`` table object."""
         return self._table
 
     @table.setter
     def table(self, value: table__n_a_m_e) -> None:
-        """
-        Wraps a new ``table__n_a_m_e`` object.
-        """
+        """Wrap a new ``table__n_a_m_e`` object."""
         self._table = value
 
     @property
     def is_modified(self) -> bool:
         """
-        Compiles the original and current ``name`` tables and compares them to determine if the
-        table has been modified.
+        Compile the original and current ``name`` tables.
+
+        Compare them to determine if the table has been modified.
 
         :return: Whether the ``name`` table has been modified.
         :rtype: bool
@@ -59,11 +62,11 @@ class NameTable(DefaultTbl):
         self,
         name_id: int,
         name_string: str,
-        platform_id: Optional[int] = None,
+        platform_id: int | None = None,
         language_string: str = "en",
     ) -> None:
         """
-        Adds a NameRecord to the ``name`` table of a font.
+        Add a NameRecord to the ``name`` table of a font.
 
         :param name_id: The NameID of the NameRecord.
         :type name_id: int
@@ -76,32 +79,27 @@ class NameTable(DefaultTbl):
         :param language_string: The language of the NameRecord. Defaults to "en".
         :type language_string: str
         """
-
         # Remove the NameRecord before writing it to avoid duplicates
-        self.remove_names(
-            name_ids=(name_id,), platform_id=platform_id, language_string=language_string
-        )
+        self.remove_names(name_ids=(name_id,), platform_id=platform_id, language_string=language_string)
 
         if platform_id == 1:
             mac, windows = True, False
-        elif platform_id == 3:
+        elif platform_id == 3:  # noqa: PLR2004
             mac, windows = False, True
         else:
             mac, windows = True, True
 
         names = {language_string: name_string}
-        self.table.addMultilingualName(
-            names, ttFont=self.ttfont, nameID=name_id, windows=windows, mac=mac
-        )
+        self.table.addMultilingualName(names, ttFont=self.ttfont, nameID=name_id, windows=windows, mac=mac)
 
     def remove_names(
         self,
         name_ids: Iterable[int],
-        platform_id: Optional[int] = None,
-        language_string: Optional[str] = None,
+        platform_id: int | None = None,
+        language_string: str | None = None,
     ) -> None:
         """
-        Deletes the specified NameRecords from the ``name`` table of a font.
+        Delete the specified NameRecords from the ``name`` table of a font.
 
         :param name_ids: A list of NameIDs to remove.
         :type name_ids: Iterable[int]
@@ -114,28 +112,24 @@ class NameTable(DefaultTbl):
             means that NameRecords in all languages are removed.
         :type language_string: Optional[str]
         """
-
-        names = self.filter_names(
-            name_ids=set(name_ids), platform_id=platform_id, lang_string=language_string
-        )
+        names = self.filter_names(name_ids=set(name_ids), platform_id=platform_id, lang_string=language_string)
         for name in names:
             self.table.removeNames(name.nameID, name.platformID, name.platEncID, name.langID)
 
     def remove_unused_names(self) -> set[int]:
-        """Removes unused NameRecords from the ``name`` table."""
+        """Remove unused NameRecords from the ``name`` table."""
         return self.table.removeUnusedNames(self.ttfont)
 
     def find_replace(
         self,
         old_string: str,
         new_string: str,
-        name_ids_to_process: Optional[tuple[int]] = None,
-        name_ids_to_skip: Optional[tuple[int]] = None,
-        platform_id: Optional[int] = None,
+        name_ids_to_process: tuple[int] | None = None,
+        name_ids_to_skip: tuple[int] | None = None,
+        platform_id: int | None = None,
     ) -> None:
         """
-        Finds and replaces occurrences of a string in the specified NameRecords of the ``name``
-        table of a font.
+        Find and replaces occurrences of a string in the specified NameRecords of the ``name`` table of a font.
 
         :param old_string: The string to find.
         :type old_string: str
@@ -153,7 +147,6 @@ class NameTable(DefaultTbl):
             (Windows) are processed.
         :type platform_id: Optional[int]
         """
-
         name_ids = self._get_name_ids_for_filter(
             name_ids_to_process=name_ids_to_process, name_ids_to_skip=name_ids_to_skip
         )
@@ -172,14 +165,13 @@ class NameTable(DefaultTbl):
     def append_prefix_suffix(
         self,
         name_ids: tuple[int],
-        platform_id: Optional[int] = None,
-        language_string: Optional[str] = None,
-        prefix: Optional[str] = None,
-        suffix: Optional[str] = None,
+        platform_id: int | None = None,
+        language_string: str | None = None,
+        prefix: str | None = None,
+        suffix: str | None = None,
     ) -> None:
         """
-        Appends a prefix, a suffix, or both to the NameRecords that match the nameID, platformID,
-        and language string.
+        Append a prefix, a suffix, or both to the NameRecords that match the nameID, platformID, and language string.
 
         :param name_ids: A tuple of name IDs to process.
         :type name_ids: tuple[int]
@@ -195,10 +187,7 @@ class NameTable(DefaultTbl):
         :type prefix: Optional[str]
         :param suffix: The suffix to append to the NameRecords. Defaults to None.
         """
-
-        names = self.filter_names(
-            name_ids=set(name_ids), platform_id=platform_id, lang_string=language_string
-        )
+        names = self.filter_names(name_ids=set(name_ids), platform_id=platform_id, lang_string=language_string)
 
         for name in names:
             string = name.toUnicode()
@@ -216,7 +205,7 @@ class NameTable(DefaultTbl):
             )
 
     def strip_names(self) -> None:
-        """Removes leading and trailing spaces from all NameRecords in the ``name`` table."""
+        """Remove leading and trailing spaces from all NameRecords in the ``name`` table."""
         for name in self.table.names:
             self.table.setName(
                 str(name).strip(),
@@ -227,7 +216,7 @@ class NameTable(DefaultTbl):
             )
 
     def remove_empty_names(self) -> None:
-        """Removes all empty NameRecords from the ``name`` table."""
+        """Remove all empty NameRecords from the ``name`` table."""
         for name in self.table.names:
             if str(name).strip() == "":
                 self.table.removeNames(
@@ -239,10 +228,10 @@ class NameTable(DefaultTbl):
 
     def _get_name_ids_for_filter(
         self,
-        name_ids_to_process: Optional[Iterable] = None,
-        name_ids_to_skip: Optional[Iterable] = None,
+        name_ids_to_process: Iterable | None = None,
+        name_ids_to_skip: Iterable | None = None,
     ) -> set[int]:
-        """Returns a set of name IDs to be used for filtering."""
+        """Return a set of name IDs to be used for filtering."""
         all_name_ids = {name.nameID for name in self.table.names}
         if name_ids_to_process:
             all_name_ids.intersection_update(name_ids_to_process)
@@ -252,14 +241,14 @@ class NameTable(DefaultTbl):
 
     def filter_names(
         self,
-        name_ids: Optional[set[int]] = None,
-        platform_id: Optional[int] = None,
-        plat_enc_id: Optional[int] = None,
-        lang_id: Optional[int] = None,
-        lang_string: Optional[str] = None,
+        name_ids: set[int] | None = None,
+        platform_id: int | None = None,
+        plat_enc_id: int | None = None,
+        lang_id: int | None = None,
+        lang_string: str | None = None,
     ) -> list[NameRecord]:
         """
-        Filters NameRecords based on the given parameters.
+        Filter NameRecords based on the given parameters.
 
         :param name_ids: A set of NameIDs to filter. Defaults to None, which means that all NameIDs
             are filtered.
@@ -281,7 +270,6 @@ class NameTable(DefaultTbl):
         :return: The filtered NameRecords.
         :rtype: list[NameRecord]
         """
-
         return [
             name
             for name in self.table.names
@@ -301,8 +289,9 @@ class NameTable(DefaultTbl):
 
     def get_best_family_name(self) -> str:
         """
-        Returns the best family name from the ``name`` table. The best family name is converted to
-        string to handle cases where the family name is None.
+        Return the best family name from the ``name`` table.
+
+        The best family name is converted to string to handle cases where the family name is None.
 
         :return: The best family name.
         :rtype: str
@@ -311,8 +300,9 @@ class NameTable(DefaultTbl):
 
     def get_best_subfamily_name(self) -> str:
         """
-        Returns the best subfamily name from the ``name`` table. The best subfamily name is
-        converted to string to handle cases where the subfamily name is None.
+        Return the best subfamily name from the ``name`` table.
+
+        The best subfamily name is converted to string to handle cases where the subfamily name is None.
 
         :return: The best subfamily name.
         :rtype: str
@@ -321,8 +311,9 @@ class NameTable(DefaultTbl):
 
     def get_debug_name(self, name_id: int) -> str:
         """
-        Returns the NameRecord string with the specified NameID. The NameRecord is converted to
-        string to handle cases where the NameRecord is None.
+        Return the NameRecord string with the specified NameID.
+
+        The NameRecord is converted to string to handle cases where the NameRecord is None.
 
         :param name_id: The NameID of the NameRecord.
         :type name_id: int
@@ -331,12 +322,9 @@ class NameTable(DefaultTbl):
         """
         return str(self.table.getDebugName(name_id))
 
-    def build_unique_identifier(
-        self, platform_id: Optional[int] = None, alternate: bool = False
-    ) -> None:
+    def build_unique_identifier(self, *, platform_id: int | None = None, alternate: bool = False) -> None:
         """
-        Build the NameID 3 (Unique Font Identifier) record based on the font revision, vendor ID,
-        and PostScript name.
+        Build the NameID 3 (Unique Font Identifier) record based on the font revision, vendor ID, and PostScript name.
 
         :param platform_id: The platform ID of the name record. Defaults to None. If None, the
             NameRecord is added to both platforms. If 1, the NameRecord is added to the Macintosh
@@ -348,7 +336,6 @@ class NameTable(DefaultTbl):
             family name, subfamily name, and year created.
         :type alternate: bool
         """
-
         if not alternate:
             font_revision = round(self.ttfont[T_HEAD].fontRevision, 3)
             vendor_id = self.ttfont[T_OS_2].achVendID
@@ -361,11 +348,9 @@ class NameTable(DefaultTbl):
             manufacturer_name = self.get_debug_name(NameIds.MANUFACTURER_NAME)
             unique_id = f"{manufacturer_name}: {family_name}-{subfamily_name}: {year_created}"
 
-        self.set_name(
-            name_id=NameIds.UNIQUE_FONT_IDENTIFIER, name_string=unique_id, platform_id=platform_id
-        )
+        self.set_name(name_id=NameIds.UNIQUE_FONT_IDENTIFIER, name_string=unique_id, platform_id=platform_id)
 
-    def build_full_font_name(self, platform_id: Optional[int] = None) -> None:
+    def build_full_font_name(self, platform_id: int | None = None) -> None:
         """
         Build the NameID 4 (Full Font Name) record based on the family name and subfamily name.
 
@@ -374,16 +359,13 @@ class NameTable(DefaultTbl):
             platform. If 3, the NameRecord is added to the Windows platform.
         :type platform_id: Optional[int]
         """
-
         family_name = self.get_best_family_name()
         subfamily_name = self.get_best_subfamily_name()
         full_font_name = f"{family_name} {subfamily_name}"
 
-        self.set_name(
-            name_id=NameIds.FULL_FONT_NAME, name_string=full_font_name, platform_id=platform_id
-        )
+        self.set_name(name_id=NameIds.FULL_FONT_NAME, name_string=full_font_name, platform_id=platform_id)
 
-    def build_version_string(self, platform_id: Optional[int] = None) -> None:
+    def build_version_string(self, platform_id: int | None = None) -> None:
         """
         Build the NameID 5 (Version String) record based on the font revision.
 
@@ -392,15 +374,12 @@ class NameTable(DefaultTbl):
             platform. If 3, the NameRecord is added to the Windows platform.
         :type platform_id: Optional[int]
         """
-
         font_revision = round(self.ttfont[T_HEAD].fontRevision, 3)
         version_string = f"Version {font_revision}"
 
-        self.set_name(
-            name_id=NameIds.VERSION_STRING, name_string=version_string, platform_id=platform_id
-        )
+        self.set_name(name_id=NameIds.VERSION_STRING, name_string=version_string, platform_id=platform_id)
 
-    def build_postscript_name(self, platform_id: Optional[int] = None) -> None:
+    def build_postscript_name(self, platform_id: int | None = None) -> None:
         """
         Build the NameID 6 (PostScript Name) record based on the PostScript name.
 
@@ -409,35 +388,38 @@ class NameTable(DefaultTbl):
             platform. If 3, the NameRecord is added to the Windows platform.
         :type platform_id: Optional[int]
         """
-
         family_name = self.get_best_family_name()
         subfamily_name = self.get_best_subfamily_name()
         postscript_name = f"{family_name}-{subfamily_name}".replace(" ", "").replace(".", "_")
 
-        self.set_name(
-            name_id=NameIds.POSTSCRIPT_NAME, name_string=postscript_name, platform_id=platform_id
-        )
+        self.set_name(name_id=NameIds.POSTSCRIPT_NAME, name_string=postscript_name, platform_id=platform_id)
 
     def build_mac_names(self) -> None:
-        """Build the Macintosh-specific NameRecords 1 (Font Family Name), 2 (Font Subfamily Name), 4
-        (Full Font Name), 5 (Version String), and 6 (PostScript Name)."""
+        """
+        Build the Macintosh-specific NameRecords.
 
+        1 (Font Family Name),
+        2 (Font Subfamily Name),
+        4 (Full Font Name),
+        5 (Version String), and
+        6 (PostScript Name).
+        """
         name_ids = {1, 2, 4, 5, 6}
         names = self.filter_names(name_ids=name_ids, platform_id=3)
         for name in names:
             try:
                 string = str(self.table.getDebugName(name.nameID))
                 self.set_name(name_id=name.nameID, name_string=string, platform_id=1)
-            except AttributeError:
+            except AttributeError:  # noqa: PERF203
                 continue
 
     def remove_mac_names(self) -> None:
-        """Removes all Macintosh-specific NameRecords from the ``name`` table."""
+        """Remove all Macintosh-specific NameRecords from the ``name`` table."""
         self.table.removeNames(platformID=1)
 
     def remap_name_ids(self) -> dict[int, int]:
-        """Remaps the NameIDs of the NameRecords in the ``name`` table."""
-        names_to_remap = {name for name in self.table.names if name.nameID >= 256}
+        """Remap the NameIDs of the NameRecords in the ``name`` table."""
+        names_to_remap = {name for name in self.table.names if name.nameID >= 256}  # noqa: PLR2004
         name_ids_map: dict[int, int] = {}
 
         for name_id, name in enumerate(names_to_remap, start=256):
