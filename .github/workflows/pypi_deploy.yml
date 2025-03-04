@@ -1,0 +1,33 @@
+# This workflow deploys a new release on PyPI once a pull request is closed
+
+name: Deploy to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  pypi-deploy:
+    name: Build and publish Python 🐍 distributions 📦 to live PyPI
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@master
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        cache-dependency-glob: "uv.lock"
+
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: "pyproject.toml"
+
+    - name: Build
+      run: uv build
+
+    - name: Publish distribution 📦 to PyPI
+      run: uv publish --token ${{ secrets.PYPI_PASSWORD }}
