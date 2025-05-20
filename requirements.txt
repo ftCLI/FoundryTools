@@ -6,4 +6,4 @@ fonttools[woff,pathops,unicode]==4.58.0
 setuptools==80.7.1
 ttfautohint-py==0.5.1
 ufo-extractor==0.8.1
-ufo2ft==3.4.3
+ufo2ft==3.4.4
