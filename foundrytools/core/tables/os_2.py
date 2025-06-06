@@ -683,6 +683,106 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         """
         self.table.setCodePageRanges(bits)
 
+    @property
+    def us_default_char(self) -> Optional[int]:
+        """
+        A property with getter and setter for the ``OS/2.usDefaultChar`` field.
+
+        :return: The ``OS/2.usDefaultChar`` value.
+        :rtype: int
+        """
+        return getattr(self.table, "usDefaultChar", None)
+
+    @us_default_char.setter
+    def us_default_char(self, value: int) -> None:
+        """
+        Sets the ``OS/2.usDefaultChar`` value.
+
+        :param value: The value to set.
+        :type value: int
+        :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
+        """
+        if self.version < 2:
+            raise InvalidOS2VersionError(
+                "usDefaultChar is only defined in OS/2 table versions 2 and up."
+            )
+        self.table.usDefaultChar = value
+
+    @property
+    def us_break_char(self) -> Optional[int]:
+        """
+        A property with getter and setter for the ``OS/2.usBreakChar`` field.
+
+        :return: The ``OS/2.usBreakChar`` value.
+        :rtype: int
+        """
+        return getattr(self.table, "usBreakChar", None)
+
+    @us_break_char.setter
+    def us_break_char(self, value: int) -> None:
+        """
+        Sets the ``OS/2.usBreakChar`` value.
+
+        :param value: The value to set.
+        :type value: int
+        :raises: InvalidOS2VersionError: If the OS/2 table version is less than 2.
+        """
+        if self.version < 2:
+            raise InvalidOS2VersionError(
+                "usBreakChar is only defined in OS/2 table versions 2 and up."
+            )
+        self.table.usBreakChar = value
+
+    @property
+    def us_lower_optical_point_size(self) -> Optional[int]:
+        """
+        A property with getter and setter for the ``OS/2.usLowerOpticalPointSize`` field.
+
+        :return: The ``OS/2.usLowerOpticalPointSize`` value.
+        :rtype: int
+        """
+        return getattr(self.table, "usLowerOpticalPointSize", None)
+
+    @us_lower_optical_point_size.setter
+    def us_lower_optical_point_size(self, value: int) -> None:
+        """
+        Sets the ``OS/2.usLowerOpticalPointSize`` value.
+
+        :param value: The value to set.
+        :type value: int
+        :raises: InvalidOS2VersionError: If the OS/2 table version is less than 5.
+        """
+        if self.version < 5:
+            raise InvalidOS2VersionError(
+                "usLowerOpticalPointSize is only defined in OS/2 table versions 5 and up."
+            )
+        self.table.usLowerOpticalPointSize = value
+
+    @property
+    def us_upper_optical_point_size(self) -> Optional[int]:
+        """
+        A property with getter and setter for the ``OS/2.usUpperOpticalPointSize`` field.
+
+        :return: The ``OS/2.usUpperOpticalPointSize`` value.
+        :rtype: int
+        """
+        return getattr(self.table, "usUpperOpticalPointSize", None)
+
+    @us_upper_optical_point_size.setter
+    def us_upper_optical_point_size(self, value: int) -> None:
+        """
+        Sets the ``OS/2.usUpperOpticalPointSize`` value.
+
+        :param value: The value to set.
+        :type value: int
+        :raises: InvalidOS2VersionError: If the OS/2 table version is less than 5.
+        """
+        if self.version < 5:
+            raise InvalidOS2VersionError(
+                "usUpperOpticalPointSize is only defined in OS/2 table versions 5 and up."
+            )
+        self.table.usUpperOpticalPointSize = value
+
     def recalc_avg_char_width(self) -> int:
         """
         Recalculates the ``OS/2.xAvgCharWidth`` value.
