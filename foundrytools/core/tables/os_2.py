@@ -886,9 +886,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
 
         if target_version == 5:
             self.us_lower_optical_point_size = 0
-            self.us_upper_optical_point_size = 65535 / 20
-            self.table.usLowerOpticalPointSize = 0
-            self.table.usUpperOpticalPointSize = 65535 / 20
+            self.us_upper_optical_point_size = int(65535 / 20)
 
         if target_version < 4:
             self.fs_selection.use_typo_metrics = False
