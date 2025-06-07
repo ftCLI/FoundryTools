@@ -880,13 +880,13 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         if current_version < 2:
             self.x_height = _get_glyph_height("x")
             self.cap_height = _get_glyph_height("H")
-            self.table.usDefaultChar = 0
-            self.table.usBreakChar = 32
+            self.us_default_char = 0
+            self.us_break_char = 32
             self.recalc_max_context()
 
         if target_version == 5:
-            self.table.usLowerOpticalPointSize = 0
-            self.table.usUpperOpticalPointSize = 65535 / 20
+            self.us_lower_optical_point_size = 0
+            self.us_upper_optical_point_size = int(65535 / 20)
 
         if target_version < 4:
             self.fs_selection.use_typo_metrics = False
