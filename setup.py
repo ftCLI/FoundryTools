@@ -20,7 +20,7 @@ setuptools.setup(
     description="A library for working with fonts in Python.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    author="ftCLI",
+    author="Cesare Gilento",
     author_email="ftcli@proton.me",
     url="https://github.com/ftCLI/FoundryTools",
     packages=setuptools.find_packages(),
