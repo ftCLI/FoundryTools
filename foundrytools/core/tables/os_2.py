@@ -1,5 +1,4 @@
 from copy import deepcopy
-from typing import Optional
 
 from fontTools.misc.roundTools import otRound
 from fontTools.misc.textTools import num2binary
@@ -557,7 +556,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         self.table.usWinDescent = value
 
     @property
-    def x_height(self) -> Optional[int]:
+    def x_height(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.sxHeight`` field.
 
@@ -586,7 +585,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         self.table.sxHeight = value
 
     @property
-    def cap_height(self) -> Optional[int]:
+    def cap_height(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.sCapHeight`` field.
 
@@ -615,7 +614,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         self.table.sCapHeight = value
 
     @property
-    def max_context(self) -> Optional[int]:
+    def max_context(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.usMaxContext`` field.
 
@@ -684,7 +683,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         self.table.setCodePageRanges(bits)
 
     @property
-    def us_default_char(self) -> Optional[int]:
+    def us_default_char(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.usDefaultChar`` field.
 
@@ -709,7 +708,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         self.table.usDefaultChar = value
 
     @property
-    def us_break_char(self) -> Optional[int]:
+    def us_break_char(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.usBreakChar`` field.
 
@@ -734,7 +733,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         self.table.usBreakChar = value
 
     @property
-    def us_lower_optical_point_size(self) -> Optional[int]:
+    def us_lower_optical_point_size(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.usLowerOpticalPointSize`` field.
 
@@ -759,7 +758,7 @@ class OS2Table(DefaultTbl):  # pylint: disable=too-many-public-methods, too-many
         self.table.usLowerOpticalPointSize = value
 
     @property
-    def us_upper_optical_point_size(self) -> Optional[int]:
+    def us_upper_optical_point_size(self) -> int | None:
         """
         A property with getter and setter for the ``OS/2.usUpperOpticalPointSize`` field.
 

@@ -4,7 +4,7 @@ from collections.abc import Generator
 from io import BytesIO
 from pathlib import Path
 from types import TracebackType
-from typing import Any, Literal, Optional, TypedDict, Union
+from typing import Any, Literal, TypedDict
 
 import defcon
 from cffsubr import desubroutinize, subroutinize
@@ -177,9 +177,9 @@ class StyleFlags:
 
     def _set_font_style(
         self,
-        bold: Optional[bool] = None,
-        italic: Optional[bool] = None,
-        regular: Optional[bool] = None,
+        bold: bool | None = None,
+        italic: bool | None = None,
+        regular: bool | None = None,
     ) -> None:
         if bold is not None:
             self.font.t_os_2.fs_selection.bold = bold
@@ -284,8 +284,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def __init__(
         self,
-        font_source: Union[str, Path, BytesIO, TTFont],
-        lazy: Optional[bool] = None,
+        font_source: str | Path | BytesIO | TTFont,
+        lazy: bool | None = None,
         recalc_bboxes: bool = True,
         recalc_timestamp: bool = False,
     ) -> None:
@@ -308,9 +308,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         :type recalc_timestamp: bool
         """
 
-        self._file: Optional[Path] = None
-        self._bytesio: Optional[BytesIO] = None
-        self._ttfont: Optional[TTFont] = None
+        self._file: Path | None = None
+        self._bytesio: BytesIO | None = None
+        self._ttfont: TTFont | None = None
         self._temp_file: Path = get_temp_file_path()
         self._init_font(font_source, lazy, recalc_bboxes, recalc_timestamp)
         self._init_tables()  # Ensure tables are initialized before flags
@@ -318,8 +318,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def _init_font(
         self,
-        font_source: Union[str, Path, BytesIO, TTFont],
-        lazy: Optional[bool],
+        font_source: str | Path | BytesIO | TTFont,
+        lazy: bool | None,
         recalc_bboxes: bool,
         recalc_timestamp: bool,
     ) -> None:
@@ -336,8 +336,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def _init_from_file(
         self,
-        path: Union[str, Path],
-        lazy: Optional[bool],
+        path: str | Path,
+        lazy: bool | None,
         recalc_bboxes: bool,
         recalc_timestamp: bool,
     ) -> None:
@@ -347,7 +347,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         )
 
     def _init_from_bytesio(
-        self, bytesio: BytesIO, lazy: Optional[bool], recalc_bboxes: bool, recalc_timestamp: bool
+        self, bytesio: BytesIO, lazy: bool | None, recalc_bboxes: bool, recalc_timestamp: bool
     ) -> None:
         self._bytesio = bytesio
         self._ttfont = TTFont(
@@ -356,7 +356,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         bytesio.close()
 
     def _init_from_ttfont(
-        self, ttfont: TTFont, lazy: Optional[bool], recalc_bboxes: bool, recalc_timestamp: bool
+        self, ttfont: TTFont, lazy: bool | None, recalc_bboxes: bool, recalc_timestamp: bool
     ) -> None:
         self._bytesio = BytesIO()
         ttfont.save(self._bytesio, reorderTables=False)
@@ -370,19 +370,19 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         Initialize all font table attributes to None. This method sets up the initial state
         for each table in the font, ensuring that they are ready to be loaded when accessed.
         """
-        self._cff: Optional[CFFTable] = None
-        self._cmap: Optional[CmapTable] = None
-        self._fvar: Optional[FvarTable] = None
-        self._gdef: Optional[GdefTable] = None
-        self._glyf: Optional[GlyfTable] = None
-        self._gsub: Optional[GsubTable] = None
-        self._head: Optional[HeadTable] = None
-        self._hhea: Optional[HheaTable] = None
-        self._hmtx: Optional[HmtxTable] = None
-        self._kern: Optional[KernTable] = None
-        self._name: Optional[NameTable] = None
-        self._os_2: Optional[OS2Table] = None
-        self._post: Optional[PostTable] = None
+        self._cff: CFFTable | None = None
+        self._cmap: CmapTable | None = None
+        self._fvar: FvarTable | None = None
+        self._gdef: GdefTable | None = None
+        self._glyf: GlyfTable | None = None
+        self._gsub: GsubTable | None = None
+        self._head: HeadTable | None = None
+        self._hhea: HheaTable | None = None
+        self._hmtx: HmtxTable | None = None
+        self._kern: KernTable | None = None
+        self._name: NameTable | None = None
+        self._os_2: OS2Table | None = None
+        self._post: PostTable | None = None
 
     def _get_table(self, table_tag: str):  # type: ignore
         table_attr, table_cls = TABLES_LOOKUP[table_tag]
@@ -400,9 +400,9 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def __exit__(
         self,
-        exc_type: Optional[type],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         self.close()
 
@@ -410,7 +410,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return f"<Font: ttfont={self.ttfont}, file={self.file}, bytesio={self.bytesio}>"
 
     @property
-    def file(self) -> Optional[Path]:
+    def file(self) -> Path | None:
         """
         A property with both getter and setter methods for the file path of the font. If the font
         was loaded from a file, this property will return the file path. If the font was loaded from
@@ -422,7 +422,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         return self._file
 
     @file.setter
-    def file(self, value: Union[str, Path]) -> None:
+    def file(self, value: str | Path) -> None:
         """
         Set the file path of the font.
 
@@ -434,7 +434,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self._file = value
 
     @property
-    def bytesio(self) -> Optional[BytesIO]:
+    def bytesio(self) -> BytesIO | None:
         """
         A property with both getter and setter methods for the ``BytesIO`` object of the font. If
         the font was loaded from a ``BytesIO`` object, this property will return the ``BytesIO``
@@ -697,8 +697,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def save(
         self,
-        file: Union[str, Path, BytesIO],
-        reorder_tables: Optional[bool] = True,
+        file: str | Path | BytesIO,
+        reorder_tables: bool | None = True,
     ) -> None:
         """
         Save the font to a file.
@@ -766,10 +766,10 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def get_file_path(
         self,
-        file: Optional[Path] = None,
-        output_dir: Optional[Path] = None,
+        file: Path | None = None,
+        output_dir: Path | None = None,
         overwrite: bool = True,
-        extension: Optional[str] = None,
+        extension: str | None = None,
         suffix: str = "",
     ) -> Path:
         """
@@ -1053,8 +1053,8 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
     def remove_glyphs(
         self,
-        glyph_names_to_remove: Optional[set[str]] = None,
-        glyph_ids_to_remove: Optional[set[int]] = None,
+        glyph_names_to_remove: set[str] | None = None,
+        glyph_ids_to_remove: set[int] | None = None,
     ) -> set[str]:
         """
         Removes glyphs from the font using the fontTools subsetter.

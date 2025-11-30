@@ -33,7 +33,6 @@ The module relies on the `afdko.otfautohint` library for font parsing and stem e
 """
 
 from pathlib import Path
-from typing import Optional
 
 from afdko.otfautohint.__main__ import ReportOptions, _validate_path, get_stemhist_options
 from afdko.otfautohint.autohint import FontInstance, fontWrapper, openFont
@@ -44,7 +43,7 @@ __all__ = ["run"]
 
 
 def _get_report(
-    file_path: Path, glyph_list: Optional[list[str]], report_all_stems: bool = False
+    file_path: Path, glyph_list: list[str] | None, report_all_stems: bool = False
 ) -> tuple[list[tuple[int, int, list[str]]], list[tuple[int, int, list[str]]]]:
     file_path = _validate_path(file_path)
     _, parsed_args = get_stemhist_options(args=[file_path])
@@ -166,7 +165,7 @@ def run(
     max_distance: int = 1,
     max_h_stems: int = 2,
     max_v_stems: int = 2,
-) -> tuple[int, int, Optional[list[int]], Optional[list[int]]]:
+) -> tuple[int, int, list[int] | None, list[int] | None]:
     """
     Recalculates the StdHW, StdVW, StemSnapH, and StemSnapV values for a font file.
 

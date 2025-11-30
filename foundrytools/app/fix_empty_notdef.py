@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from fontTools.misc.psCharStrings import T2CharString
 from fontTools.misc.roundTools import otRound
@@ -31,7 +30,7 @@ class DrawNotdefTTError(DrawNotdefError):
 
 
 def draw_notdef_cff(
-    font: Font, width: int, height: int, thickness: int, cs_width: Optional[int] = None
+    font: Font, width: int, height: int, thickness: int, cs_width: int | None = None
 ) -> T2CharString:
     """
     Draws a '.notdef' glyph in a CFF font.

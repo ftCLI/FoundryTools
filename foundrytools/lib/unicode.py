@@ -1,5 +1,4 @@
 import json
-from typing import Optional
 
 from fontTools.ttLib import TTFont, newTable
 from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
@@ -41,7 +40,7 @@ class UnicodeBlock:  # pylint: disable=too-many-instance-attributes, too-few-pub
         last_codepoint: int,
         name: str,
         min_os2_version: int,
-        sub_blocks: Optional[list["UnicodeBlock"]] = None,
+        sub_blocks: list["UnicodeBlock"] | None = None,
     ):
         """Initializes the Unicode block."""
         self.bit_number = bit_number
@@ -456,7 +455,7 @@ OS_2_UNICODE_RANGES = [
 ]
 
 
-def _uni_str_from_int(codepoint: int) -> Optional[str]:
+def _uni_str_from_int(codepoint: int) -> str | None:
     """
     Get a Unicode string from an integer.
 
@@ -480,7 +479,7 @@ def _uni_str_from_int(codepoint: int) -> Optional[str]:
     return f"0x{codepoint:04x}"
 
 
-def _uni_str_from_glyph_name(glyph_name: str) -> Optional[str]:
+def _uni_str_from_glyph_name(glyph_name: str) -> str | None:
     """
     Guess the Unicode value of a glyph from its name. If the glyph name is not in the expected
     format (e.g. "uniXXXX" or "uXXXXXX"), it will return None.
@@ -509,7 +508,7 @@ def _uni_str_from_glyph_name(glyph_name: str) -> Optional[str]:
     return None
 
 
-def _uni_str_from_reversed_cmap(glyph_name: str, reversed_cmap: _ReversedCmap) -> Optional[str]:
+def _uni_str_from_reversed_cmap(glyph_name: str, reversed_cmap: _ReversedCmap) -> str | None:
     """
     Get the Unicode value of a glyph from the reversed cmap.
 
@@ -530,7 +529,7 @@ def _uni_str_from_reversed_cmap(glyph_name: str, reversed_cmap: _ReversedCmap) -
     return _uni_str_from_int(list(codepoints)[0])
 
 
-def _glyph_name_from_uni_str(uni_str: str) -> Optional[str]:
+def _glyph_name_from_uni_str(uni_str: str) -> str | None:
     """
     Guess the name of a glyph from its Unicode value.
 
@@ -560,7 +559,7 @@ def _glyph_name_from_uni_str(uni_str: str) -> Optional[str]:
     return None
 
 
-def production_name_from_unicode(uni_str: str) -> Optional[str]:
+def production_name_from_unicode(uni_str: str) -> str | None:
     """
     Get the production name of a glyph from its Unicode value.
 
@@ -580,7 +579,7 @@ def production_name_from_unicode(uni_str: str) -> Optional[str]:
     return UNICODES_TO_NAMES.get(uni_str, {}).get("production", None)
 
 
-def prod_name_from_glyph_name(glyph_name: str) -> Optional[str]:
+def prod_name_from_glyph_name(glyph_name: str) -> str | None:
     """
     Get the production name of a glyph from its name.
 
@@ -603,7 +602,7 @@ def prod_name_from_glyph_name(glyph_name: str) -> Optional[str]:
     return production_name_from_unicode(uni_str)
 
 
-def friendly_name_from_uni_str(uni_str: str) -> Optional[str]:
+def friendly_name_from_uni_str(uni_str: str) -> str | None:
     """
     Get the friendly name of a glyph from its Unicode value.
 
@@ -761,7 +760,7 @@ def _get_multi_mapped_glyphs(
     return multi_mapped
 
 
-def unicode_from_glyph_name(glyph_name: str, reversed_cmap: _ReversedCmap) -> Optional[str]:
+def unicode_from_glyph_name(glyph_name: str, reversed_cmap: _ReversedCmap) -> str | None:
     """
     Attempt to retrieve a Unicode string, using various fallback mechanisms.
 

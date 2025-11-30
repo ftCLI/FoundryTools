@@ -1,6 +1,5 @@
 import math
 from copy import deepcopy
-from typing import Optional, Union
 
 from fontTools.misc.roundTools import otRound
 from fontTools.ttLib import TTFont
@@ -215,7 +214,7 @@ class HheaTable(DefaultTbl):
         run_rise_angle = math.degrees(math.atan(-run / rise))
         return run_rise_angle
 
-    def calc_caret_slope_rise(self, italic_angle: Optional[Union[int, float]] = None) -> int:
+    def calc_caret_slope_rise(self, italic_angle: int | float | None = None) -> int:
         """
         Calculate the ``caretSlopeRise`` field of the ``hhea`` table.
 
@@ -233,7 +232,7 @@ class HheaTable(DefaultTbl):
             return 1
         return self.ttfont[T_HEAD].unitsPerEm
 
-    def calc_caret_slope_run(self, italic_angle: Optional[Union[int, float]] = None) -> int:
+    def calc_caret_slope_run(self, italic_angle: int | float | None = None) -> int:
         """
         Calculate the ``caretSlopeRun`` field of the ``hhea`` table.
 

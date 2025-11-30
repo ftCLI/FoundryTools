@@ -1,7 +1,6 @@
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Optional, Union
 
 from fontTools.ttLib.ttCollection import TTCollection
 from fontTools.ttLib.ttFont import TTLibError
@@ -16,7 +15,7 @@ class FinderOptions:
     """A class that specifies the options to pass to the FontFinder class."""
 
     recursive: bool = False
-    lazy: Optional[bool] = None
+    lazy: bool | None = None
     recalc_bboxes: bool = True
     recalc_timestamp: bool = False
 
@@ -52,9 +51,9 @@ class FontFinder:
 
     def __init__(
         self,
-        input_path: Union[str, Path],
-        options: Optional[FinderOptions] = None,
-        filter_: Optional[FinderFilter] = None,
+        input_path: str | Path,
+        options: FinderOptions | None = None,
+        filter_: FinderFilter | None = None,
     ) -> None:
         """
         Initializes the ``FontFinder`` class.

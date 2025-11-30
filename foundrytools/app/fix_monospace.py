@@ -1,6 +1,5 @@
 # pylint: disable=import-outside-toplevel
 from collections import Counter
-from typing import Union
 
 from foundrytools import Font
 
@@ -10,7 +9,7 @@ class FixMonospaceError(Exception):
 
 
 # Copied from fontbakery/profiles/shared_conditions.py
-def _get_glyph_metrics_stats(font: Font) -> dict[str, Union[bool, int]]:
+def _get_glyph_metrics_stats(font: Font) -> dict[str, bool | int]:
     """
     Returns a dict containing whether the font seems_monospaced, what's the maximum glyph width and
     what's the most common width.
