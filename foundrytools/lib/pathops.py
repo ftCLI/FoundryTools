@@ -1,6 +1,5 @@
 import itertools
-from collections.abc import Mapping
-from typing import Callable
+from collections.abc import Callable, Mapping
 
 import pathops
 from fontTools.cffLib import CFFFontSet

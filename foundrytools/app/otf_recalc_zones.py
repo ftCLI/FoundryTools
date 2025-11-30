@@ -1,5 +1,5 @@
 from collections import Counter
-from typing import Literal, Optional
+from typing import Literal
 
 from foundrytools import Font
 
@@ -112,11 +112,11 @@ def _calculate_zone(
 
 def run(
     font: Font,
-    descender_glyphs: Optional[list[str]] = None,
-    baseline_glyphs: Optional[list[str]] = None,
-    x_height_glyphs: Optional[list[str]] = None,
-    uppercase_glyphs: Optional[list[str]] = None,
-    ascender_glyphs: Optional[list[str]] = None,
+    descender_glyphs: list[str] | None = None,
+    baseline_glyphs: list[str] | None = None,
+    x_height_glyphs: list[str] | None = None,
+    uppercase_glyphs: list[str] | None = None,
+    ascender_glyphs: list[str] | None = None,
 ) -> tuple[list[int], list[int]]:
     """
     Recalculates the zones for a given TTFont object.

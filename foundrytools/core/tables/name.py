@@ -1,7 +1,6 @@
 # pylint: disable=too-many-public-methods
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import Optional
 
 from fontTools.misc.timeTools import timestampToString
 from fontTools.ttLib import TTFont
@@ -59,7 +58,7 @@ class NameTable(DefaultTbl):
         self,
         name_id: int,
         name_string: str,
-        platform_id: Optional[int] = None,
+        platform_id: int | None = None,
         language_string: str = "en",
     ) -> None:
         """
@@ -97,8 +96,8 @@ class NameTable(DefaultTbl):
     def remove_names(
         self,
         name_ids: Iterable[int],
-        platform_id: Optional[int] = None,
-        language_string: Optional[str] = None,
+        platform_id: int | None = None,
+        language_string: str | None = None,
     ) -> None:
         """
         Deletes the specified NameRecords from the ``name`` table of a font.
@@ -129,9 +128,9 @@ class NameTable(DefaultTbl):
         self,
         old_string: str,
         new_string: str,
-        name_ids_to_process: Optional[tuple[int]] = None,
-        name_ids_to_skip: Optional[tuple[int]] = None,
-        platform_id: Optional[int] = None,
+        name_ids_to_process: tuple[int] | None = None,
+        name_ids_to_skip: tuple[int] | None = None,
+        platform_id: int | None = None,
     ) -> None:
         """
         Finds and replaces occurrences of a string in the specified NameRecords of the ``name``
@@ -172,10 +171,10 @@ class NameTable(DefaultTbl):
     def append_prefix_suffix(
         self,
         name_ids: tuple[int],
-        platform_id: Optional[int] = None,
-        language_string: Optional[str] = None,
-        prefix: Optional[str] = None,
-        suffix: Optional[str] = None,
+        platform_id: int | None = None,
+        language_string: str | None = None,
+        prefix: str | None = None,
+        suffix: str | None = None,
     ) -> None:
         """
         Appends a prefix, a suffix, or both to the NameRecords that match the nameID, platformID,
@@ -239,8 +238,8 @@ class NameTable(DefaultTbl):
 
     def _get_name_ids_for_filter(
         self,
-        name_ids_to_process: Optional[Iterable] = None,
-        name_ids_to_skip: Optional[Iterable] = None,
+        name_ids_to_process: Iterable | None = None,
+        name_ids_to_skip: Iterable | None = None,
     ) -> set[int]:
         """Returns a set of name IDs to be used for filtering."""
         all_name_ids = {name.nameID for name in self.table.names}
@@ -252,11 +251,11 @@ class NameTable(DefaultTbl):
 
     def filter_names(
         self,
-        name_ids: Optional[set[int]] = None,
-        platform_id: Optional[int] = None,
-        plat_enc_id: Optional[int] = None,
-        lang_id: Optional[int] = None,
-        lang_string: Optional[str] = None,
+        name_ids: set[int] | None = None,
+        platform_id: int | None = None,
+        plat_enc_id: int | None = None,
+        lang_id: int | None = None,
+        lang_string: str | None = None,
     ) -> list[NameRecord]:
         """
         Filters NameRecords based on the given parameters.
@@ -332,7 +331,7 @@ class NameTable(DefaultTbl):
         return str(self.table.getDebugName(name_id))
 
     def build_unique_identifier(
-        self, platform_id: Optional[int] = None, alternate: bool = False
+        self, platform_id: int | None = None, alternate: bool = False
     ) -> None:
         """
         Build the NameID 3 (Unique Font Identifier) record based on the font revision, vendor ID,
@@ -365,7 +364,7 @@ class NameTable(DefaultTbl):
             name_id=NameIds.UNIQUE_FONT_IDENTIFIER, name_string=unique_id, platform_id=platform_id
         )
 
-    def build_full_font_name(self, platform_id: Optional[int] = None) -> None:
+    def build_full_font_name(self, platform_id: int | None = None) -> None:
         """
         Build the NameID 4 (Full Font Name) record based on the family name and subfamily name.
 
@@ -383,7 +382,7 @@ class NameTable(DefaultTbl):
             name_id=NameIds.FULL_FONT_NAME, name_string=full_font_name, platform_id=platform_id
         )
 
-    def build_version_string(self, platform_id: Optional[int] = None) -> None:
+    def build_version_string(self, platform_id: int | None = None) -> None:
         """
         Build the NameID 5 (Version String) record based on the font revision.
 
@@ -400,7 +399,7 @@ class NameTable(DefaultTbl):
             name_id=NameIds.VERSION_STRING, name_string=version_string, platform_id=platform_id
         )
 
-    def build_postscript_name(self, platform_id: Optional[int] = None) -> None:
+    def build_postscript_name(self, platform_id: int | None = None) -> None:
         """
         Build the NameID 6 (PostScript Name) record based on the PostScript name.
 

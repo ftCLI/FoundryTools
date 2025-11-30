@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 from fontTools.fontBuilder import FontBuilder
 from fontTools.misc.psCharStrings import T2CharString
@@ -10,9 +10,9 @@ from foundrytools.constants import T_CFF, T_HEAD, T_NAME, T_POST
 def build_otf(
     font: TTFont,
     charstrings_dict: dict[str, T2CharString],
-    ps_name: Optional[str] = None,
-    font_info: Optional[dict[str, Any]] = None,
-    private_dict: Optional[dict[str, Any]] = None,
+    ps_name: str | None = None,
+    font_info: dict[str, Any] | None = None,
+    private_dict: dict[str, Any] | None = None,
 ) -> None:
     """
     Builds an OpenType-PS font with ``fontTools.fontBuilder.FontBuilder``.
