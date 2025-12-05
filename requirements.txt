@@ -1,4 +1,4 @@
-afdko==4.0.2
+afdko==4.0.3
 cffsubr==0.3.0
 defcon==0.12.2
 dehinter>=4.0.0
