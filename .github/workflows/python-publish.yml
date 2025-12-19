@@ -65,6 +65,6 @@ jobs:
           path: dist/
 
       - name: Publish release distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@3317ede93a4981d0fc490510c6fcf8bf0e92ed05
+        uses: pypa/gh-action-pypi-publish@b5a6e8ba2611ad0c810f383eed9e6629eb0b3b2f
         with:
           packages-dir: dist/
