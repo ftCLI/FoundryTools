@@ -5,6 +5,7 @@ from afdko.otfautohint.autohint import ACOptions, FontInstance, fontWrapper, ope
 
 from foundrytools import Font
 from foundrytools.utils.misc import restore_flavor
+from foundrytools.utils.path_tools import get_temp_file_path
 
 
 class OTFAutohintError(Exception):
@@ -29,8 +30,9 @@ def run(font: Font, **kwargs: dict[str, Any]) -> bool:
             setattr(options, key, value)
 
         with restore_flavor(font.ttfont):
-            font.save(font.temp_file)
-            in_file = _validate_path(font.temp_file)
+            temp_file = get_temp_file_path()
+            font.save(temp_file)
+            in_file = _validate_path(temp_file)
             fw_font = openFont(in_file, options=options)
             font_instance = FontInstance(font=fw_font, inpath=in_file, outpath=None)
             fw = fontWrapper(options=options, fil=[font_instance])

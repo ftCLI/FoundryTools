@@ -39,7 +39,6 @@ from foundrytools.lib.qu2cu import quadratics_to_cubics
 from foundrytools.lib.ttf_builder import build_ttf
 from foundrytools.lib.unicode import prod_name_from_glyph_name
 from foundrytools.utils.misc import restore_flavor
-from foundrytools.utils.path_tools import get_temp_file_path
 
 __all__ = ["Font", "FontConversionError", "FontError"]
 
@@ -311,7 +310,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         self._file: Path | None = None
         self._bytesio: BytesIO | None = None
         self._ttfont: TTFont | None = None
-        self._temp_file: Path = get_temp_file_path()
         self._init_font(font_source, lazy, recalc_bboxes, recalc_timestamp)
         self._init_tables()  # Ensure tables are initialized before flags
         self.flags = StyleFlags(self)
@@ -476,17 +474,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
             value: The ``TTFont`` object of the font.
         """
         self._ttfont = value
-
-    @property
-    def temp_file(self) -> Path:
-        """
-        A placeholder for the temporary file path of the font, in case is needed for some
-        operations.
-
-        :return: The temporary file path of the font.
-        :rtype: Path
-        """
-        return self._temp_file
 
     @property
     def t_cff_(self) -> CFFTable:
@@ -715,7 +702,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def close(self) -> None:
         """Close the font and delete the temporary file."""
         self.ttfont.close()
-        self._temp_file.unlink(missing_ok=True)
         if self.bytesio:
             self.bytesio.close()
 
