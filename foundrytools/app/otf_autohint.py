@@ -4,8 +4,8 @@ from afdko.otfautohint.__main__ import _validate_path
 from afdko.otfautohint.autohint import ACOptions, FontInstance, fontWrapper, openFont
 
 from foundrytools import Font
-from foundrytools.utils.path_tools import get_temp_file_path
 from foundrytools.utils.misc import restore_flavor
+from foundrytools.utils.path_tools import get_temp_file_path
 
 
 class OTFAutohintError(Exception):
