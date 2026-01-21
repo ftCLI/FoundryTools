@@ -702,7 +702,6 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
     def close(self) -> None:
         """Close the font and delete the temporary file."""
         self.ttfont.close()
-        self._temp_file.unlink(missing_ok=True)
         if self.bytesio:
             self.bytesio.close()
 
