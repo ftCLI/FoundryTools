@@ -2,6 +2,7 @@ from afdko import checkoutlinesufo
 
 from foundrytools import Font
 from foundrytools.utils.misc import restore_flavor
+from foundrytools.utils.path_tools import get_temp_file_path
 
 
 class CheckOutlinesError(Exception):
@@ -30,9 +31,10 @@ def run(font: Font, drop_hinting_data: bool = False) -> bool:
             # restore it later.
             hinthing_data = font.t_cff_.get_hinting_data() if not drop_hinting_data else None
 
-            font.save(font.temp_file)
-            checkoutlinesufo.run(args=[font.temp_file.as_posix(), "--error-correction-mode"])
-            temp_font = Font(font.temp_file)
+            temp_file = get_temp_file_path()
+            font.save(temp_file)
+            checkoutlinesufo.run(args=[temp_file.as_posix(), "--error-correction-mode"])
+            temp_font = Font(temp_file)
             font.ttfont = temp_font.ttfont
 
             if hinthing_data and not drop_hinting_data:
