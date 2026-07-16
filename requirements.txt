@@ -4,6 +4,6 @@ defcon==0.12.2
 dehinter>=4.0.0
 fonttools[woff,pathops,unicode]==4.63.0
 setuptools==83.0.0
-ttfautohint-py==0.6.0
+ttfautohint-py==0.6.1
 ufo-extractor==0.8.1
 ufo2ft==3.9.0
