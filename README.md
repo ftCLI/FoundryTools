@@ -217,6 +217,7 @@ TABLES_LOOKUP = {
     "post": ("_post", PostTable),
 }
 
+
 def _get_table(self, table_tag: str):  # type: ignore
     table_attr, table_cls = TABLES_LOOKUP[table_tag]
     if getattr(self, table_attr) is None:
@@ -475,10 +476,11 @@ Returns a **list of Fonts** that meet the specified conditions.
 
 ```python
 from foundrytools.lib.font_finder import FontFinder
+
 finder = FontFinder(input_path="path/to/fonts")
 fonts = finder.find_fonts()
 for font in fonts:
-  print(font.file)
+    print(font.file)
 ```
 
 #### `generate_fonts()`
@@ -561,6 +563,7 @@ for font in fonts:
 
 ```python
 from foundrytools.lib.font_finder import FontFinder, FinderOptions, FinderFilter
+
 options = FinderOptions(recursive=True, lazy=True)
 filter_ = FinderFilter(filter_out_tt=True, filter_out_woff=True)
 
