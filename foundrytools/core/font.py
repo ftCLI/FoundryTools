@@ -1141,7 +1141,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         old_glyph_order = self.ttfont.getGlyphOrder()
         if new_glyph_order == old_glyph_order:
             return False
-        rename_map = dict(zip(old_glyph_order, new_glyph_order))
+        rename_map = dict(zip(old_glyph_order, new_glyph_order, strict=False))
         PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
         self.t_cmap.rebuild_character_map(remap_all=True)
 
@@ -1186,7 +1186,7 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
         if not renamed_glyphs:
             return []
 
-        rename_map = dict(zip(old_glyph_order, new_glyph_order))
+        rename_map = dict(zip(old_glyph_order, new_glyph_order, strict=False))
         PostProcessor.rename_glyphs(otf=self.ttfont, rename_map=rename_map)
         self.t_cmap.rebuild_character_map(remap_all=True)
 
