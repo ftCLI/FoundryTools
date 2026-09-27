@@ -49,7 +49,7 @@ documentation can be found at the following link: https://foundrytools.readthedo
 
 ## Installation
 
-FoundryTools requires Python 3.10 or later.
+FoundryTools requires Python 3.11 or later.
 
 ### pip
 
