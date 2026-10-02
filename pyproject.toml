@@ -1,0 +1,172 @@
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13.0"]
+build-backend = "uv_build"
+
+[project]
+name = "foundrytools"
+version = "0.1.6"
+description = "A library for working with fonts in Python."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Cesare Gilento", email = "ftcli@proton.me" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Text Processing :: Fonts",
+]
+dependencies = [
+    "afdko==4.0.3",
+    "cffsubr>=0.4.0",
+    "defcon>=0.12.2",
+    "dehinter>=4.0.0",
+    "fonttools[woff,pathops,unicode]>=4.65.0",
+    "ttfautohint-py>=0.6.1",
+    "ufo-extractor>=0.8.1",
+    "ufo2ft>=3.9.0",
+]
+
+[project.optional-dependencies]
+docs = [
+    "sphinx==8.2.3; python_version < '3.12'",
+    "sphinx==9.1.0; python_version >= '3.12'",
+    "sphinx-rtd-theme==3.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/ftCLI/FoundryTools"
+
+[dependency-groups]
+dev = [
+    "bump-my-version==1.5.1",
+    "mypy==2.3.1",
+    "pre-commit==4.6.2",
+    "pylint==4.0.9",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+foundrytools = ["py.typed", "data/*"]
+
+[tool.bumpversion]
+current_version = "0.1.6"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+ignore_missing_files = false
+tag = true
+sign_tags = false
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = false
+commit = false
+message = "Bump version: {current_version} → {new_version}"
+commit_args = ""
+setup_hooks = []
+pre_commit_hooks = []
+post_commit_hooks = []
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+
+[[tool.bumpversion.files]]
+filename = "src/foundrytools/__init__.py"
+
+[[tool.bumpversion.files]]
+filename = "docs/conf.py"
+
+[tool.ruff]
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+line-length = 100
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["C", "E", "F", "UP", "B", "SIM", "I"]
+ignore = []
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.mypy]
+warn_unused_configs = true
+disallow_untyped_defs = true
+exclude = '\.venv'
+
+[[tool.mypy.overrides]]
+module = [
+    "fontTools.*",
+    "afdko.*",
+    "cffsubr.*",
+    "defcon.*",
+    "dehinter.*",
+    "extractor.*",
+    "pathops.*",
+    "ttfautohint.*",
+    "ufo2ft.*",
+]
+ignore_missing_imports = true
+
+[tool.pylint.main]
+disable = [
+    "C0114",
+    "C0302",
+    "R0801",
+    "R0913",
+    "R0914",
+    "R0917",
+    "W0212",
+    "W1203",
+]
