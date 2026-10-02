@@ -62,27 +62,16 @@ python -m pip install foundrytools
 
 ### Editable mode
 
-If you would like to contribute to the development, you can clone the repository from GitHub,
-install the package in 'editable' mode, and modify the source code in place. We strongly recommend
-using a virtual environment.
+If you would like to contribute to the development, clone the repository from GitHub and use
+[uv](https://docs.astral.sh/uv/) to create an environment and install the package in editable mode.
 
 ```bash
-
 # clone the repository:
 git clone https://github.com/ftCLI/FoundryTools.git
 cd foundrytools
 
-# create new virtual environment named e.g. ftcli-venv, or whatever you prefer:
-python -m venv foundrytools-venv
-
-# to activate the virtual environment in macOS and Linux, do:
-. foundrytools-venv/bin/activate
-
-# to activate the virtual environment in Windows, do:
-foundrytools-venv\Scripts\activate.bat
-
-# install in 'editable' mode
-python -m pip install -e .
+# create the environment and install the package with development dependencies:
+uv sync --group dev
 ```
 
 ## Font Class: High-Level Wrapper for TTFont
@@ -585,8 +574,8 @@ application.
 An example of using the `fix_italic_angle` application:
 
 ```python
-from foudrytools.lib.font_finder import FontFinder
-from foundrytools.apps.fix_italic_angle import run as fix_italic_angle
+from foundrytools.lib.font_finder import FontFinder
+from foundrytools.app.fix_italic_angle import run as fix_italic_angle
 
 finder = FontFinder(input_path="path/to/fonts")
 fonts = finder.find_fonts()
