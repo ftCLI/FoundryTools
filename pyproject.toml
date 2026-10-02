@@ -46,7 +46,7 @@ Homepage = "https://github.com/ftCLI/FoundryTools"
 [dependency-groups]
 dev = [
     "bump-my-version==1.5.1",
-    "mypy==2.3.1",
+    "mypy==2.4.0",
     "pre-commit==4.6.2",
     "pylint==4.0.9",
 ]
