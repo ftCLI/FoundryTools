@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.15'",
@@ -10,7 +10,7 @@ resolution-markers = [
 
 [[package]]
 name = "afdko"
-version = "4.0.3"
+version = "5.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "booleanoperations" },
@@ -22,12 +22,20 @@ dependencies = [
     { name = "ufonormalizer" },
     { name = "ufoprocessor" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/73/fd/4fdefdfcb0c698b55dd385cdfd87cb40a878c7666ab1f59846ee58eb7e02/afdko-4.0.3.tar.gz", hash = "sha256:5feed7c2468e25b25fce0479c04af07f4ed2680bc9251bb4c4aef9ec2fba5720", size = 17922308, upload-time = "2025-12-05T00:36:35.889Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ab/36/faa1c9eb87382a52a8a46786f7dac5baaf59bb521dff3f9dd29ea5ce87ee/afdko-5.0.1.tar.gz", hash = "sha256:083b504a1cd865e8bfbb42134a34318ce42ef5130daebfc5b0e2f2fb444326c5", size = 17353747, upload-time = "2026-05-18T10:04:03.166Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/17/74/e423c6d100a02d93d9686a5684810317fbe4e6faa00b7ac003ffe5e473d6/afdko-4.0.3-py3-none-macosx_10_13_universal2.whl", hash = "sha256:70bd527cdf2cef5668cdc2aa2d3eaabfea9d3bb574ed0041f16656bfe3a60b99", size = 5107086, upload-time = "2025-12-05T00:36:29.801Z" },
-    { url = "https://files.pythonhosted.org/packages/cc/25/8697db80b1ec9e9b01d19fa52543709d88162fcaf9766027d34b63e6520e/afdko-4.0.3-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:378b6820dd64fadf0b7a6e8332e47fb707148b706b1c934593f773bddc14647f", size = 3072634, upload-time = "2025-12-05T00:36:31.228Z" },
-    { url = "https://files.pythonhosted.org/packages/45/af/fefefc7349360ef02b216bfa670cd93edc7610a1c8f8be4bd59b4de5f15b/afdko-4.0.3-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:b397b7131449c473cb03c0f28d537ed05e91492d4942365d180ddf1ae04d092f", size = 5311733, upload-time = "2025-12-05T00:36:32.721Z" },
-    { url = "https://files.pythonhosted.org/packages/a2/05/5f1f77e917387ad775b894bcbfef6a483a45d099a3e675a155dd0700eb65/afdko-4.0.3-py3-none-win_amd64.whl", hash = "sha256:ae53822368d09e6fd01d7773596c4fd97d68842926eb046cf4704afa6c886536", size = 4636775, upload-time = "2025-12-05T00:36:34.461Z" },
+    { url = "https://files.pythonhosted.org/packages/91/50/8e0f521b88faf60eb5c7862f6a835b1a5c45239ecb233370cc5cffc269ed/afdko-5.0.1-cp311-cp311-macosx_10_15_universal2.whl", hash = "sha256:92e090f88a6fb8567474c4f69ee1ac1c1af6ce3fad7e99cabbb2a557e19ef877", size = 4765810, upload-time = "2026-05-18T10:03:45.687Z" },
+    { url = "https://files.pythonhosted.org/packages/9e/94/d7f1a8272bff5fe82b7de81d635b513baa5f0841b16bbf4e65e356a071ac/afdko-5.0.1-cp311-cp311-macosx_10_15_x86_64.whl", hash = "sha256:15b864d3bbf949d784a89bc7a182d0c8fd1d5c478ad6fa64edcebfff7442afa4", size = 2869629, upload-time = "2026-05-18T10:03:47.008Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/f9/3959e1ecb16f9487064a849820839f6755b331a94e850885895221bb63bb/afdko-5.0.1-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:b387565947aa2150d68b480c2271ce04937b9caf4b33ef86c925afb0bda5311e", size = 3442808, upload-time = "2026-05-18T10:03:48.162Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/f0/931a735e688431d5a437989a6250595bd47b5026ff48014596cc3120ba5d/afdko-5.0.1-cp311-cp311-win_amd64.whl", hash = "sha256:5e69990c29d9ee77890888a23598f4ea0c7870f1abfe3d129081b3012a81293a", size = 2722244, upload-time = "2026-05-18T10:03:49.458Z" },
+    { url = "https://files.pythonhosted.org/packages/84/7a/2d0b981cb297fe263088b87358bcb541792a6ee8aa61fd2c14da7560fd85/afdko-5.0.1-cp312-cp312-macosx_10_15_universal2.whl", hash = "sha256:4c8b455135f2ad7dde9cd06e83e2f76bd65cd52e904c26124ffb329216fdb66f", size = 4766062, upload-time = "2026-05-18T10:03:51.25Z" },
+    { url = "https://files.pythonhosted.org/packages/16/80/76a1ebbdb9010bc04b6306e3be335be1eb29ada683b12ddea897c5c52eeb/afdko-5.0.1-cp312-cp312-macosx_10_15_x86_64.whl", hash = "sha256:61fc3b8781e09780d0c0298f20ddb13accff0a9287d044dce222784944aa281e", size = 2870281, upload-time = "2026-05-18T10:03:53.07Z" },
+    { url = "https://files.pythonhosted.org/packages/a5/73/b4c67509dd0daaecaf93cd5f425f6a49565aa44df1e10fab2bca3899bb65/afdko-5.0.1-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:f2f28f623278052aca55e8c730819347ef3443ce69b0ac2134df721bc82a22be", size = 3443164, upload-time = "2026-05-18T10:03:54.234Z" },
+    { url = "https://files.pythonhosted.org/packages/de/08/0d5046bd4d4dfc10d0d44feb3fa44886fcf8fa55161f4a4721ea3b90c340/afdko-5.0.1-cp312-cp312-win_amd64.whl", hash = "sha256:c5aca7e9c8ed8ad3f411ba9e60cdcc5e820ca2326efc8332168fec995600c15a", size = 2721468, upload-time = "2026-05-18T10:03:55.755Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/b0/ac3b369c906d02f68a7300d626a61a562be07c57a89ab40737c1905055cb/afdko-5.0.1-cp313-cp313-macosx_10_15_universal2.whl", hash = "sha256:6c9fc8a1ed74493c281435d17ca6d826b03bcac4e34a653fa6d922f1cf19f4d5", size = 4765871, upload-time = "2026-05-18T10:03:57.276Z" },
+    { url = "https://files.pythonhosted.org/packages/34/04/d1a81c15f7ab71d16752f6ebeece8099cb095463babb377470e75402b52c/afdko-5.0.1-cp313-cp313-macosx_10_15_x86_64.whl", hash = "sha256:65993810f512efddf9fae5276cfbbe3c1ec95a2c908624fd6f0033cdd78d6470", size = 2869859, upload-time = "2026-05-18T10:03:58.7Z" },
+    { url = "https://files.pythonhosted.org/packages/be/4d/758dff2c11f4806943ea0cfd9c33b7e935419031e5f41994d318aafd4415/afdko-5.0.1-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:873b55e0086ed2b76e04060ed542f6336d6b680397aa24da7786679be714af04", size = 3442415, upload-time = "2026-05-18T10:03:59.996Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/73/292c404102fa6080515675fd2763c80fef9f6eb4510f1318ef5b1382661b/afdko-5.0.1-cp313-cp313-win_amd64.whl", hash = "sha256:e019f19475653dac358ccf3d66e3e6dcd0c99ea458fed6c4314b8ca737c2d597", size = 2720950, upload-time = "2026-05-18T10:04:01.814Z" },
 ]
 
 [[package]]
@@ -808,7 +816,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "afdko", specifier = "==4.0.3" },
+    { name = "afdko", specifier = "==5.0.1" },
     { name = "cffsubr", specifier = ">=0.4.0" },
     { name = "defcon", specifier = ">=0.12.2" },
     { name = "dehinter", specifier = ">=4.0.0" },
