@@ -37,12 +37,6 @@ dependencies = [
     "ufo2ft>=3.9.0",
 ]
 
-[project.optional-dependencies]
-docs = [
-    "sphinx==8.2.3; python_version < '3.12'",
-    "sphinx==9.1.0; python_version >= '3.12'",
-    "sphinx-rtd-theme==3.1.0",
-]
 
 [project.urls]
 Homepage = "https://github.com/ftCLI/FoundryTools"
@@ -55,13 +49,16 @@ Changelog = "https://github.com/ftCLI/FoundryTools/releases"
 dev = [
     "bump-my-version==1.6.0",
     "mypy==2.4.0",
-    "pre-commit==4.7.0",
-    "pylint==4.1.3",
     "ruff>=0.17.0",
 ]
 security = [
     "bandit>=1.9.4",
     "pip-audit>=2.10.1",
+]
+docs = [
+    "sphinx==8.2.3; python_version < '3.12'",
+    "sphinx==9.1.0; python_version >= '3.12'",
+    "sphinx-rtd-theme==3.1.0",
 ]
 
 [tool.bumpversion]
@@ -93,6 +90,7 @@ filename = "src/foundrytools/__init__.py"
 
 [[tool.bumpversion.files]]
 filename = "docs/conf.py"
+
 [tool.ruff.lint]
 select = [
     "E",
@@ -103,13 +101,16 @@ select = [
     "C4",
     "SIM",
 ]
-ignore = [
-    "E501",
-]
+
+[tool.ruff]
+   line-length = 100
+   target-version = "py311"
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
 
 [tool.mypy]
 warn_unused_configs = true
