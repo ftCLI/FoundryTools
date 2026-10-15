@@ -11,25 +11,12 @@ repos:
     -   id: check-added-large-files
     -   id: check-json
 
--   repo: https://github.com/hhatto/autopep8
-    rev: v2.3.2
-    hooks:
-    -   id: autopep8
-        args: [--in-place, --max-line-length=100]
-
--   repo: https://github.com/asottile/pyupgrade
-    rev: v3.22.0
-    hooks:
-    -   id: pyupgrade
-        args: [--py311-plus]
-
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.0
     hooks:
-    -   id: ruff
+    -   id: ruff-check
         args: [--fix]
     -   id: ruff-format
-        args: [--line-length=100]
 
 -   repo: https://github.com/hukkin/mdformat
     rev: 1.0.0
