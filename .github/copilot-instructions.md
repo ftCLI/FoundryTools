@@ -5,9 +5,9 @@
 FoundryTools is a Python 3.11+ library built on `fontTools` for inspecting, editing, and converting
 OpenType fonts.
 
-- `src/foundrytools/core/font.py` defines `Font`, the high-level wrapper around `fontTools.ttLib.TTFont`.
-  It accepts font paths, in-memory streams, or existing `TTFont` objects and centralizes font
-  properties, editing, saving, and conversions.
+- `src/foundrytools/core/font.py` defines `Font`, the high-level wrapper around
+  `fontTools.ttLib.TTFont`. It accepts font paths, in-memory streams, or existing `TTFont` objects
+  and centralizes font properties, editing, saving, and conversions.
 - `src/foundrytools/core/tables/` contains wrappers for supported font tables. `TABLES_LOOKUP` maps
   OpenType table tags to wrapper classes; `Font` loads these wrappers lazily. Each wrapper exposes
   the underlying fontTools table through `.table`.
@@ -55,8 +55,8 @@ There is currently no tracked test suite or configured test command in the repos
 
 ## Codebase conventions
 
-- Target Python 3.11 and keep lines within 100 characters. Ruff handles linting and formatting;
-  its configured rules include pyflakes, import sorting, pyupgrade, bugbear, comprehensions, and
+- Target Python 3.11 and keep lines within 100 characters. Ruff handles linting and formatting; its
+  configured rules include pyflakes, import sorting, pyupgrade, bugbear, comprehensions, and
   simplify checks.
 - Keep public and internal function definitions fully typed; Mypy enforces `disallow_untyped_defs`
   for `src`.
