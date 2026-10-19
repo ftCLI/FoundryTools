@@ -1037,6 +1037,27 @@ class Font:  # pylint: disable=too-many-public-methods, too-many-instance-attrib
 
         raise FontError("Unknown font type.")
 
+    def add_extremes(self, remove_hinting: bool = True, tolerance: float = 1) -> set[str]:
+        """
+        Add points at the horizontal and vertical extrema of the curves. Composite glyphs in
+        TrueType fonts are not modified.
+
+        :param remove_hinting: If ``True``, remove hinting from the modified glyphs (TrueType) or
+            from the font (PostScript). Defaults to ``True``.
+        :type remove_hinting: bool
+        :return: A set of glyph names that have been modified.
+        :rtype: set[str]
+        """
+        if self.is_variable:
+            raise NotImplementedError("Adding extremes is not supported for variable fonts.")
+
+        if self.is_ps:
+            return self.t_cff_.add_extremes(remove_hinting=remove_hinting, tolerance=tolerance)
+        if self.is_tt:
+            return self.t_glyf.add_extremes(remove_hinting=remove_hinting, tolerance=tolerance)
+
+        raise FontError("Unknown font type.")
+
     def remove_glyphs(
         self,
         glyph_names_to_remove: set[str] | None = None,
