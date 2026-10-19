@@ -5,6 +5,7 @@ from fontTools.ttLib.tables._g_l_y_f import table__g_l_y_f
 
 from foundrytools.constants import T_FPGM, T_GLYF
 from foundrytools.core.tables.default import DefaultTbl
+from foundrytools.lib.extremes import add_extremes_to_glyf
 from foundrytools.lib.pathops import correct_glyf_contours
 
 
@@ -56,6 +57,22 @@ class GlyfTable(DefaultTbl):  # pylint: disable=too-few-public-methods
             remove_hinting=remove_hinting,
             ignore_errors=ignore_errors,
             min_area=min_area,
+        )
+
+    def add_extremes(self, remove_hinting: bool = True, tolerance: float = 1) -> set[str]:
+        """
+        Adds points at the horizontal and vertical extrema of the curves of simple glyphs.
+
+        :param remove_hinting: Whether to remove hinting instructions from the modified glyphs.
+        :type remove_hinting: bool
+        :param tolerance: Extrema closer than this value (in font units) to an existing point are
+            not added. Defaults to 1.
+        :type tolerance: float
+        :return: A set of glyph names that were modified.
+        :rtype: set[str]
+        """
+        return add_extremes_to_glyf(
+            font=self.ttfont, remove_hinting=remove_hinting, tolerance=tolerance
         )
 
     def decompose_glyph(self, glyph_name: str) -> None:

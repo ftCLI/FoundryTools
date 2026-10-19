@@ -10,6 +10,7 @@ from fontTools.ttLib.tables.C_F_F_ import table_C_F_F_
 
 from foundrytools.constants import T_CFF
 from foundrytools.core.tables.default import DefaultTbl
+from foundrytools.lib.extremes import add_extremes_to_cff
 from foundrytools.lib.pathops import correct_cff_contours
 
 HINTING_ATTRS = (
@@ -287,3 +288,35 @@ class CFFTable(DefaultTbl):
         if not drop_hinting_data:
             self._restore_hinting_data()
         return fixed_glyphs
+
+    def add_extremes(
+        self,
+        remove_hinting: bool = True,
+        remove_unused_subroutines: bool = True,
+        drop_hinting_data: bool = False,
+        tolerance: float = 1,
+    ) -> set[str]:
+        """
+        Adds points at the horizontal and vertical extrema of the curves of the glyphs.
+
+        :param remove_hinting: Whether to remove hinting if one or more glyphs are modified.
+        :type remove_hinting: bool
+        :param remove_unused_subroutines: Whether to remove unused subroutines.
+        :type remove_unused_subroutines: bool
+        :param drop_hinting_data: If True, the hinting data will be removed from the font.
+        :type drop_hinting_data: bool
+        :param tolerance: Extrema closer than this value (in font units) to an existing point are
+            not added. Defaults to 1.
+        :type tolerance: float
+        :return: A set of glyph names that were modified.
+        :rtype: set[str]
+        """
+        modified_glyphs = add_extremes_to_cff(
+            font=self.ttfont,
+            remove_hinting=remove_hinting,
+            remove_unused_subroutines=remove_unused_subroutines,
+            tolerance=tolerance,
+        )
+        if not drop_hinting_data:
+            self._restore_hinting_data()
+        return modified_glyphs
