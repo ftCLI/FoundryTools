@@ -45,7 +45,7 @@ Changelog = "https://github.com/ftCLI/FoundryTools/releases"
 
 [dependency-groups]
 dev = [
-    "bump-my-version==1.7.0",
+    "bump-my-version==1.8.1",
     "mypy==2.4.1",
     "pytest>=9.1.1",
     "ruff>=0.17.0",
