@@ -2458,7 +2458,7 @@ wheels = [
 
 [[package]]
 name = "ufo2ft"
-version = "3.10.0"
+version = "3.11.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "booleanoperations" },
@@ -2466,9 +2466,9 @@ dependencies = [
     { name = "fontmath" },
     { name = "fonttools" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/be/c8/5f05adb6dc92fd7b1e42f86aabefff1b316d9dd61204a81ca865e08c669f/ufo2ft-3.10.0.tar.gz", hash = "sha256:4767e2f69b7e904227cd54cc9ab37ebe08298c0778f8b34fc04ebb8625e69aa4", size = 478869, upload-time = "2026-10-29T16:08:53.143Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2a/a3/3902416b61ea5cf60a597b8df924d1e8ba6a9c7c3e417d68fdc94717cf71/ufo2ft-3.11.0.tar.gz", hash = "sha256:11543a02e121cae0d498e2358fbaf9ad03101ed53a600a9e0c196ec0e151dc41", size = 479008, upload-time = "2026-11-02T18:41:49.74Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/91/22/5b5e01cbd94a6eefcb27453e7f55f228ea2d41ddaa0ee891261f33a5569e/ufo2ft-3.10.0-py3-none-any.whl", hash = "sha256:3449f43df6e4fa710160b25b7f7ce8e869253ab61f2cc823b71e7fd41758bb01", size = 173476, upload-time = "2026-10-29T16:08:51.2Z" },
+    { url = "https://files.pythonhosted.org/packages/70/ea/b6bcfa8b221f778d89265883ba3f3b4595ec507b547f128a8558e8c33609/ufo2ft-3.11.0-py3-none-any.whl", hash = "sha256:2797f4128f29e04e3881593be5da3b99b003748b7c5c3d5321c94f08fc82dd4e", size = 173635, upload-time = "2026-11-02T18:41:47.973Z" },
 ]
 
 [[package]]
